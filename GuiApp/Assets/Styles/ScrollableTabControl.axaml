@@ -1,0 +1,340 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls">
+  <Design.PreviewWith>
+    <Border Padding="200">
+      <StackPanel Spacing="10"
+                  Width="150">
+        <controls:ScrollableTabControl Items="ABCDEFG" Padding="10"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <StyleInclude Source="/Assets/Styles/Button.axaml"/>
+
+  <Style Selector="controls|ScrollableTabControl">
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+          <DockPanel>
+            <Grid DockPanel.Dock="{TemplateBinding TabStripPlacement}"
+                  ColumnDefinitions="*,1,Auto"
+                  Margin="12 0 6 0"
+                  ZIndex="1">
+
+              <Grid Grid.Column="2"
+                    ColumnDefinitions="Auto,0,Auto,0,Auto">
+                <Grid.Styles>
+                  <Style Selector="Button.scrollButton">
+                    <Setter Property="Transitions"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Padding" Value="1"/>
+                    <Setter Property="Margin" Value="1"/>
+                  </Style>
+                  <Style Selector="Button.scrollButton:pointerover">
+                    <Setter Property="BorderThickness" Value="1"/>
+                    <Setter Property="Background">
+                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0.0" Color="#FF4F4F4F"/>
+                        <GradientStop Offset="1.0" Color="#FF525252"/>
+                      </LinearGradientBrush>
+                    </Setter>
+                    <Setter Property="Padding" Value="0 0 0 1"/>
+                    <Setter Property="Margin" Value="0"/>
+                  </Style>
+                </Grid.Styles>
+
+                <Button Grid.Column="0"
+                        Classes="scrollButton"
+                        Command="{Binding ScrollLeft, RelativeSource={RelativeSource AncestorType=controls:ScrollableTabControl}}">
+
+                  <Button.Resources>
+                    <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                  </Button.Resources>
+
+                  <Button.Styles>
+                    <Style Selector="FlyoutPresenter.scrollMenuFlyoutPresenter">
+                      <Setter Property="Margin" Value="0 12 0 0"/>
+                      <Setter Property="Padding" Value="1"/>
+                      <Setter Property="MaxWidth" Value="100000"/>
+                      <Setter Property="Template">
+                        <ControlTemplate>
+                          <Border Name="LayoutRoot"
+                                  Classes="themed"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  Padding="{DynamicResource FlyoutBorderThemePadding}"
+                                  CornerRadius="0">
+                            <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                          VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                              <ContentControl Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch" />
+                            </ScrollViewer>
+                          </Border>
+                        </ControlTemplate>
+                      </Setter>
+                    </Style>
+                  </Button.Styles>
+
+                  <Panel>
+                    <Viewbox Width="9" Height="9"
+                             RenderTransform="matrix(1,0,0,1,0,0.8)"
+                             Margin="2 0 2 0">
+                      <Path VerticalAlignment="Center"
+                            Data="m 0 0 l 100 120 l 100 -120 z"
+                            Fill="#90000000"/>
+                    </Viewbox>
+
+                    <Viewbox Width="9" Height="9"
+                             Margin="2 0 2 0">
+                      <Path VerticalAlignment="Center"
+                            Data="m 0 0 l 100 120 l 100 -120 z"
+                            Fill="#FF101010"/>
+                    </Viewbox>
+                  </Panel>
+
+                  <Button.Flyout>
+                    <Flyout Placement="BottomEdgeAlignedLeft"
+                            Flyout.FlyoutPresenterClasses="scrollMenuFlyoutPresenter"
+                            ShowMode="TransientWithDismissOnPointerMoveAway">
+                      <ItemsPresenter Items="{Binding $parent[controls:ScrollableTabControl].Items}"
+                                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                        <ItemsPresenter.Styles>
+                          <Style Selector="Button.scrollMenuButton">
+                            <Setter Property="Transitions"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Padding" Value="8 6"/>
+                          </Style>
+                          <Style Selector="Button.scrollMenuButton:pointerover">
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Background">
+                              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0.0" Color="#FF4F4F4F"/>
+                                <GradientStop Offset="1.0" Color="#FF525252"/>
+                              </LinearGradientBrush>
+                            </Setter>
+                            <Setter Property="Padding" Value="5 3 4 3"/>
+                          </Style>
+                        </ItemsPresenter.Styles>
+
+                        <ItemsPresenter.ItemTemplate>
+                          <DataTemplate>
+                            <Button Classes="scrollMenuButton"
+                                    MinHeight="15"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding $parent[controls:ScrollableTabControl].ScrollTo}"
+                                    CommandParameter="{Binding .}">
+                              <ContentControl Content="{Binding .}"
+                                              ContentTemplate="{Binding $parent[controls:ScrollableTabControl].ItemTemplate}"/>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsPresenter.ItemTemplate>
+
+                      </ItemsPresenter>
+                    </Flyout>
+                  </Button.Flyout>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Classes="scrollButton"
+                        Command="{Binding ScrollLeft, RelativeSource={RelativeSource AncestorType=controls:ScrollableTabControl}}"
+                        IsVisible="{Binding $parent[controls:ScrollableTabControl].IsOverflowing}">
+                  <Button.Resources>
+                    <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                  </Button.Resources>
+                  <Panel>
+                    <Panel RenderTransform="matrix(1,0,0,1,0,0.8)">
+                      <Viewbox Width="9" Height="9"
+                               RenderTransform="rotate(90deg)"
+                               Margin="1 0 3 0">
+                        <Path VerticalAlignment="Center"
+                              Data="m 0 0 l 100 120 l 100 -120 z"
+                              Fill="#90000000"/>
+                      </Viewbox>
+                    </Panel>
+
+                    <Viewbox Width="9" Height="9"
+                             RenderTransform="rotate(90deg)"
+                             Margin="1 0 3 0">
+                      <Path VerticalAlignment="Center"
+                            Data="m 0 0 l 100 120 l 100 -120 z"
+                            Fill="#FFFFFFFF"/>
+                    </Viewbox>
+                  </Panel>
+                </Button>
+
+                <Button Grid.Column="4"
+                        Classes="scrollButton"
+                        Command="{Binding ScrollRight, RelativeSource={RelativeSource AncestorType=controls:ScrollableTabControl}}"
+                        IsVisible="{Binding $parent[controls:ScrollableTabControl].IsOverflowing}">
+                  <Button.Resources>
+                    <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                  </Button.Resources>
+                  <Panel>
+                    <Panel RenderTransform="matrix(1,0,0,1,0,0.8)">
+                      <Viewbox Width="9" Height="9"
+                               RenderTransform="rotate(-90deg)"
+                               Margin="3 0 1 0">
+                        <Path VerticalAlignment="Center"
+                              Data="m 0 0 l 100 120 l 100 -120 z"
+                              Fill="#90000000"/>
+                      </Viewbox>
+                    </Panel>
+                    <Viewbox Width="9" Height="9"
+                             RenderTransform="rotate(-90deg)"
+                             Margin="3 0 1 0">
+                      <Path VerticalAlignment="Center"
+                            Data="m 0 0 l 100 120 l 100 -120 z"
+                            Fill="#FFFFFFFF"/>
+                    </Viewbox>
+                  </Panel>
+                </Button>
+              </Grid>
+
+              <ScrollViewer Name="PART_TabScrollViewer"
+                            Grid.Column="0"
+                            HorizontalScrollBarVisibility="Hidden"
+                            VerticalScrollBarVisibility="Disabled"
+                            Margin="0 0 0 -3">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                Items="{TemplateBinding Items}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                Margin="2"/>
+              </ScrollViewer>
+            </Grid>
+
+            <Border BorderThickness="1"
+                    BorderBrush="#FF3D3D3D"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Background="{TemplateBinding Background}">
+              <ContentPresenter Name="PART_SelectedContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}"/>
+            </Border>
+
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem">
+    <Setter Property="FontSize" Value="10.5"/>
+    <Setter Property="Foreground" Value="#FFB5B5B5"/>
+    <Setter Property="FontFamily" Value="Tahoma"/>
+    <Setter Property="MinHeight" Value="15"/>
+    <Setter Property="Padding" Value="4 2"/>
+    <Setter Property="Margin" Value="0 2 0 1"/>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                ClipToBounds="True"
+                Padding="0 0 0 -1">
+          <Panel>
+            <Border Name="PART_BackgroundBorder"
+                    BorderThickness="1"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+              <Panel>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                  Content="{TemplateBinding Header}"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                  TextBlock.FontSize="{TemplateBinding FontSize}"
+                                  TextBlock.FontWeight="{TemplateBinding FontWeight}"/>
+              </Panel>
+            </Border>
+            <Border Name="PART_InnerAccentBorder"
+                    BorderThickness="1 1 1 0"
+                    Margin="1"/>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem /template/ Border#PART_BackgroundBorder">
+    <Setter Property="BorderBrush" Value="#FF3D3D3D"/>
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0.0" Color="#FF535353"/>
+        <GradientStop Offset="1.0" Color="#FF585858"/>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem /template/ Border#PART_InnerAccentBorder">
+    <Setter Property="IsVisible" Value="True"/>
+    <Setter Property="BorderBrush" Value="#FF5A5A5A"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:selected">
+    <Setter Property="Padding" Value="4 3 4 4"/>
+    <Setter Property="Margin" Value="-1 0"/>
+    <Setter Property="Foreground" Value="#FFECECEC"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:selected /template/ Border#PART_BackgroundBorder">
+    <Setter Property="Background" Value="#FF585858"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:selected /template/ Border#PART_InnerAccentBorder">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:not(:selected):pointerover /template/ Border#PART_BackgroundBorder">
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0.0" Color="#FF4B4B4B"/>
+        <GradientStop Offset="1.0" Color="#FF505050"/>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:not(:selected):pointerover /template/ Border#PART_InnerAccentBorder">
+    <Setter Property="IsVisible" Value="True"/>
+    <Setter Property="BorderBrush" Value="#FF515151"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl TabItem:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="TextBlock.Foreground" Value="#FFECECEC"/>
+  </Style>
+</Styles>

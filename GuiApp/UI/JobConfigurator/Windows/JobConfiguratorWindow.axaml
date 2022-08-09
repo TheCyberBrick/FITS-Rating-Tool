@@ -1,0 +1,395 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:jviews="using:FitsRatingTool.GuiApp.UI.JobConfigurator.Views"
+        xmlns:eviews="using:FitsRatingTool.GuiApp.UI.Evaluation.Views"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters;assembly=FitsRatingTool"
+        mc:Ignorable="d" d:DesignWidth="640"
+        Width="640" MinWidth="500"
+        SizeToContent="Height"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.JobConfigurator.Windows.JobConfiguratorWindow"
+        Icon="/Assets/Icons/new_file.png"
+        Title="Job Configurator"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        Classes="nomaximize pinnable"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/new_file.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid ColumnDefinitions="*,8,*">
+      <Grid Grid.Column="0"
+            RowDefinitions="*,Auto,Auto,Auto,Auto">
+
+        <HeaderedContentControl Grid.Row="0"
+                                Padding="4"
+                                MinHeight="120">
+          <HeaderedContentControl.Header>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+              <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Viewbox Width="16" Height="16" Margin="-1">
+                    <Image Source="/Assets/Icons/formula.png"/>
+                  </Viewbox>
+                  <TextBlock Text="Evaluation Formula" VerticalAlignment="Center"/>
+                </StackPanel>
+              </StackPanel>
+              <eviews:EvaluationFormulaHelpView
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Margin="-4 -3 -2 -3"/>
+            </Grid>
+          </HeaderedContentControl.Header>
+
+          <Grid ColumnDefinitions="*" RowDefinitions="*,4,Auto">
+
+            <TextBox Text="{Binding EvaluationFormula.RatingFormula}"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+            <Grid Grid.Row="2"
+                  ColumnDefinitions="*,Auto">
+
+              <Border Grid.Column="0"
+                      Classes="themed"
+                      Padding="4">
+                <TextBlock Text="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
+                           ToolTip.Tip="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
+                           Foreground="#CEFA4A37"
+                           FontWeight="Black"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+              </Border>
+
+              <Button Grid.Column="1"
+                      Height="20"
+                      Width="22"
+                      Content="..."
+                      Padding="1 -2"
+                      HorizontalContentAlignment="Right"
+                      Margin="2 0 0 0"
+                      Command="{Binding EvaluationFormula.LoadFormulaWithOpenFileDialog}"/>
+
+            </Grid>
+
+          </Grid>
+        </HeaderedContentControl>
+
+        <HeaderedContentControl Grid.Row="1"
+                                Padding="4"
+                                Margin="0 8 0 0">
+          <HeaderedContentControl.Header>
+            <Panel>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Width="18" Height="18" Margin="0 -2">
+                  <Image Source="/Assets/Icons/link.png"/>
+                </Viewbox>
+                <TextBlock Text="Grouping" VerticalAlignment="Center"/>
+              </StackPanel>
+              <jviews:JobGroupingConfigurationHelpView
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Center"
+                     DataContext="{Binding GroupingConfigurator.GroupingConfiguration}"
+                     Margin="-4 -3 -2 -3"/>
+            </Panel>
+          </HeaderedContentControl.Header>
+          <Panel>
+            <Grid RowDefinitions="Auto,4,Auto,4,Auto,4,Auto,4,Auto,4,Auto,4,Auto">
+
+              <TextBlock Grid.Row="0" Text="Group by..."/>
+
+              <jviews:JobGroupingConfiguratorView
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        DataContext="{Binding GroupingConfigurator}"/>
+
+              <Separator Grid.Row="4"/>
+
+              <CheckBox Grid.Row="6"
+                        Content="Skip files where one or more grouping keys have no value"
+                        IsChecked="{Binding GroupingKeysRequired}"/>
+
+              <Separator Grid.Row="8"/>
+
+              <Panel Grid.Row="10">
+                <CheckBox Content="Filter by grouping keys"
+                          IsChecked="{Binding IsFilteredByGrouping}"
+                          ToolTip.Tip="Allows filtering files based on grouping keys and regular expressions. The files can be filtered by grouping keys independently of the grouping. A list of possible grouping keys can be found in the grouping info box above."/>
+                <Button IsVisible="{Binding IsFilteredByGrouping}"
+                        Content="+"
+                        Width="15" Height="15"
+                        CornerRadius="1" Padding="0 -4 0 0"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"
+                        VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                        Command="{Binding AddNewGroupingFilter}"/>
+              </Panel>
+              <ScrollViewer Grid.Row="12"
+                            IsVisible="{Binding IsFilteredByGrouping}"
+                            VerticalScrollBarVisibility="Hidden">
+                <ItemsControl Items="{Binding GroupingFilters}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid ColumnDefinitions="Auto,10,*,4,Auto" RowDefinitions="Auto,2,Auto" Margin="0 1 0 4">
+                        <TextBlock Grid.Column="0" Grid.Row="0" Text="Key" VerticalAlignment="Center">
+                          <ToolTip.Tip>
+                            <TextBlock Text="A list of possible grouping keys can be found in the grouping info box above." TextWrapping="Wrap"/>
+                          </ToolTip.Tip>
+                        </TextBlock>
+                        <Panel Grid.Column="2" Grid.Row="0">
+                          <TextBox Text="{Binding Key}"/>
+                          <Border Classes.invalid="{Binding !IsKeyValid}">
+                            <Border.Styles>
+                              <Style Selector="Border.invalid">
+                                <Setter Property="BorderBrush" Value="#90FA4A37"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                              </Style>
+                            </Border.Styles>
+                          </Border>
+                        </Panel>
+                        <Button Grid.Column="4" Grid.Row="0"
+                                Content="-"
+                                Width="15" Height="15"
+                                CornerRadius="1" Padding="1.5 -4 0 0"
+                                VerticalAlignment="Center" HorizontalAlignment="Right"
+                                VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                                Command="{Binding Remove}"/>
+
+                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Pattern" VerticalAlignment="Center">
+                          <ToolTip.Tip>
+                            <TextBlock Text="The pattern can be any valid regular expression" TextWrapping="Wrap"/>
+                          </ToolTip.Tip>
+                        </TextBlock>
+                        <Panel Grid.Column="2" Grid.Row="2">
+                          <TextBox Text="{Binding Pattern}"/>
+                          <Border Classes.invalid="{Binding !IsPatternValid}">
+                            <Border.Styles>
+                              <Style Selector="Border.invalid">
+                                <Setter Property="BorderBrush" Value="#90FA4A37"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                              </Style>
+                            </Border.Styles>
+                          </Border>
+                        </Panel>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+
+            </Grid>
+          </Panel>
+        </HeaderedContentControl>
+
+        <HeaderedContentControl Grid.Row="2"
+                                Padding="4"
+                                Margin="0 8 0 0">
+          <HeaderedContentControl.Header>
+            <StackPanel Orientation="Horizontal">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Width="16" Height="16">
+                  <Image Source="/Assets/Icons/gears.png"/>
+                </Viewbox>
+                <TextBlock Text="Processing" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </HeaderedContentControl.Header>
+
+          <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto">
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Parallel Tasks"
+                       VerticalAlignment="Center"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           Value="{Binding ParallelTasks}"
+                           Minimum="1"
+                           ClipValueToMinMax="True"
+                           Margin="0 2"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Parallel I/O"
+                       VerticalAlignment="Center"/>
+
+            <NumericUpDown Grid.Row="1" Grid.Column="2"
+                           Value="{Binding ParallelIO}"
+                           Minimum="1"
+                           ClipValueToMinMax="True"
+                           Margin="0 2"/>
+
+          </Grid>
+        </HeaderedContentControl>
+
+        <Button Grid.Row="4"
+                Margin="0 4 0 0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Command="{Binding SaveJobConfigWithSaveFileDialog}">
+
+          <Grid ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Column="0"
+                       Text="Save As..."
+                       HorizontalAlignment="Left"
+                       Margin="4 0 0 0"/>
+            <Viewbox Grid.Column="2"
+                     Width="16" Height="16"
+                     HorizontalAlignment="Right"
+                     Margin="-2">
+              <Image Source="/Assets/Icons/save.png"/>
+            </Viewbox>
+          </Grid>
+        </Button>
+
+      </Grid>
+
+      <Grid Grid.Column="2"
+            RowDefinitions="Auto,*">
+
+        <HeaderedContentControl Grid.Row="0"
+                                Padding="4">
+          <HeaderedContentControl.Header>
+            <StackPanel Orientation="Horizontal">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Width="18" Height="18" Margin="0 -1">
+                  <Image Source="/Assets/Icons/import.png"/>
+                </Viewbox>
+                <TextBlock Text="Input" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </HeaderedContentControl.Header>
+
+          <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,Auto">
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Max. Image Size (MB)"
+                       VerticalAlignment="Center"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1048576}"
+                           Minimum="1"
+                           ClipValueToMinMax="True"
+                           Margin="0 2"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Max. Image Width"
+                       VerticalAlignment="Center"/>
+
+            <NumericUpDown Grid.Row="1" Grid.Column="2"
+                           Value="{Binding MaxImageWidth}"
+                           Increment="128"
+                           Minimum="1"
+                           ClipValueToMinMax="True"
+                           Margin="0 2"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Max. Image Height"
+                       VerticalAlignment="Center"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Value="{Binding MaxImageHeight}"
+                           Increment="128"
+                           Minimum="1"
+                           ClipValueToMinMax="True"
+                           Margin="0 2"/>
+
+          </Grid>
+        </HeaderedContentControl>
+
+        <HeaderedContentControl Grid.Row="1"
+                                Padding="4"
+                                Margin="0 8 0 0">
+          <HeaderedContentControl.Header>
+            <StackPanel Orientation="Horizontal">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Width="18" Height="18" Margin="0 -1">
+                  <Image Source="/Assets/Icons/export.png"/>
+                </Viewbox>
+                <TextBlock Text="Output" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </HeaderedContentControl.Header>
+
+          <Grid ColumnDefinitions="Auto,10,*,Auto" RowDefinitions="Auto,Auto,Auto,*">
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Logs path"
+                       VerticalAlignment="Center"/>
+
+            <TextBox Grid.Row="0" Grid.Column="2"
+                     Text="{Binding OutputLogsPath}"
+                     Margin="0 2"/>
+
+            <Button Grid.Row="0" Grid.Column="3"
+                    Height="20"
+                    Width="22"
+                    Content="..."
+                    Padding="1 -2"
+                    HorizontalContentAlignment="Center"
+                    Margin="2 0 0 0"
+                    Command="{Binding SelectOutputLogsPathWithOpenFolderDialog}"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="Cache path"
+                       VerticalAlignment="Center"/>
+
+            <TextBox Grid.Row="1" Grid.Column="2"
+                     Text="{Binding CachePath}"
+                     Margin="0 2"/>
+
+            <Button Grid.Row="1" Grid.Column="3"
+                    Height="20"
+                    Width="22"
+                    Content="..."
+                    Padding="1 -2"
+                    HorizontalContentAlignment="Center"
+                    Margin="2 0 0 0"
+                    Command="{Binding SelectCachePathWithOpenFolderDialog}"/>
+
+            <Separator Grid.Row="2" Grid.ColumnSpan="4"
+                       Margin="0 2"/>
+
+            <eviews:EvaluationExporterConfiguratorView
+                      Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"
+                      DataContext="{Binding EvaluationExporterConfigurator}"/>
+
+          </Grid>
+        </HeaderedContentControl>
+
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+
+</Window>

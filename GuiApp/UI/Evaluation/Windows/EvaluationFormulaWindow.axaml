@@ -1,0 +1,243 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.Evaluation.Views"
+        xmlns:jviews="using:FitsRatingTool.GuiApp.UI.JobConfigurator.Views"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="435"
+        Width="600" Height="435"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.Evaluation.Windows.EvaluationFormulaWindow"
+        Icon="/Assets/Icons/formula.png"
+        Title="Evaluation Formula"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True"
+        Classes="nomaximize pinnable">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/formula.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Top"
+          Height="24"
+          Margin="-2 -4 0 5">
+      <MenuItem Header="File">
+        <MenuItem Header="Open..." Command="{Binding LoadFormulaWithOpenFileDialog}" HotKey="Ctrl+O" InputGesture="Ctrl+O">
+          <MenuItem.Icon>
+            <Image Source="/Assets/Icons/open.png" Width="16" Height="16"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Header="-"/>
+        <MenuItem Header="Save" Command="{Binding SaveFormula}" HotKey="Ctrl+S" InputGesture="Ctrl+S">
+          <MenuItem.Icon>
+            <Image Source="/Assets/Icons/save.png" Width="16" Height="16"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Header="Save As..." Command="{Binding SaveFormulaWithSaveFileDialog}"/>
+      </MenuItem>
+      <MenuItem Header="Settings">
+        <CheckBox Grid.Column="1"
+                  IsChecked="{Binding AutoUpdateRatings}"
+                  Margin="-20 -2">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="Auto Evaluate"
+                       HorizontalAlignment="Left"
+                       Margin="4 0 0 0"/>
+            <Viewbox Width="16" Height="16"
+                     HorizontalAlignment="Right"
+                     Margin="-2">
+              <Image Source="/Assets/Icons/gears.png"/>
+            </Viewbox>
+          </StackPanel>
+        </CheckBox>
+      </MenuItem>
+    </Menu>
+
+    <Grid ColumnDefinitions="Auto,9,*">
+
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" MinHeight="50"/>
+        <RowDefinition Height="4"/>
+        <RowDefinition Height="Auto" MinHeight="30"/>
+      </Grid.RowDefinitions>
+
+      <HeaderedContentControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="3"
+                              Padding="4">
+        <HeaderedContentControl.Header>
+          <Panel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="16" Height="16" Margin="-1 0">
+                <Image Source="/Assets/Icons/formula.png"/>
+              </Viewbox>
+              <TextBlock Text="Formula" VerticalAlignment="Center"/>
+            </StackPanel>
+            <views:EvaluationFormulaHelpView
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Right"
+                  Margin="-4 -4 -2 -4"/>
+          </Panel>
+        </HeaderedContentControl.Header>
+
+        <Panel>
+          <Grid RowDefinitions="*,4,Auto">
+            <TextBox Text="{Binding RatingFormula}"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"/>
+
+            <Border Grid.Row="2"
+                    Padding="8 2"
+                    Height="22">
+              <TextBlock Text="{Binding RatingFormulaError, FallbackValue={}}"
+                         ToolTip.Tip="{Binding RatingFormulaError, FallbackValue={}}"
+                         Foreground="#CEFA4A37"
+                         FontWeight="Black"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"/>
+            </Border>
+          </Grid>
+        </Panel>
+
+      </HeaderedContentControl>
+
+
+
+      <GridSplitter Grid.Row="0" Grid.Column="1"
+                    ResizeDirection="Columns"
+                    Background="Transparent"/>
+
+      <HeaderedContentControl Grid.Row="0" Grid.Column="0"
+                              Padding="4">
+        <HeaderedContentControl.Header>
+          <Panel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18">
+                <Image Source="/Assets/Icons/link.png"/>
+              </Viewbox>
+              <TextBlock Text="Grouping" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Image Source="/Assets/Icons/question.png"
+                   Width="22"
+                   Height="22"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Margin="-4 -4 -2 -4"
+                   ToolTip.ShowDelay="100">
+              <ToolTip.Tip>
+                <StackPanel>
+                  <TextBlock Text="Grouping allows calculating statistics over certain groups of files. Files with equal grouping values are grouped together. For example, if 'Object' and 'Filter' are checked, then all images of the same object and with the same filter are grouped together." TextWrapping="Wrap"/>
+                  <TextBlock Text="Min, Max and Median variables are automatically set to the minimum, maximum and median values of a variable for each group." TextWrapping="Wrap"/>
+                </StackPanel>
+              </ToolTip.Tip>
+            </Image>
+          </Panel>
+        </HeaderedContentControl.Header>
+
+        <Grid RowDefinitions="Auto,*,5,Auto,5,Auto" ClipToBounds="True">
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="151"/>
+          </Grid.ColumnDefinitions>
+
+          <Grid Grid.Row="5"
+                RowDefinitions="Auto,4,*">
+
+            <TextBlock Grid.Row="0"
+                       Text="Groups"
+                       VerticalAlignment="Top"
+                       Margin="0 4 0 2">
+              <ToolTip.Tip>
+                <TextBlock Text="All found groups of the currently loaded files" TextWrapping="Wrap"/>
+              </ToolTip.Tip>
+            </TextBlock>
+
+            <Border Grid.Row="2"
+                    Classes="themed inner">
+              <ListBox ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       Items="{Binding GroupKeys}"
+                       MinHeight="21"
+                       MaxHeight="105"
+                       Background="Transparent">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding .}" ToolTip.Tip="{Binding .}"/>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.Styles>
+                  <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="4"/>
+                  </Style>
+                </ListBox.Styles>
+              </ListBox>
+            </Border>
+
+          </Grid>
+
+          <Separator Grid.Row="4"/>
+
+          <TextBlock Grid.Row="0"
+                      Text="Group by..."
+                      VerticalAlignment="Center"/>
+
+          <ScrollViewer Grid.Row="1"
+                        VerticalScrollBarVisibility="Auto"
+                        Margin="0 8 0 0">
+            <jviews:JobGroupingConfiguratorView
+                DataContext="{Binding GroupingConfigurator}"/>
+          </ScrollViewer>
+        </Grid>
+
+      </HeaderedContentControl>
+
+      <Button Grid.Row="2" Grid.Column="0"
+              Command="{Binding UpdateRatings}"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch">
+        <Grid ColumnDefinitions="Auto,10,*">
+          <TextBlock Grid.Column="0"
+                     Text="Evaluate"
+                     HorizontalAlignment="Left"
+                     Margin="4 0 0 0"/>
+          <Viewbox Grid.Column="2"
+                   Width="16" Height="16"
+                   HorizontalAlignment="Right"
+                   Margin="-2">
+            <Image Source="/Assets/Icons/gears.png"/>
+          </Viewbox>
+        </Grid>
+      </Button>
+
+    </Grid>
+  </DockPanel>
+
+</Window>

@@ -1,0 +1,58 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="FitsRatingTool.GuiApp.UI.JobConfigurator.Views.JobGroupingConfigurationHelpView">
+
+  <Border Width="22" Height="22"
+          ToolTip.ShowDelay="100">
+    <ToolTip.Tip>
+      <StackPanel Spacing="6">
+        <TextBlock Text="Selected grouping keys"
+                   FontWeight="UltraBlack"/>
+        <ItemsPresenter Items="{Binding GroupingKeys}">
+          <ItemsPresenter.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Spacing="2"/>
+            </ItemsPanelTemplate>
+          </ItemsPresenter.ItemsPanel>
+          <ItemsPresenter.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal">
+                <Ellipse Width="3" Height="3"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Margin="4 1 4 0"
+                         Fill="#FFEFEFEF"/>
+                <TextBlock Text="{Binding .}"/>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsPresenter.ItemTemplate>
+        </ItemsPresenter>
+      </StackPanel>
+    </ToolTip.Tip>
+
+    <Image Source="/Assets/Icons/info.png"
+           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Border>
+
+</UserControl>

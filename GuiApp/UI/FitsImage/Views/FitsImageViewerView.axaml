@@ -1,0 +1,114 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:imaging="using:Avalonia.Visuals.Media.Imaging"
+             xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:views="using:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+             xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+             xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
+             x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerView">
+
+  <Panel ClipToBounds="True">
+
+    <paz:ZoomBorder Name="ZoomBorder" Stretch="Uniform" ZoomSpeed="1.2"
+                    Background="Transparent" ClipToBounds="True" Focusable="True"
+                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                    MinZoomX="1" MinZoomY="1" EnableConstrains="True">
+      <Border Padding="-1"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsVisible="{Binding HasImage}"
+              MinWidth="50"
+              MinHeight="35">
+        <Border BorderThickness="1"
+                BorderBrush="#FF272727"
+                BoxShadow="0 0 5 2 #80000000">
+          <Viewbox Stretch="Uniform">
+            <Panel>
+              <ContentControl Name="ImageView" Content="{Binding FitsImage}"/>
+              <ItemsControl Items="{Binding Photometry}" IsVisible="{Binding ShowPhotometry}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Canvas VerticalAlignment="Stretch" HorizontalAlignment="Stretch" UseLayoutRounding="False">
+                      <RelativePanel Canvas.Left="{Binding PSF.CanvasXMin}" Canvas.Top="{Binding PSF.CanvasYMin}" Width="{Binding PSF.CanvasWidth}" Height="{Binding PSF.CanvasHeight}" ClipToBounds="False">
+                        <Grid Name="CrosshairGrid"
+                              RelativePanel.AlignHorizontalCenterWithPanel="True"
+                              RelativePanel.AlignVerticalCenterWithPanel="True"
+                              ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="Auto,Auto,Auto">
+                          <Panel Grid.Column="1" Grid.Row="1" Width="{Binding PSF.FWHM4}" Height="{Binding PSF.FWHM4}" Margin="4"/>
+                          <Ellipse Grid.Column="1" Grid.Row="1" Height="{Binding PSF.FWHMX3}" Width="{Binding PSF.FWHMY3}" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="#CF3498DB" StrokeThickness="2">
+                            <Ellipse.RenderTransform>
+                              <RotateTransform Angle="{Binding PSF.ThetaDeg}"/>
+                            </Ellipse.RenderTransform>
+                          </Ellipse>
+                          <Rectangle Grid.Column="0" Grid.Row="1" Width="12" Height="3" VerticalAlignment="Center" HorizontalAlignment="Right" Fill="#CF3498DB"/>
+                          <Rectangle Grid.Column="2" Grid.Row="1" Width="12" Height="3" VerticalAlignment="Center" HorizontalAlignment="Left" Fill="#CF3498DB"/>
+                          <Rectangle Grid.Column="1" Grid.Row="0" Width="3" Height="12" VerticalAlignment="Bottom" HorizontalAlignment="Center" Fill="#CF3498DB"/>
+                          <Rectangle Grid.Column="1" Grid.Row="2" Width="3" Height="12" VerticalAlignment="Top" HorizontalAlignment="Center" Fill="#CF3498DB"/>
+                        </Grid>
+                        <Border RelativePanel.RightOf="CrosshairGrid"
+                                RelativePanel.Above="CrosshairGrid"
+                                Padding="4 0"
+                                Margin="-8 -12"
+                                Background="#30000000"
+                                BorderThickness="1"
+                                BorderBrush="#60000000"
+                                IsVisible="{Binding Path=DataContext.ShowPhotometryMeasurements, RelativeSource={RelativeSource AncestorType=views:FitsImageViewerView}}">
+                          <StackPanel Orientation="Horizontal">
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text="F"/>
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text="{Binding PSF.FWHM, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text=" H"/>
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text="{Binding HFD, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text=" E"/>
+                            <TextBlock Foreground="#FFDDDDDD" FontSize="24" Text="{Binding PSF.Eccentricity, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                          </StackPanel>
+                        </Border>
+                      </RelativePanel>
+                    </Canvas>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Panel>
+          </Viewbox>
+        </Border>
+      </Border>
+    </paz:ZoomBorder>
+
+    <controls:ProgressRing HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                           Width="45" Height="45">
+      <controls:ProgressRing.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+          <Binding Path="IsLoadingFromFile"/>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="Statistics" Converter="{x:Static ObjectConverters.IsNull}"/>
+            <Binding Path="FitsImage" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+            <Binding Path="AutoCalculateStatistics"/>
+            <Binding Path="ShowPhotometry"/>
+          </MultiBinding>
+        </MultiBinding>
+      </controls:ProgressRing.IsVisible>
+    </controls:ProgressRing>
+
+  </Panel>
+
+</UserControl>

@@ -1,0 +1,83 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="250"
+        Width="250" Height="250"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Windows.FitsImagePeekViewerWindow"
+        SystemDecorations="None"
+        HasSystemDecorations="False"
+        IsHitTestVisible="False"
+        Icon="/Assets/Icons/eye.png"
+        Title="Image Viewer"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        Topmost="True"
+        Classes="bare"
+        Padding="0"
+        TransparencyLevelHint="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        Background="Transparent"
+        ShowInTaskbar="False">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/eye.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Panel>
+    <Border Name="BackgroundBorder"
+            ClipToBounds="True"
+            Background="#FF383838">
+      <views:FitsImageSectionViewerView DataContext="{Binding .}"/>
+    </Border>
+
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center"
+          ColumnDefinitions="8,4,8" RowDefinitions="8,4,8">
+      <Rectangle Grid.Row="1" Grid.Column="0"
+                 Width="6" Height="2"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"
+                 Fill="#60FFFFFF"/>
+      <Rectangle Grid.Row="0" Grid.Column="1"
+                 Width="2" Height="6"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"
+                 Fill="#60FFFFFF"/>
+      <Rectangle Grid.Row="1" Grid.Column="2"
+                 Width="6" Height="2"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"
+                 Fill="#60FFFFFF"/>
+      <Rectangle Grid.Row="2" Grid.Column="1"
+                 Width="2" Height="6"
+                 VerticalAlignment="Center" HorizontalAlignment="Center"
+                 Fill="#60FFFFFF"/>
+    </Grid>
+  </Panel>
+
+</Window>

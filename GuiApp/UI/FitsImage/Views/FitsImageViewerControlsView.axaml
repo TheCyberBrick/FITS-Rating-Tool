@@ -1,0 +1,322 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:imaging="using:Avalonia.Visuals.Media.Imaging"
+             xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:views="using:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+             xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+             xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+             xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters"
+             mc:Ignorable="d" d:DesignWidth="930" d:DesignHeight="650"
+             x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerControlsView">
+
+  <Grid RowDefinitions="Auto,4,*">
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="9"/>
+      <ColumnDefinition Width="200" MinWidth="150"/>
+    </Grid.ColumnDefinitions>
+
+    <HeaderedContentControl Grid.Column="0" Grid.Row="0" Padding="4">
+      <HeaderedContentControl.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="16" Height="16">
+            <Image Source="/Assets/Icons/wrench.png"/>
+          </Viewbox>
+          <TextBlock Text="Settings" VerticalAlignment="Center"/>
+        </StackPanel>
+      </HeaderedContentControl.Header>
+
+      <Grid ColumnDefinitions="Auto,*">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="10 0">
+          <CheckBox Content="Interpolate"
+                    IsChecked="{Binding FitsImage.IsInterpolated, FallbackValue=False}"
+                    IsEnabled="{Binding FitsImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+          <CheckBox Content="Show stars" IsChecked="{Binding ShowPhotometry, FallbackValue=False}"/>
+          <CheckBox Content="Show measurements" IsChecked="{Binding ShowPhotometryMeasurements, FallbackValue=False}" IsEnabled="{Binding ShowPhotometry, FallbackValue=False}"/>
+          <CheckBox Content="Auto analyze" IsChecked="{Binding AutoCalculateStatistics, FallbackValue=False}"/>
+          <CheckBox Content="Peek viewer"
+                    IsChecked="{Binding IsPeekViewerEnabled, FallbackValue=False}"
+                    ToolTip.Tip="Hold left-click on viewer to open peek viewer. Radius can be changed by (re-)enabling peek viewer.">
+            <CheckBox.Styles>
+              <Style Selector="CheckBox[IsChecked=true]">
+                <Setter Property="CheckBox.Flyout">
+                  <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="TransientWithDismissOnPointerMoveAway">
+                    <NumericUpDown Minimum="1"
+                                   Value="{Binding PeekViewerSize}"
+                                   IsEnabled="{Binding IsPeekViewerEnabled, FallbackValue=False}"
+                                   UseLayoutRounding="True"/>
+                  </Flyout>
+                </Setter>
+              </Style>
+            </CheckBox.Styles>
+          </CheckBox>
+          <CheckBox Content="Corner overlay"
+                    IsChecked="{Binding IsCornerViewerEnabled, FallbackValue=False}"
+                    ToolTip.Tip="Zoom can be changed by (re-)enabling corner viewer.">
+            <CheckBox.Styles>
+              <Style Selector="CheckBox[IsChecked=true]">
+                <Setter Property="CheckBox.Flyout">
+                  <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="TransientWithDismissOnPointerMoveAway">
+                    <Slider Minimum="0" Maximum="1.0"
+                            Value="{Binding CornerViewerPercentage, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=2}"
+                            IsEnabled="{Binding IsCornerViewerEnabled, FallbackValue=False}"
+                            UseLayoutRounding="True"
+                            Width="120"/>
+                  </Flyout>
+                </Setter>
+              </Style>
+            </CheckBox.Styles>
+          </CheckBox>
+        </StackPanel>
+        <Button Grid.Column="1"
+                Content="Calculate Statistics"
+                Command="{Binding CalculateStatisticsWithProgressDialog}"
+                HorizontalAlignment="Right">
+          <Grid ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Column="0"
+                       Text="Analyze Image"
+                       HorizontalAlignment="Left"
+                       Margin="4 0 0 0"/>
+            <Viewbox Grid.Column="2"
+                     Width="16" Height="16"
+                     HorizontalAlignment="Right"
+                     Margin="-2">
+              <Image Source="/Assets/Icons/gears.png"/>
+            </Viewbox>
+          </Grid>
+        </Button>
+      </Grid>
+
+    </HeaderedContentControl>
+
+    <Border Grid.Column="0" Grid.Row="2"
+            Classes="themed"
+            Padding="3"
+            Background="#FF383838">
+      <Panel ClipToBounds="True">
+        <views:FitsImageViewerView DataContext="{Binding .}"/>
+
+        <Grid ColumnDefinitions="2*,3*,2*" RowDefinitions="2*,3*,2*"
+              IsVisible="{Binding CornerViewer, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=True}">
+
+          <Border Grid.Column="0" Grid.Row="0"
+                  Classes="themed"
+                  Padding="1"
+                  Background="#FF383838"
+                  BorderThickness="0"
+                  CornerRadius="0"
+                  Margin="-3"
+                  BoxShadow="0 0 5 1 #CC000000"
+                  IsHitTestVisible="False">
+            <ContentControl Content="{Binding CornerViewer.TopLeftSection}"/>
+          </Border>
+
+          <Border Grid.Column="2" Grid.Row="0"
+                  Classes="themed"
+                  Padding="1"
+                  Background="#FF383838"
+                  BorderThickness="0"
+                  CornerRadius="0"
+                  Margin="-3"
+                  BoxShadow="0 0 5 1 #CC000000"
+                  IsHitTestVisible="False">
+            <ContentControl Content="{Binding CornerViewer.TopRightSection}"/>
+          </Border>
+
+          <Border Grid.Column="0" Grid.Row="2"
+                  Classes="themed"
+                  Padding="3"
+                  Background="#FF383838"
+                  BorderThickness="0"
+                  CornerRadius="0"
+                  Margin="-3"
+                  BoxShadow="0 0 5 1 #CC000000"
+                  IsHitTestVisible="False">
+            <ContentControl Content="{Binding CornerViewer.BottomLeftSection}"/>
+          </Border>
+
+          <Border Grid.Column="2" Grid.Row="2"
+                  Classes="themed"
+                  Padding="1"
+                  Background="#FF383838"
+                  BorderThickness="0"
+                  CornerRadius="0"
+                  Margin="-3"
+                  BoxShadow="0 0 5 1 #CC000000"
+                  IsHitTestVisible="False">
+            <ContentControl Content="{Binding CornerViewer.BottomRightSection}"/>
+          </Border>
+
+        </Grid>
+
+        <Border Background="#FF3C3C3C" Width="1" HorizontalAlignment="Left" VerticalAlignment="Stretch" BoxShadow="0 0 5 1 #CC000000"/>
+        <Border Background="#FF3C3C3C" Width="1" HorizontalAlignment="Right" VerticalAlignment="Stretch" BoxShadow="0 0 5 1 #CC000000"/>
+        <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" BoxShadow="0 0 5 1 #CC000000"/>
+        <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BoxShadow="0 0 5 1 #CC000000"/>
+
+        <Button Padding="0"
+                BorderThickness="0"
+                Background="Transparent"
+                Cursor="Hand"
+                VerticalAlignment="Top" HorizontalAlignment="Right"
+                Margin="1"
+                Command="{Binding ShowExternalViewer}"
+                IsVisible="{Binding IsExternalViewerEnabled, FallbackValue=True}"
+                ToolTip.Tip="External viewer">
+          <Button.Styles>
+            <Style Selector="Button Viewbox">
+              <Setter Property="Width" Value="18"/>
+              <Setter Property="Height" Value="18"/>
+            </Style>
+            <Style Selector="Button:pointerover Viewbox">
+              <Setter Property="Width" Value="16"/>
+              <Setter Property="Height" Value="16"/>
+              <Setter Property="Margin" Value="0 1 1 0"/>
+            </Style>
+            <Style Selector="Button:pressed Viewbox">
+              <Setter Property="Width" Value="14"/>
+              <Setter Property="Height" Value="14"/>
+              <Setter Property="Margin" Value="0 2 2 0"/>
+            </Style>
+          </Button.Styles>
+          <Viewbox>
+            <Image Source="/Assets/Icons/external.png"/>
+          </Viewbox>
+        </Button>
+        
+        <Button Padding="0"
+                BorderThickness="0"
+                Background="Transparent"
+                Cursor="Hand"
+                VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                Margin="1"
+                Command="{Binding ShowExternalCornerViewer}"
+                IsVisible="{Binding IsExternalCornerViewerEnabled, FallbackValue=True}"
+                ToolTip.Tip="Corner viewer">
+          <Button.Styles>
+            <Style Selector="Button Viewbox">
+              <Setter Property="Width" Value="18"/>
+              <Setter Property="Height" Value="18"/>
+            </Style>
+            <Style Selector="Button:pointerover Viewbox">
+              <Setter Property="Width" Value="16"/>
+              <Setter Property="Height" Value="16"/>
+              <Setter Property="Margin" Value="0 1 1 0"/>
+            </Style>
+            <Style Selector="Button:pressed Viewbox">
+              <Setter Property="Width" Value="14"/>
+              <Setter Property="Height" Value="14"/>
+              <Setter Property="Margin" Value="0 2 2 0"/>
+            </Style>
+          </Button.Styles>
+          <Viewbox>
+            <Image Source="/Assets/Icons/external_multiple.png"/>
+          </Viewbox>
+        </Button>
+
+        <!--
+        <TextBlock Text="{Binding FileName}" VerticalAlignment="Bottom" Margin="8 0 0 8"/>
+        -->
+
+        <TextBlock Text="(Too many stars - only a subset is shown)" VerticalAlignment="Top" Margin="8 8 0 0">
+          <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="IsShownPhotometryIncomplete"/>
+              <Binding Path="ShowPhotometry"/>
+            </MultiBinding>
+          </TextBlock.IsVisible>
+        </TextBlock>
+      </Panel>
+    </Border>
+
+    <GridSplitter Grid.Column="1" Grid.RowSpan="3"
+                  ResizeDirection="Columns"
+                  Background="Transparent"/>
+
+    <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+          RowDefinitions="Auto,4,Auto,4,*">
+      <HeaderedContentControl Grid.Row="0"
+                              Padding="4"
+                              VerticalAlignment="Top">
+        <HeaderedContentControl.Header>
+          <Panel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18">
+                <Image Source="/Assets/Icons/monitor.png"/>
+              </Viewbox>
+              <TextBlock Text="Stretch" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Image Source="/Assets/Icons/info.png"
+                   Width="22"
+                   Height="22"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Margin="-4 -4 -2 -4"
+                   ToolTip.ShowDelay="100">
+              <ToolTip.Tip>
+                <TextBlock Text="Tip: right-click the sliders for precise adjustments"/>
+              </ToolTip.Tip>
+            </Image>
+          </Panel>
+        </HeaderedContentControl.Header>
+
+        <views:FitsImageViewerStretchView DataContext="{Binding .}"/>
+
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Row="2"
+                              Padding="4"
+                              VerticalAlignment="Top">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="18" Height="18">
+              <Image Source="/Assets/Icons/statistics.png"/>
+            </Viewbox>
+            <TextBlock Text="Statistics" VerticalAlignment="Center"/>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+
+        <views:FitsImageViewerStatisticsView DataContext="{Binding .}"/>
+
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Row="4"
+                              Padding="4"
+                              VerticalAlignment="Stretch"
+                              MinHeight="80">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="16" Height="16">
+              <Image Source="/Assets/Icons/list.png"/>
+            </Viewbox>
+            <TextBlock Text="Header"/>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+        <views:FitsImageViewerHeaderView DataContext="{Binding .}"/>
+      </HeaderedContentControl>
+    </Grid>
+
+  </Grid>
+
+</UserControl>

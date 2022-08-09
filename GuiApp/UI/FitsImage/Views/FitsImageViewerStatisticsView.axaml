@@ -1,0 +1,140 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="using:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+             xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerStatisticsView">
+
+  <StackPanel Orientation="Vertical">
+    <Grid ColumnDefinitions="Auto,30,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <TextBlock Grid.Column="0" Grid.Row="0" Foreground="#FFDEDEDE" Text="Median" Margin="0 0 0 4"/>
+      <TextBlock Grid.Column="2" Grid.Row="0" Foreground="#FFDEDEDE" Text="{Binding Statistics.Median, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}" Margin="0 0 0 4">
+        <ToolTip.Tip>
+          <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,30,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Median" FontWeight="UltraBlack"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Statistics.Median, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Mean Dev."/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Statistics.MedianMAD, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+          </Grid>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <TextBlock Grid.Column="0" Grid.Row="1" Foreground="#FFDEDEDE" Text="FWHM" Margin="0 0 0 4"/>
+      <TextBlock Grid.Column="2" Grid.Row="1" Foreground="#FFDEDEDE" Text="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}" Margin="0 0 0 4">
+        <ToolTip.Tip>
+          <Grid RowDefinitions="Auto,10,Auto,4,Auto,4,Auto,4,Auto,4,Auto" ColumnDefinitions="Auto,30,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="FWHM" FontWeight="UltraBlack"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Min."/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Statistics.FWHMMin, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max."/>
+            <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Statistics.FWHMMax, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Mean"/>
+            <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="8" Grid.Column="0" Text="Median"/>
+            <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding Statistics.FWHMMedian, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="10" Grid.Column="0" Text="Mean Dev."/>
+            <TextBlock Grid.Row="10" Grid.Column="2" Text="{Binding Statistics.FWHMMAD, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+          </Grid>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <TextBlock Grid.Column="0" Grid.Row="2" Foreground="#FFDEDEDE" Text="HFD" Margin="0 0 0 4"/>
+      <TextBlock Grid.Column="2" Grid.Row="2" Foreground="#FFDEDEDE" Text="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}" Margin="0 0 0 4">
+        <ToolTip.Tip>
+          <Grid RowDefinitions="Auto,10,Auto,4,Auto,4,Auto,4,Auto,4,Auto" ColumnDefinitions="Auto,30,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="HFD" FontWeight="UltraBlack"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Min."/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Statistics.HFDMin, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max."/>
+            <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Statistics.HFDMax, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Mean"/>
+            <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="8" Grid.Column="0" Text="Median"/>
+            <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding Statistics.HFDMedian, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="10" Grid.Column="0" Text="Mean Dev."/>
+            <TextBlock Grid.Row="10" Grid.Column="2" Text="{Binding Statistics.HFDMAD, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+          </Grid>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <TextBlock Grid.Column="0" Grid.Row="3" Foreground="#FFDEDEDE" Text="Eccentricity" Margin="0 0 0 4"/>
+      <TextBlock Grid.Column="2" Grid.Row="3" Foreground="#FFDEDEDE" Text="{Binding Statistics.EccentricityMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}" Margin="0 0 0 4">
+        <ToolTip.Tip>
+          <Grid RowDefinitions="Auto,10,Auto,4,Auto,4,Auto,4,Auto,4,Auto" ColumnDefinitions="Auto,30,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Eccentricity" FontWeight="UltraBlack"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Statistics.EccentricityMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Min."/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Statistics.EccentricityMin, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max."/>
+            <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding Statistics.EccentricityMax, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Mean"/>
+            <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Statistics.EccentricityMean, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="8" Grid.Column="0" Text="Median"/>
+            <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding Statistics.EccentricityMedian, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+            <TextBlock Grid.Row="10" Grid.Column="0" Text="Mean Dev."/>
+            <TextBlock Grid.Row="10" Grid.Column="2" Text="{Binding Statistics.EccentricityMAD, StringFormat={}{0:N2}, FallbackValue=-, Mode=OneWay}"/>
+          </Grid>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <TextBlock Grid.Column="0" Grid.Row="4" Foreground="#FFDEDEDE" Text="Stars" Margin="0 0 0 4"/>
+      <TextBlock Grid.Column="2" Grid.Row="4" Foreground="#FFDEDEDE" Text="{Binding Statistics.Stars, FallbackValue=-, Mode=OneWay}" Margin="0 0 0 4">
+        <ToolTip.Tip>
+          <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,30,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Stars" FontWeight="UltraBlack"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Statistics.Stars, FallbackValue=-, Mode=OneWay}"/>
+          </Grid>
+        </ToolTip.Tip>
+      </TextBlock>
+
+      <controls:ProgressRing Grid.Column="1" Grid.Row="0"
+                             Grid.ColumnSpan="2" Grid.RowSpan="5"
+                             HorizontalAlignment="Stretch"
+                             Width="45" Height="45">
+        <controls:ProgressRing.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="Statistics" Converter="{x:Static ObjectConverters.IsNull}"/>
+            <Binding Path="FitsImage" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+            <Binding Path="AutoCalculateStatistics"/>
+          </MultiBinding>
+        </controls:ProgressRing.IsVisible>
+      </controls:ProgressRing>
+    </Grid>
+    <Panel ToolTip.Tip="Logarithmic histogram of the raw image">
+      <views:FitsImageHistogramView DataContext="{Binding Histogram}"
+                                    Background="#FF404040"
+                                    Padding="3"
+                                    MinHeight="90"
+                                    Margin="0 5"/>
+    </Panel>
+    <Panel ToolTip.Tip="Linear histogram of the stretched image">
+      <views:FitsImageHistogramView DataContext="{Binding StretchedHistogram}"
+                                    Background="#FF404040"
+                                    Padding="3"
+                                    MinHeight="90"/>
+    </Panel>
+  </StackPanel>
+
+</UserControl>

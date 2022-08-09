@@ -1,0 +1,133 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Design.PreviewWith>
+    <Border Padding="20" Background="#FF555555">
+      <Border>
+        <StackPanel Orientation="Vertical" Spacing="10">
+          <ButtonSpinner Width="200"/>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Design.PreviewWith>
+
+  <StyleInclude Source="/Assets/Styles/RepeatButton.axaml"/>
+
+  <Style Selector="ButtonSpinner">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="#FF414141"/>
+    <Setter Property="MinHeight" Value="19"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataValidationErrors>
+          <Panel>
+            <Border Name="PART_BorderElement"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MinHeight="{TemplateBinding MinHeight}">
+              <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Rectangle DockPanel.Dock="Top"
+                           VerticalAlignment="Top"
+                           HorizontalAlignment="Stretch"
+                           Height="1"
+                           Fill="#FF3C3C3C"/>
+                <Rectangle DockPanel.Dock="Bottom"
+                           VerticalAlignment="Bottom"
+                           HorizontalAlignment="Stretch"
+                           Height="1"
+                           Fill="#FF525252"/>
+                <Rectangle DockPanel.Dock="Left"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Left"
+                           Width="1"
+                           Fill="#FF4A4A4A"/>
+                <Rectangle DockPanel.Dock="Right"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Right"
+                           Width="1"
+                           Fill="#FF4A4A4A"/>
+              </DockPanel>
+            </Border>
+
+            <Border Background="Transparent"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  MinHeight="{TemplateBinding MinHeight}">
+
+              <Grid ColumnDefinitions="Auto,*,Auto,2">
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Grid.Column="1"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Padding="{TemplateBinding Padding}"/>
+
+                <StackPanel Name="PART_SpinnerPanel"
+                            Orientation="Horizontal"
+                            IsVisible="{TemplateBinding ShowButtonSpinner}"
+                            Spacing="1">
+                  <Rectangle Width="2"
+                             VerticalAlignment="Stretch"
+                             Margin="0 1 0 1">
+                    <Rectangle.Fill>
+                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0.0" Color="#FF4A4A4A"/>
+                        <GradientStop Offset="0.5" Color="#FF4A4A4A"/>
+                        <GradientStop Offset="0.5" Color="#FF5A5A5A"/>
+                        <GradientStop Offset="1.0" Color="#FF5A5A5A"/>
+                      </LinearGradientBrush>
+                    </Rectangle.Fill>
+                  </Rectangle>
+
+                  <RepeatButton Name="PART_IncreaseButton"
+                                VerticalContentAlignment="Center"
+                                Foreground="{TemplateBinding Foreground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}"
+                                FontSize="{TemplateBinding FontSize}"
+                                Content="+"
+                                Width="15" Height="15"
+                                CornerRadius="1" Padding="0 -4 0 0"/>
+
+                  <RepeatButton Name="PART_DecreaseButton"
+                                Foreground="{TemplateBinding Foreground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}"
+                                VerticalContentAlignment="Center"
+                                Content="-"
+                                Width="15" Height="15"
+                                CornerRadius="1" Padding="1 -4 0 0"/>
+
+                  <Rectangle Width="1"
+                             VerticalAlignment="Stretch"
+                             Fill="#FF5A5A5A"
+                             Margin="0 1 -1 1"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Panel>
+
+        </DataValidationErrors>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

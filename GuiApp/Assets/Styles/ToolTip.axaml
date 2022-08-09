@@ -1,0 +1,59 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="10">
+        <Border Background="Gray" Width="100" Height="50" ToolTip.Tip="Test"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <StyleInclude Source="/Assets/Styles/Border.axaml"/>
+
+  <Style Selector="ToolTip">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Margin="8" BoxShadow="1 1 8 1 #80000000"
+                CornerRadius="4">
+          <HeaderedContentControl
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                Padding="{TemplateBinding Padding}">
+            <HeaderedContentControl.Header>
+              <Viewbox Width="20" Height="20"
+                       Margin="-6 -3 -6 -5"
+                       HorizontalAlignment="Left">
+                <Image Source="/Assets/Icons/info.png"/>
+              </Viewbox>
+            </HeaderedContentControl.Header>
+
+            <ContentPresenter Name="PART_ContentPresenter"
+                              MaxWidth="{TemplateBinding MaxWidth}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Background="Transparent"/>
+          </HeaderedContentControl>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

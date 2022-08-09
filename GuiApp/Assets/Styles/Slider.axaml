@@ -1,0 +1,152 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20" Background="#FF555555">
+      <Border BorderThickness="1" BorderBrush="#FF000000">
+        <Slider Width="100"/>
+      </Border>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="Slider">
+    <Style.Resources>
+      <GridLength x:Key="SliderPreContentMargin">0</GridLength>
+      <GridLength x:Key="SliderPostContentMargin">0</GridLength>
+      <Thickness x:Key="SliderTopHeaderMargin">0,0,0,0</Thickness>
+      <x:Double x:Key="SliderHorizontalHeight">0</x:Double>
+      <x:Double x:Key="SliderHorizontalThumbWidth">4</x:Double>
+      <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
+      <PathGeometry x:Key="ThemeSliderThumbIcon">m 0 0 v 2.5 l 1 1 l 1 -1 v -2.5 z</PathGeometry>
+      <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
+      <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+    </Style.Resources>
+  </Style>
+
+  <Style Selector="Slider:horizontal /template/ Border">
+    <Setter Property="Padding" Value="4 0"/>
+  </Style>
+
+  <Style Selector="Slider:horizontal /template/ Thumb.SliderThumbStyle">
+    <Setter Property="ClipToBounds" Value="False"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border CornerRadius="20"
+                  Background="#DD000000"
+                  BoxShadow="0.5 1 5 0 Black"
+                  Width="8"
+                  Height="12"/>
+          <PathIcon Name="ThumbIconShadow"
+                    Data="{DynamicResource ThemeSliderThumbIcon}"
+                    Foreground="#953E3E3E"
+                    Background="Transparent"
+                    Width="16"
+                    Height="18"
+                    Margin="0 4 0 0"
+                    RenderTransform="scale(1.2,1.15)"
+                    RenderTransformOrigin="8.5,6.25"/>
+          <PathIcon Name="ThumbIcon"
+                    Data="{DynamicResource ThemeSliderThumbIcon}"
+                    Background="Transparent"
+                    Width="16"
+                    Height="18"
+                    Margin="0 4 0 0"/>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Width" Value="0"/>
+  </Style>
+
+  <Style Selector="Slider:horizontal /template/ Thumb.SliderThumbStyle PathIcon#ThumbIcon">
+    <Setter Property="Foreground">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FFCACACA"/>
+          <GradientStop Offset="0.2" Color="#FFCACACA"/>
+          <GradientStop Offset="0.8" Color="#FFB6B6B6"/>
+          <GradientStop Offset="1.0" Color="#FFB6B6B6"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="Slider:horizontal:not(:pressed) /template/ Thumb.SliderThumbStyle PathIcon#ThumbIcon:pointerover">
+    <Setter Property="Foreground">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FFEAEAEA"/>
+          <GradientStop Offset="0.2" Color="#FFEAEAEA"/>
+          <GradientStop Offset="0.8" Color="#FFDFDFDF"/>
+          <GradientStop Offset="1.0" Color="#FFDFDFDF"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="Slider:horizontal /template/ Track RepeatButton#PART_IncreaseButton Border#TrackBackground">
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FF4B4B4B"/>
+          <GradientStop Offset="0.5" Color="#FF4B4B4B"/>
+          <GradientStop Offset="0.5" Color="#FF5A5A5A"/>
+          <GradientStop Offset="1.0" Color="#FF5A5A5A"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="OpacityMask">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="Black"/>
+          <GradientStop Offset="0.5" Color="Black"/>
+          <GradientStop Offset="0.9" Color="#70FFFFFF"/>
+          <GradientStop Offset="1.0" Color="Transparent"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="Slider:horizontal /template/ Track RepeatButton#PART_DecreaseButton Border#TrackBackground">
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FF3F3F3F"/>
+          <GradientStop Offset="0.5" Color="#FF3F3F3F"/>
+          <GradientStop Offset="0.5" Color="#18000000"/>
+          <GradientStop Offset="1.0" Color="#18000000"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="OpacityMask">
+      <LinearGradientBrush StartPoint="100%,0%" EndPoint="0%,0%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="Black"/>
+          <GradientStop Offset="0.5" Color="Black"/>
+          <GradientStop Offset="0.9" Color="#70FFFFFF"/>
+          <GradientStop Offset="1.0" Color="Transparent"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="BoxShadow" Value="0 0 5 1 #24000000"/>
+  </Style>
+
+</Styles>

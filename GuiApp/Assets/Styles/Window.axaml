@@ -1,0 +1,330 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls">
+
+  <!-- Base window template -->
+  <Style Selector="Window">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderThickness="1"
+                Margin="{TemplateBinding Margin}"
+                ClipToBounds="True"
+                BorderBrush="#FF3D3D3D">
+          <VisualLayerManager>
+            <Panel>
+              <Rectangle Name="PART_BackgroundRectangle"
+                         IsHitTestVisible="False"/>
+              <Rectangle Fill="#FF595959" Height="1" IsHitTestVisible="False" VerticalAlignment="Top"/>
+              <Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
+              <DockPanel>
+                <DockPanel Name="PART_TitleBarDockPanel"
+                           DockPanel.Dock="Top">
+                  <StackPanel Name="PART_CaptionsStackPanel"
+                              DockPanel.Dock="Right"
+                              Orientation="Horizontal"
+                              HorizontalAlignment="Right">
+
+                    <controls:WindowControlButton Name="PART_PinButton"
+                                                  Margin="1 2"
+                                                  FontSize="12"
+                                                  CornerRadius="2"
+                                                  FontWeight="ExtraLight"
+                                                  Command="{Binding TogglePin, RelativeSource={RelativeSource Self}}">
+                      <controls:WindowControlButton.Resources>
+                        <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                      </controls:WindowControlButton.Resources>
+                      <controls:WindowControlButton.Styles>
+                        <Style Selector="controls|WindowControlButton">
+                          <Setter Property="Padding" Value="7 1 8 0"/>
+                          <Setter Property="Content">
+                            <Template>
+                              <Panel>
+                                <PathIcon Data="{DynamicResource PinIcon}" Width="8" Height="8" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,1)"/>
+                                <PathIcon Data="{DynamicResource PinIcon}" Width="8" Height="8" Foreground="#FFCECECE"/>
+                              </Panel>
+                            </Template>
+                          </Setter>
+                        </Style>
+                        <Style Selector="controls|WindowControlButton:pinned">
+                          <Setter Property="Padding" Value="8 1 7 0"/>
+                          <Setter Property="Content">
+                            <Template>
+                              <Panel>
+                                <PathIcon Data="{DynamicResource UnpinIcon}" Width="8" Height="8" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,1)"/>
+                                <PathIcon Data="{DynamicResource UnpinIcon}" Width="8" Height="8" Foreground="#FFCECECE"/>
+                              </Panel>
+                            </Template>
+                          </Setter>
+                        </Style>
+                      </controls:WindowControlButton.Styles>
+                    </controls:WindowControlButton>
+
+                    <controls:WindowControlButton Name="PART_MinimizeButton"
+                                                  Padding="6 1"
+                                                  Margin="1 2"
+                                                  FontSize="12"
+                                                  CornerRadius="2"
+                                                  FontWeight="ExtraLight"
+                                                  Command="{Binding Minimize, RelativeSource={RelativeSource Self}}">
+                      <Panel>
+                        <PathIcon Data="{DynamicResource MinimizeIcon}" Width="11" Height="7" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,3)"/>
+                        <PathIcon Data="{DynamicResource MinimizeIcon}" Width="11" Height="7" Foreground="#FFCECECE" RenderTransform="matrix(1,0,0,1,0,2)"/>
+                      </Panel>
+                      <controls:WindowControlButton.Resources>
+                        <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                      </controls:WindowControlButton.Resources>
+                    </controls:WindowControlButton>
+
+                    <controls:WindowControlButton Name="PART_MaximizeButton"
+                                                  Margin="1 2"
+                                                  FontSize="12"
+                                                  CornerRadius="2"
+                                                  FontWeight="ExtraLight"
+                                                  Command="{Binding ToggleMaximize, RelativeSource={RelativeSource Self}}">
+                      <controls:WindowControlButton.Resources>
+                        <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                      </controls:WindowControlButton.Resources>
+                      <controls:WindowControlButton.Styles>
+                        <Style Selector="controls|WindowControlButton">
+                          <Setter Property="Padding" Value="6 0"/>
+                          <Setter Property="Content">
+                            <Template>
+                              <Panel>
+                                <PathIcon Data="{DynamicResource MaximizeIcon}" Width="11" Height="7" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,1)"/>
+                                <PathIcon Data="{DynamicResource MaximizeIcon}" Width="11" Height="7" Foreground="#FFCECECE"/>
+                              </Panel>
+                            </Template>
+                          </Setter>
+                        </Style>
+                        <Style Selector="controls|WindowControlButton:maximized">
+                          <Setter Property="Padding" Value="5 0"/>
+                          <Setter Property="Content">
+                            <Template>
+                              <Panel>
+                                <PathIcon Data="{DynamicResource NormalizeIcon}" Width="13" Height="9" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,1)"/>
+                                <PathIcon Data="{DynamicResource NormalizeIcon}" Width="13" Height="9" Foreground="#FFCECECE"/>
+                              </Panel>
+                            </Template>
+                          </Setter>
+                        </Style>
+                      </controls:WindowControlButton.Styles>
+                    </controls:WindowControlButton>
+
+                    <controls:WindowControlButton Name="PART_CloseButton"
+                                                  Padding="6 1"
+                                                  Margin="1 2 2 2"
+                                                  FontSize="12"
+                                                  CornerRadius="2"
+                                                  FontWeight="ExtraLight"
+                                                  Command="{Binding Close, RelativeSource={RelativeSource Self}}">
+                      <Panel>
+                        <PathIcon Data="{DynamicResource CloseIcon}" Width="11" Height="7" Foreground="#50000000" RenderTransform="matrix(1,0,0,1,0,1)"/>
+                        <PathIcon Data="{DynamicResource CloseIcon}" Width="11" Height="7" Foreground="#FFCECECE"/>
+                      </Panel>
+                      <controls:WindowControlButton.Resources>
+                        <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
+                      </controls:WindowControlButton.Resources>
+                    </controls:WindowControlButton>
+
+                  </StackPanel>
+                  <StackPanel Name="PART_TitleStackPanel"
+                              DockPanel.Dock="Left"
+                              Orientation="Horizontal"
+                              ClipToBounds="True">
+                    <Panel Name="PART_Icon">
+                      <Viewbox Width="16" Height="16"
+                             Margin="4 2 2 2"
+                             IsVisible="{TemplateBinding controls:WindowExtensions.TitleIcon, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <ContentPresenter Content="{TemplateBinding controls:WindowExtensions.TitleIcon}"/>
+                      </Viewbox>
+                    </Panel>
+                    <Panel Name="PART_TitlePanel" VerticalAlignment="Center">
+                      <TextBlock Name="PART_TitleShadowTextBlock"
+                                 Text="{TemplateBinding Title}"
+                                 VerticalAlignment="Center"
+                                 Margin="4"
+                                 IsHitTestVisible="False"
+                                 FontSize="11.25"
+                                 FontWeight="SemiBold"
+                                 Foreground="#60000000"
+                                 RenderTransform="matrix(1,0,0,1,1,3)"
+                                 TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Name="PART_TitleTextBlock"
+                                 Text="{TemplateBinding Title}"
+                                 VerticalAlignment="Center"
+                                 Margin="4"
+                                 IsHitTestVisible="False"
+                                 FontSize="11.25"
+                                 FontWeight="SemiBold"
+                                 RenderTransform="matrix(1,0,0,1,1,2)"
+                                 TextTrimming="CharacterEllipsis"/>
+                    </Panel>
+                  </StackPanel>
+                </DockPanel>
+                <Border Name="PART_ContentBorder"
+                        Margin="3" BorderThickness="1" Background="#FF585858"
+                        ClipToBounds="True">
+                  <Border.BorderBrush>
+                    <SolidColorBrush Color="#FF414141"/>
+                  </Border.BorderBrush>
+                  <DockPanel Name="PART_ContentDockPanel" ClipToBounds="True">
+                    <Border Name="PART_StatusBarBorder"
+                            DockPanel.Dock="Bottom"
+                            VerticalAlignment="Bottom"
+                            ClipToBounds="True">
+                      <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                          <LinearGradientBrush.GradientStops>
+                            <GradientStop Offset="0" Color="#FF535353"/>
+                            <GradientStop Offset="1" Color="#FF4C4C4C"/>
+                          </LinearGradientBrush.GradientStops>
+                        </LinearGradientBrush>
+                      </Border.Background>
+                      <StackPanel Orientation="Vertical">
+                        <Rectangle Name="PART_StatusBarSeparatorRectangle"
+                                   Fill="#FF4B4B4B" VerticalAlignment="Top" Height="1"/>
+                        <ContentPresenter Name="PART_StatusBarContentPresenter"/>
+                      </StackPanel>
+                    </Border>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Content="{TemplateBinding Content}"
+                                      Padding="{TemplateBinding Padding}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      ClipToBounds="True"/>
+                  </DockPanel>
+                </Border>
+              </DockPanel>
+            </Panel>
+          </VisualLayerManager>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Set default window properties -->
+  <Style Selector="Window">
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="ExtendClientAreaToDecorationsHint" Value="True"/>
+    <Setter Property="Background" Value="#FF3D3D3D"/>
+  </Style>
+
+  <!-- Set default title font -->
+  <Style Selector="Window /template/ Panel#PART_TitlePanel">
+    <Setter Property="TextBlock.FontFamily" Value="Tahoma"/>
+  </Style>
+
+  <!-- Add margin when maximized (Windows clips 8px when maximized)-->
+  <Style Selector="Window[WindowState=Maximized]">
+    <Setter Property="Margin" Value="4 8 4 4"/>
+  </Style>
+
+  <!-- Set inactive title foreground -->
+  <Style Selector="Window /template/ TextBlock#PART_TitleTextBlock">
+    <Setter Property="Foreground" Value="#FF8C8C8C"/>
+  </Style>
+
+  <!-- Set inactive background -->
+  <Style Selector="Window /template/ Rectangle#PART_BackgroundRectangle">
+    <Setter Property="Fill">
+      <LinearGradientBrush StartPoint="0,0" EndPoint="0,20">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0" Color="#FF565656"/>
+          <GradientStop Offset="20" Color="#FF525252"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <!-- Set active title foreground -->
+  <Style Selector="Window[IsActive=true] /template/ TextBlock#PART_TitleTextBlock">
+    <Setter Property="Foreground" Value="#FFE0E0E0"/>
+  </Style>
+
+  <!-- Set active background -->
+  <Style Selector="Window[IsActive=true] /template/ Rectangle#PART_BackgroundRectangle">
+    <Setter Property="Fill">
+      <LinearGradientBrush StartPoint="0,0" EndPoint="0,20">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0" Color="#FF525252"/>
+          <GradientStop Offset="20" Color="#FF4C4C4C"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="Window /template/ controls|WindowControlButton#PART_PinButton">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="Window.pinnable /template/ controls|WindowControlButton#PART_PinButton">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
+
+  <Style Selector="Window.nominimize /template/ controls|WindowControlButton#PART_MinimizeButton">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="Window.nomaximize /template/ controls|WindowControlButton#PART_MaximizeButton">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="Window.noclose /template/ controls|WindowControlButton#PART_CloseButton">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="Window.noicon /template/ Panel#PART_Icon">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="Window.bare">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderThickness="1"
+                Margin="{TemplateBinding Margin}"
+                ClipToBounds="True"
+                BorderBrush="#FF3D3D3D"
+                Opacity="{Binding $parent[Window].Opacity}">
+          <VisualLayerManager>
+            <Panel>
+              <Rectangle Name="PART_BackgroundRectangle"
+                         IsHitTestVisible="False"/>
+              <Border Name="PART_ContentBorder"
+                      Margin="3" BorderThickness="1" Background="#FF585858"
+                      ClipToBounds="True"
+                      BorderBrush="#FF414141">
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  ClipToBounds="True"/>
+              </Border>
+            </Panel>
+          </VisualLayerManager>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

@@ -1,0 +1,118 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <Grid ColumnDefinitions="*,4,*" RowDefinitions="*">
+          <Rectangle Grid.Column="0" Fill="#20FFFFFF" Width="20" Height="20"/>
+          <GridSplitter ResizeDirection="Columns" Grid.Column="1"/>
+          <Rectangle Grid.Column="2" Fill="#20FFFFFF" Width="20" Height="20"/>
+        </Grid>
+        <Grid ColumnDefinitions="*" RowDefinitions="*,4,*">
+          <Rectangle Grid.Row="0" Fill="#20FFFFFF" Width="20" Height="20"/>
+          <GridSplitter ResizeDirection="Rows" Grid.Row="1"/>
+          <Rectangle Grid.Row="2" Fill="#20FFFFFF" Width="20" Height="20"/>
+        </Grid>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="GridSplitter[ResizeDirection=Columns]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Background="{TemplateBinding Background}">
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="3" ClipToBounds="True">
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Height="1" Width="3"/>
+            <Rectangle Fill="{DynamicResource GrabberShadowBrush}"    Height="1" Width="3"/>
+            <StackPanel.Resources>
+              <LinearGradientBrush x:Key="GrabberHighlightBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0" Color="#FF808080"/>
+                  <GradientStop Offset="0.5" Color="#FFCCCCCC"/>
+                  <GradientStop Offset="1" Color="#FF808080"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+              <LinearGradientBrush x:Key="GrabberShadowBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0" Color="#20000000"/>
+                  <GradientStop Offset="0.5" Color="#40000000"/>
+                  <GradientStop Offset="1" Color="#20000000"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+            </StackPanel.Resources>
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="GridSplitter[ResizeDirection=Rows]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Background="{TemplateBinding Background}">
+          <StackPanel Orientation="Horizontal" Spacing="1" VerticalAlignment="Center" HorizontalAlignment="Center" Height="3" ClipToBounds="True">
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <Rectangle Fill="{DynamicResource GrabberHighlightBrush}" Width="1" Height="3"/>
+            <StackPanel.Resources>
+              <LinearGradientBrush x:Key="GrabberHighlightBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0" Color="#FF808080"/>
+                  <GradientStop Offset="0.5" Color="#FFCCCCCC"/>
+                  <GradientStop Offset="1" Color="#FF808080"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+              <LinearGradientBrush x:Key="GrabberShadowBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0" Color="#20000000"/>
+                  <GradientStop Offset="0.5" Color="#40000000"/>
+                  <GradientStop Offset="1" Color="#20000000"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+            </StackPanel.Resources>
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

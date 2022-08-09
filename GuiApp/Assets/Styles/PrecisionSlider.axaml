@@ -1,0 +1,65 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls">
+
+  <Design.PreviewWith>
+    <Border Padding="100">
+      <StackPanel Spacing="4">
+        <controls:PrecisionSlider Width="200" Minimum="0" Maximum="1"/>
+        <controls:PrecisionSlider Width="200" Minimum="0" Maximum="1"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <StyleInclude Source="/Assets/Styles/Slider.axaml"/>
+
+  <!-- Default styling -->
+  <Style Selector="controls|PrecisionSlider">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Slider Minimum="{TemplateBinding Minimum}"
+                Maximum="{TemplateBinding Maximum}"
+                Value="{TemplateBinding Value, Mode=TwoWay}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                TickFrequency="{TemplateBinding TickFrequency}"
+                Orientation="{TemplateBinding Orientation}"
+                Ticks="{TemplateBinding Ticks}"/>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Flyout">
+      <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="TransientWithDismissOnPointerMoveAway"/>
+    </Setter>
+    <Setter Property="PrecisionSliderTemplate">
+      <ControlTemplate>
+        <Slider Name="PART_PrecisionControl"
+                Minimum="0"
+                Maximum="1"
+                Value="{TemplateBinding PrecisionValue, Mode=TwoWay}"
+                Width="120"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

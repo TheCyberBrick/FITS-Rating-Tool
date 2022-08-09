@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FitsRatingTool": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

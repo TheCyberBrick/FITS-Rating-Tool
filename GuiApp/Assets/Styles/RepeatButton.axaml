@@ -1,0 +1,193 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Thickness x:Key="ButtonInnerBorderThickness">1</Thickness>
+    <Thickness x:Key="ButtonPressedShrinkThickness">1</Thickness>
+    <StreamGeometry x:Key="CloseIcon">M 800 0 l 0 0 h -220 l -180 165 l -180 -165 h -220 l 300 275 l -300 275 h 220 l 180 -165 l 180 165 h 220 l -300 -275 z</StreamGeometry>
+    <PathGeometry x:Key="NormalizeIcon" FillRule="NonZero">M 398.75 26.25 C 398.75 7.5 390.5 0 369.875 0 L 275 0 L 275 56.25 L 336.875 56.25 L 336.875 150 L 171.875 150 L 171.875 56.25 L 275 56.25 L 275 0 L 138.875 0 C 118.25 0 110 7.5 110 26.25 L 110 165 L 258.5 165 L 258.5 206 L 369.875 206.25 C 390.5 206.25 398.75 198.75 398.75 180 Z M 288.75 146.25 C 288.75 127.5 280.5 120 259.875 120 L 165 120 L 165 176.25 L 226.875 176.25 L 226.875 270 L 61.875 270 L 61.875 176.25 L 165 176.25 L 165 120 L 28.875 120 C 8.25 120 0 127.5 0 146.25 L 0 300 C 0 318.75 8.25 326.25 28.875 326.25 L 259.875 326.25 C 280.5 326.25 288.75 318.75 288.75 300 Z</PathGeometry>
+    <StreamGeometry x:Key="MaximizeIcon">M 350 35 C 350 10 340 0 315 0 L 200 0 L 200 75 L 275 75 L 275 200 L 75 200 L 75 75 L 200 75 L 200 0 L 35 0 C 10 0 0 10 0 35 L 0 240 C 0 265 10 275 35 275 L 315 275 C 340 275 350 265 350 240 Z</StreamGeometry>
+    <StreamGeometry x:Key="MinimizeIcon">M 350 200 L 0 200 L 0 275 L 350 275 Z</StreamGeometry>
+  </Styles.Resources>
+
+  <Design.PreviewWith>
+    <Border Padding="20" Background="#FF555555">
+      <StackPanel Spacing="5">
+        <RepeatButton Content="Test"
+                      CornerRadius="1.5"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Default styling -->
+  <Style Selector="RepeatButton">
+    <Setter Property="Padding" Value="4 4"/>
+
+    <Setter Property="TextBlock.Foreground" Value="#FFECECEC"/>
+    <Setter Property="TextBlock.FontFamily" Value="Tahoma"/>
+    <Setter Property="TextBlock.FontSize" Value="11"/>
+
+    <Setter Property="CornerRadius" Value="3"/>
+    <Setter Property="Opacity" Value="1"/>
+    <Setter Property="Background" Value="#FF545454"/>
+    <Setter Property="BorderThickness" Value="1"/>
+
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF414141"/>
+    </Setter>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Name="PART_OuterGrid" Margin="{TemplateBinding Margin}">
+          <Grid Name="PART_InnerGrid">
+            <Border Name="PART_OuterBorder"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    Background="{TemplateBinding BorderBrush}"/>
+            <Border Name="PART_InnerBorder"
+                    Margin="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    BorderThickness="{DynamicResource ButtonInnerBorderThickness}">
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                Padding="{TemplateBinding Padding}"
+                                Background="Transparent"
+                                BorderThickness="{DynamicResource ButtonInnerBorderThickness}"
+                                TextBlock.Foreground="{TemplateBinding Foreground}"/>
+            </Border>
+          </Grid>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- On press shrinking -->
+  <Style Selector="RepeatButton /template/ Grid#PART_InnerGrid">
+    <Setter Property="Margin" Value="0"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <ThicknessTransition Duration="0:0:0.01" Property="Margin" Easing="LinearEasing"/>
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="RepeatButton /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Margin" Value="{DynamicResource ButtonPressedShrinkThickness}"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <ThicknessTransition Duration="0:0:0.01" Property="Margin" Easing="LinearEasing"/>
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="RepeatButton:pressed /template/ Grid#PART_InnerGrid">
+    <Setter Property="Margin" Value="{DynamicResource ButtonPressedShrinkThickness}"/>
+  </Style>
+  <Style Selector="RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Margin" Value="0"/>
+  </Style>
+
+  <!-- Background & border -->
+  <Style Selector="RepeatButton /template/ Border#PART_InnerBorder">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Duration="0:0:0.08" Property="Background" Easing="LinearEasing"/>
+      </Transitions>
+    </Setter>
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FF5B5B5B"/>
+          <GradientStop Offset="0.2" Color="#FF545454"/>
+          <GradientStop Offset="0.8" Color="#FF545454"/>
+          <GradientStop Offset="1.0" Color="#FF5B5B5B"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF5D5D5D"/>
+    </Setter>
+  </Style>
+
+  <Style Selector="RepeatButton:pointerover">
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF3B3B3B"/>
+    </Setter>
+  </Style>
+
+  <Style Selector="RepeatButton:pointerover /template/ Border#PART_InnerBorder">
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FF4E4E4E"/>
+          <GradientStop Offset="0.2" Color="#FF4E4E4E"/>
+          <GradientStop Offset="0.8" Color="#FF4E4E4E"/>
+          <GradientStop Offset="1.0" Color="#FF4E4E4E"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF535353"/>
+    </Setter>
+  </Style>
+
+  <Style Selector="RepeatButton:pressed">
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF303030"/>
+    </Setter>
+    <Setter Property="RenderTransform" Value="scale(1.0)"/>
+  </Style>
+
+  <Style Selector="RepeatButton:pressed /template/ Border#PART_InnerBorder">
+    <Setter Property="Background">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <LinearGradientBrush.GradientStops>
+          <GradientStop Offset="0.0" Color="#FF464646"/>
+          <GradientStop Offset="0.2" Color="#FF4B4B4B"/>
+          <GradientStop Offset="0.8" Color="#FF4B4B4B"/>
+          <GradientStop Offset="1.0" Color="#FF464646"/>
+        </LinearGradientBrush.GradientStops>
+      </LinearGradientBrush>
+    </Setter>
+    <Setter Property="BorderBrush">
+      <SolidColorBrush Color="#FF414141"/>
+    </Setter>
+  </Style>
+</Styles>

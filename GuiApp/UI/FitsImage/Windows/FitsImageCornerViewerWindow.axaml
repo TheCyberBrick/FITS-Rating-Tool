@@ -1,0 +1,80 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+        Width="500" Height="500"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Windows.FitsImageCornerViewerWindow"
+        Icon="/Assets/Icons/eye.png"
+        Title="Corner Viewer"
+        Foreground="#FF383838"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        Topmost="True"
+        Classes="pinnable"
+        Padding="0">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/eye.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Border Background="#FF383838">
+    <Panel>
+
+      <views:FitsImageCornerViewerView DataContext="{Binding .}"/>
+
+      <Slider Minimum="0" Maximum="1.0"
+              Value="{Binding Percentage, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=2}"
+              Width="120"
+              Height="30"
+              Margin="6 4"
+              HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Slider.Styles>
+          <Style Selector="Slider">
+            <Setter Property="Opacity" Value="0.25"/>
+
+            <Setter Property="Transitions">
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.25"/>
+              </Transitions>
+            </Setter>
+          </Style>
+
+          <Style Selector="Slider:pointerover">
+            <Setter Property="Opacity" Value="1.0"/>
+          </Style>
+        </Slider.Styles>
+      </Slider>
+
+    </Panel>
+  </Border>
+
+</Window>

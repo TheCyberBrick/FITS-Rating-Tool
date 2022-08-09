@@ -1,0 +1,67 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="4" Margin="4">
+        <Border Classes="themed" Width="100" Height="100"/>
+        <Border Classes="themed dark" Width="100" Height="100"/>
+        <Border Classes="themed inner" Width="100" Height="100"/>
+        <Border Classes="themed inner dark" Width="100" Height="100"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+    <LinearGradientBrush x:Key="ThemeBorderBackground" StartPoint="0,0" EndPoint="0,18">
+      <LinearGradientBrush.GradientStops>
+        <GradientStop Offset="0.1" Color="#FF595959"/>
+        <GradientStop Offset="0.1" Color="#FF595959"/>
+        <GradientStop Offset="0.1" Color="#FF585858"/>
+        <GradientStop Offset="18" Color="#FF585858"/>
+      </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ThemeBorderBackgroundDark" StartPoint="0,0" EndPoint="0,18">
+      <LinearGradientBrush.GradientStops>
+        <GradientStop Offset="0.1" Color="#FF595959"/>
+        <GradientStop Offset="0.1" Color="#FF595959"/>
+        <GradientStop Offset="0.1" Color="#FF565656"/>
+        <GradientStop Offset="18" Color="#FF555555"/>
+      </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+  </Styles.Resources>
+
+  <Style Selector="Border.themed">
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="3"/>
+    <Setter Property="BorderBrush" Value="#FF4A4A4A"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeBorderBackground}"/>
+  </Style>
+
+  <Style Selector="Border.themed.inner">
+    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="Background" Value="#FF5F5F5F"/>
+    <Setter Property="BorderBrush" Value="#FF3D3D3D"/>
+  </Style>
+
+  <Style Selector="Border.themed.dark">
+    <Setter Property="Background" Value="{DynamicResource ThemeBorderBackgroundDark}"/>
+  </Style>
+</Styles>

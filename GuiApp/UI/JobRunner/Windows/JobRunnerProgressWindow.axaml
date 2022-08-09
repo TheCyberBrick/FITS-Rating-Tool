@@ -1,0 +1,87 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fitsimage_vm="using:FitsRatingTool.GuiApp.UI.FitsImage.ViewModels"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters;assembly=FitsRatingTool"
+        mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="110"
+        Width="200" Height="110"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.JobRunner.Windows.JobRunnerProgressWindow"
+        Icon="/Assets/Icons/hourglass.png"
+        Title="Running Job..."
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Classes="nominimize nomaximize">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/hourglass.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,*" ClipToBounds="True">
+    <TextBlock Grid.Column="0" Grid.Row="0" IsVisible="{Binding IsLoading, FallbackValue=True}">
+      <TextBlock.Text>
+        <MultiBinding StringFormat="Files loaded: {0}/{1}    {2:#,0.##} files/s" Mode="OneWay">
+          <Binding Path="LoadedFiles" FallbackValue="-" Mode="OneWay"/>
+          <Binding Path="NumberOfFiles" FallbackValue="-" Mode="OneWay"/>
+          <Binding Path="SpeedValue" FallbackValue="-" Mode="OneWay"/>
+        </MultiBinding>
+      </TextBlock.Text>
+    </TextBlock>
+    <TextBlock Grid.Column="0" Grid.Row="0" IsVisible="{Binding IsEvaluating, FallbackValue=False}">
+      <TextBlock.Text>
+        <MultiBinding StringFormat="Evaluation progress: {0:F0}%    {1:#,0.##} %/s" Mode="OneWay">
+          <Binding Path="ProgressValue" FallbackValue="-" Converter="{x:Static converters:MathConverters.Multiplication}" ConverterParameter="100" Mode="OneWay"/>
+          <Binding Path="SpeedValue" FallbackValue="-" Mode="OneWay"/>
+        </MultiBinding>
+      </TextBlock.Text>
+    </TextBlock>
+    <ProgressBar Grid.Column="0" Grid.Row="1" Value="{Binding ProgressValue}" Maximum="1.0" Height="15" Margin="0 4"/>
+    <Button Grid.Column="0" Grid.Row="2"
+            Command="{Binding Cancel}"
+            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+            VerticalAlignment="Bottom">
+      <Grid ColumnDefinitions="Auto,10,*">
+        <TextBlock Grid.Column="0"
+                   Text="Cancel"
+                   HorizontalAlignment="Left"
+                   Margin="4 0 0 0"/>
+        <Viewbox Grid.Column="2"
+                 Width="16" Height="16"
+                 HorizontalAlignment="Right"
+                 Margin="-2 -2 -2 -3">
+          <Image Source="/Assets/Icons/close.png"/>
+        </Viewbox>
+      </Grid>
+    </Button>
+  </Grid>
+
+
+</Window>

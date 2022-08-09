@@ -1,0 +1,592 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:statistics_controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls.StatisticsControl"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters"
+        xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
+        xmlns:views="using:FitsRatingTool.GuiApp.UI.JobConfigurator.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
+        Width="800" Height="650"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.Evaluation.Windows.EvaluationTableWindow"
+        Icon="/Assets/Icons/list.png"
+        Title="Evaluation Table"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True"
+        Classes="nomaximize pinnable">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/list.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="*" RowDefinitions="*,9,325">
+    <Panel Grid.Row="0">
+      <Grid RowDefinitions="*" ColumnDefinitions="*,Auto">
+
+        <HeaderedContentControl Grid.Column="0"
+                                Padding="4">
+          <HeaderedContentControl.Header>
+            <StackPanel Orientation="Horizontal">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Viewbox Width="16" Height="16">
+                  <Image Source="/Assets/Icons/list.png"/>
+                </Viewbox>
+                <TextBlock Text="Data" VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </HeaderedContentControl.Header>
+
+          <DataGrid Items="{Binding Records}"
+                    VerticalScrollBarVisibility="Visible"
+                    HorizontalScrollBarVisibility="Visible"
+                    AutoGenerateColumns="False"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    CanUserResizeColumns="True"
+                    CanUserReorderColumns="True"
+                    SelectedItem="{Binding SelectedRecord}"
+                    SelectionMode="Extended">
+
+            <DataGrid.Styles>
+              <Style Selector="DataGridCell">
+                <Setter Property="ToolTip.Tip" Value="{Binding File}"/>
+
+                <Setter Property="ContextMenu">
+                  <controls:FixedContextMenu>
+                    <MenuItem Header="Remove"
+                              Command="{Binding Remove}"
+                              IsVisible="{Binding $parent[DataGrid].SelectedItems.Count, Converter={x:Static converters:ComparatorConverters.LessEqual}, ConverterParameter=1}">
+                      <MenuItem.Icon>
+                        <Image Source="/Assets/Icons/close.png" Width="16" Height="16"/>
+                      </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Remove Selection"
+                              Command="{Binding $parent[DataGrid].DataContext.RemoveRecords}"
+                              CommandParameter="{Binding $parent[DataGrid].SelectedItems}"
+                              IsVisible="{Binding $parent[DataGrid].SelectedItems.Count, Converter={x:Static converters:ComparatorConverters.Greater}, ConverterParameter=1}">
+                      <MenuItem.Icon>
+                        <Image Source="/Assets/Icons/close.png" Width="16" Height="16"/>
+                      </MenuItem.Icon>
+                    </MenuItem>
+                  </controls:FixedContextMenu>
+                </Setter>
+              </Style>
+            </DataGrid.Styles>
+
+            <DataGrid.Columns>
+              <controls:DataGridSelectableTextColumn Header="#"  Binding="{Binding IndexPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Width="60" Header="File"  Binding="{Binding FileName, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Rating" Binding="{Binding Statistics.Rating, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="FWHM" Binding="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="HFD" Binding="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="SNR" Binding="{Binding Statistics.SNRMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="SNR Weight" Binding="{Binding Statistics.SNRWeight, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Eccentricity" Binding="{Binding Statistics.EccentricityMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Median" Binding="{Binding Statistics.Median, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Noise" Binding="{Binding Statistics.Noise, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Noise Ratio" Binding="{Binding Statistics.NoiseRatio, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Stars" Binding="{Binding Statistics.Stars, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Residual" Binding="{Binding Statistics.ResidualMean, StringFormat={}{0:N3}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="FWHM Mean Dev." Binding="{Binding Statistics.FWHMMAD, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="HFD Mean Dev." Binding="{Binding Statistics.HFDMAD, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="SNR Mean Dev." Binding="{Binding Statistics.SNRMAD, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Eccentricity Mean Dev." Binding="{Binding Statistics.EccentricityMAD, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Median Mean Dev." Binding="{Binding Statistics.MedianMAD, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="Residual Mean Dev." Binding="{Binding Statistics.ResidualMAD, StringFormat={}{0:N3}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+            </DataGrid.Columns>
+
+          </DataGrid>
+        </HeaderedContentControl>
+
+        <HeaderedContentControl Grid.Column="1"
+                                Padding="4"
+                                Margin="4 0 0 0">
+          <HeaderedContentControl.Header>
+            <Panel>
+              <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Viewbox Width="14" Height="16">
+                    <Image Source="/Assets/Icons/funnel.png"/>
+                  </Viewbox>
+                  <TextBlock Text="Filter" VerticalAlignment="Center"/>
+                </StackPanel>
+              </StackPanel>
+              <Image Source="/Assets/Icons/info.png"
+                     Width="22"
+                     Height="22"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Center"
+                     Margin="-4 -4 -2 -4"
+                     ToolTip.ShowDelay="100">
+                <ToolTip.Tip>
+                  <TextBlock Text="The grouping below is only for filtering the data shown in the table. It does not affect the evaluation in any way."/>
+                </ToolTip.Tip>
+              </Image>
+            </Panel>
+          </HeaderedContentControl.Header>
+
+          <Grid ColumnDefinitions="Auto,8,*" RowDefinitions="Auto,5,Auto,5,Auto,*">
+            <TextBlock Grid.Column="0" Text="Group" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="2"
+                      SelectedItem="{Binding SelectedGroupKey}"
+                      Items="{Binding GroupKeys}"
+                      MaxWidth="120" Width="120"
+                      HorizontalAlignment="Stretch"/>
+
+            <Separator Grid.Row="2" Grid.ColumnSpan="3"/>
+
+            <TextBlock Grid.Row="4"
+                       Grid.ColumnSpan="3"
+                       Text="Group by..."
+                       VerticalAlignment="Center"/>
+
+            <views:JobGroupingConfiguratorView
+              Grid.Row="5"
+              Grid.ColumnSpan="3"
+              Margin="0 8 0 0"
+              DataContext="{Binding GroupingConfigurator}"/>
+          </Grid>
+
+        </HeaderedContentControl>
+
+      </Grid>
+    </Panel>
+
+    <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="Transparent"/>
+
+    <Grid Grid.Row="2" ColumnDefinitions="0,8,*,8,0" RowDefinitions="*">
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="Transparent"/>
+
+      <HeaderedContentControl Grid.Column="2"
+                              Padding="4">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18">
+                <Image Source="/Assets/Icons/statistics.png"/>
+              </Viewbox>
+              <TextBlock Text="Graph" VerticalAlignment="Center"/>
+            </StackPanel>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+
+        <Grid RowDefinitions="Auto,*,4,Auto,*" ColumnDefinitions="*">
+          <Grid Grid.Row="0" ColumnDefinitions="Auto,8,*" RowDefinitions="*" Margin="0 0 0 4">
+            <TextBlock Grid.Column="0" Text="Measure" VerticalAlignment="Center"/>
+
+            <ComboBox Grid.Column="2"
+                      SelectedIndex="{Binding DataKeyIndex}"
+                      HorizontalAlignment="Stretch">
+              <collections:ArrayList>
+                <system:String>HFD</system:String>
+                <system:String>FWHM</system:String>
+                <system:String>SNR</system:String>
+                <system:String>SNR Weight</system:String>
+                <system:String>Eccentricity</system:String>
+                <system:String>Median</system:String>
+                <system:String>Noise</system:String>
+                <system:String>Noise Ratio</system:String>
+                <system:String>Stars</system:String>
+                <system:String>Residual</system:String>
+                <system:String>HFD Mean Dev.</system:String>
+                <system:String>FWHM Mean Dev.</system:String>
+                <system:String>SNR Mean Dev.</system:String>
+                <system:String>Eccentricity Mean Dev.</system:String>
+                <system:String>Median Mean Dev.</system:String>
+                <system:String>Residual Mean Dev.</system:String>
+              </collections:ArrayList>
+            </ComboBox>
+          </Grid>
+
+          <Border Grid.Row="1"
+                  Classes="themed inner"
+                  ClipToBounds="True">
+
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="*" ClipToBounds="True">
+
+              <oxy:Plot Grid.Column="0"
+                        IsEnabled="False"
+                        Background="Transparent"
+                        Padding="4 12 2 12" Margin="0"
+                        PlotAreaBorderThickness="0"
+                        TextColor="#AADEDEDE"
+                        FontFamily="Tahoma"
+                        MinWidth="50"
+                        PlotMargins="42 0">
+                <oxy:Plot.Axes>
+                  <oxy:LinearAxis Position="Left"
+                                  ClipTitle="True"
+                                  MinimumPadding="0" Minimum="{Binding GraphMin}"
+                                  MaximumPadding="0" Maximum="{Binding GraphMax}"
+                                  MinimumRange="0"
+                                  TicklineColor="#AADEDEDE"
+                                  IntervalLength="15"
+                                  EdgeRenderingMode="PreferSpeed"
+                                  UseLayoutRounding="True"
+                                  FontWeight="SemiBold"
+                                  FontSize="10.5"/>
+                </oxy:Plot.Axes>
+              </oxy:Plot>
+
+              <Border Grid.Column="1" Grid.ColumnSpan="1" Padding="0 12 0 12">
+                <Panel>
+                  <Grid ColumnDefinitions="*">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding TwoSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding TwoSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding TwoSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1" Background="#10303030">
+                      <Rectangle VerticalAlignment="Top" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                      <Rectangle VerticalAlignment="Bottom" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                    </Panel>
+                  </Grid>
+
+                  <Grid ColumnDefinitions="*">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding OneSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding OneSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding OneSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1" Background="#10303030">
+                      <Rectangle VerticalAlignment="Top" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                      <Rectangle VerticalAlignment="Bottom" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                    </Panel>
+                  </Grid>
+
+                  <Grid ColumnDefinitions="*" ClipToBounds="False">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding ZeroSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding ZeroSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding ZeroSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1">
+                      <Rectangle VerticalAlignment="Center" Height="1" Fill="#30DEDEDE"/>
+                    </Panel>
+                  </Grid>
+                </Panel>
+              </Border>
+
+              <Panel Grid.Column="1">
+                <statistics_controls:StatisticsControl Items="{Binding Records}"
+                                                       SelectedItem="{Binding SelectedRecord}"
+                                                       DataKey="{Binding DataKeyIndex}"
+                                                       ScalingMode="Manual"
+                                                       GraphMin="{Binding GraphMin}"
+                                                       GraphMax="{Binding GraphMax}"
+                                                       Padding="12">
+
+                  <statistics_controls:StatisticsControl.ContextContainerTemplate>
+                    <statistics_controls:StatisticsContextContainerTemplate>
+                      <statistics_controls:StatisticsContextContainer>
+                        <statistics_controls:StatisticsContextContainer.ValueBindings>
+                          <Binding x:Key="0" Path="Statistics.HFDMean"/>
+                          <Binding x:Key="1" Path="Statistics.FWHMMean"/>
+                          <Binding x:Key="2" Path="Statistics.SNRMean"/>
+                          <Binding x:Key="3" Path="Statistics.SNRWeight"/>
+                          <Binding x:Key="4" Path="Statistics.EccentricityMean"/>
+                          <Binding x:Key="5" Path="Statistics.Median"/>
+                          <Binding x:Key="6" Path="Statistics.Noise"/>
+                          <Binding x:Key="7" Path="Statistics.NoiseRatio"/>
+                          <Binding x:Key="8" Path="Statistics.Stars"/>
+                          <Binding x:Key="9" Path="Statistics.ResidualMean"/>
+                          <Binding x:Key="10" Path="Statistics.HFDMAD"/>
+                          <Binding x:Key="11" Path="Statistics.FWHMMAD"/>
+                          <Binding x:Key="12" Path="Statistics.SNRMAD"/>
+                          <Binding x:Key="13" Path="Statistics.EccentricityMAD"/>
+                          <Binding x:Key="14" Path="Statistics.MedianMAD"/>
+                          <Binding x:Key="15" Path="Statistics.ResidualMAD"/>
+                        </statistics_controls:StatisticsContextContainer.ValueBindings>
+                        <statistics_controls:StatisticsContextContainer.EnabledBindings>
+                          <Binding x:Key="0" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="1" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="2" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="3" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="4" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="5" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="6" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="7" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="8" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="9" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="10" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="11" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="12" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="13" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="14" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                          <Binding x:Key="15" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                        </statistics_controls:StatisticsContextContainer.EnabledBindings>
+                      </statistics_controls:StatisticsContextContainer>
+                    </statistics_controls:StatisticsContextContainerTemplate>
+                  </statistics_controls:StatisticsControl.ContextContainerTemplate>
+
+                  <statistics_controls:StatisticsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Canvas VerticalAlignment="Stretch"
+                              HorizontalAlignment="Stretch"
+                              UseLayoutRounding="False"
+                              IsVisible="{Binding $parent[statistics_controls:StatisticsContextContainer].Enabled}">
+                        <RelativePanel Canvas.Left="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasX}"
+                                       Canvas.Top="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasY}"
+                                       Width="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasWidth}"
+                                       Height="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasHeight}"
+                                       ClipToBounds="False">
+                          <Grid RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                RelativePanel.AlignVerticalCenterWithPanel="True">
+                            <Ellipse Width="5" Height="5" Fill="#FFAAAAAA"/>
+                            <Ellipse Width="12" Height="12" Stroke="#FF3498DB" StrokeThickness="2" IsVisible="{Binding IsSelected}" ZIndex="-100"/>
+                            <Ellipse Width="20" Height="20" IsHitTestVisible="True">
+                              <Ellipse.Styles>
+                                <Style Selector="Ellipse">
+                                  <Setter Property="Fill" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="Ellipse:pointerover">
+                                  <Setter Property="Fill" Value="#20FFFFFF"/>
+                                </Style>
+                              </Ellipse.Styles>
+                              <ToolTip.Tip>
+                                <Grid ColumnDefinitions="Auto,10,*"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+                                  <TextBlock Grid.Column="0" Grid.Row="0" Text="#"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding IndexPlusOne}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="1" Text="Rating"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Statistics.Rating, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="2" Text="HFD"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="3" Text="FWHM"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="4" Text="SNR"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Statistics.SNRMean, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="5" Text="SNR Weight"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="5" Text="{Binding Statistics.SNRWeight, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="6" Text="Eccentricity"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="6" Text="{Binding Statistics.EccentricityMean, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="7" Text="Median"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="7" Text="{Binding Statistics.Median, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="8" Text="Noise"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="8" Text="{Binding Statistics.Noise, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="9" Text="Noise Ratio"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="9" Text="{Binding Statistics.NoiseRatio, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="10" Text="Stars"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="10" Text="{Binding Statistics.Stars, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="11" Text="Residual"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="11" Text="{Binding Statistics.ResidualMean, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="12" Text="HFD Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="12" Text="{Binding Statistics.HFDMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="13" Text="FWHM Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="13" Text="{Binding Statistics.FWHMMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="14" Text="SNR Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="14" Text="{Binding Statistics.SNRMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="15" Text="Eccentricity Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="15" Text="{Binding Statistics.EccentricityMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="16" Text="Median Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="16" Text="{Binding Statistics.MedianMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="17" Text="Residual Mean Dev."/>
+                                  <TextBlock Grid.Column="2" Grid.Row="17" Text="{Binding Statistics.ResidualMAD, StringFormat={}{0:N3}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="18" Text="{Binding File}" TextWrapping="Wrap" Margin="0 6 0 0"/>
+                                </Grid>
+                              </ToolTip.Tip>
+                            </Ellipse>
+                          </Grid>
+                        </RelativePanel>
+
+                        <Line IsVisible="{Binding $parent[statistics_controls:StatisticsContextContainer].HasPreviousPoint}"
+                              StartPoint="{Binding $parent[statistics_controls:StatisticsContextContainer].StartPoint}"
+                              EndPoint="{Binding $parent[statistics_controls:StatisticsContextContainer].EndPoint}"
+                              Stroke="#FF808080" StrokeThickness="1"
+                              IsHitTestVisible="False"/>
+                      </Canvas>
+                    </DataTemplate>
+                  </statistics_controls:StatisticsControl.ItemTemplate>
+
+                </statistics_controls:StatisticsControl>
+              </Panel>
+
+            </Grid>
+          </Border>
+
+          <TextBlock Grid.Row="3" Text="Rating" VerticalAlignment="Center" Margin="0 0 0 4"/>
+
+          <Border Grid.Row="4"
+                  Classes="themed inner"
+                  ClipToBounds="True">
+
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="*" ClipToBounds="True">
+
+              <oxy:Plot Grid.Column="0"
+                        IsEnabled="False"
+                        Background="Transparent"
+                        Padding="4 12 2 12" Margin="0"
+                        PlotAreaBorderThickness="0"
+                        TextColor="#AADEDEDE"
+                        FontFamily="Tahoma"
+                        MinWidth="50"
+                        PlotMargins="42 0">
+                <oxy:Plot.Axes>
+                  <oxy:LinearAxis Position="Left"
+                                  ClipTitle="True"
+                                  MinimumPadding="0" Minimum="{Binding RatingGraphMin}"
+                                  MaximumPadding="0" Maximum="{Binding RatingGraphMax}"
+                                  MinimumRange="0"
+                                  TicklineColor="#AADEDEDE"
+                                  IntervalLength="15"
+                                  EdgeRenderingMode="PreferSpeed"
+                                  UseLayoutRounding="True"
+                                  FontWeight="SemiBold"
+                                  FontSize="10.5"/>
+                </oxy:Plot.Axes>
+              </oxy:Plot>
+
+              <Border Grid.Column="1" Grid.ColumnSpan="1" Padding="0 12 0 12">
+                <Panel>
+                  <Grid ColumnDefinitions="*">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding RatingTwoSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingTwoSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingTwoSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1" Background="#10303030">
+                      <Rectangle VerticalAlignment="Top" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                      <Rectangle VerticalAlignment="Bottom" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                    </Panel>
+                  </Grid>
+
+                  <Grid ColumnDefinitions="*">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding RatingOneSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingOneSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingOneSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1" Background="#10303030">
+                      <Rectangle VerticalAlignment="Top" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                      <Rectangle VerticalAlignment="Bottom" Height="1" StrokeThickness="1" StrokeDashArray="4, 8" Stroke="#15DEDEDE"/>
+                    </Panel>
+                  </Grid>
+
+                  <Grid ColumnDefinitions="*" ClipToBounds="False">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="{Binding RatingZeroSigmaRange.RangeUpper, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingZeroSigmaRange.Range, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                      <RowDefinition Height="{Binding RatingZeroSigmaRange.RangeLower, Converter={x:Static converters:GridLengthConverters.ToWeighted}}"/>
+                    </Grid.RowDefinitions>
+                    <Panel Grid.Row="1">
+                      <Rectangle VerticalAlignment="Center" Height="1" Fill="#30DEDEDE"/>
+                    </Panel>
+                  </Grid>
+                </Panel>
+              </Border>
+
+              <Panel Grid.Column="1">
+                <statistics_controls:StatisticsControl Items="{Binding Records}"
+                                                       SelectedItem="{Binding SelectedRecord}"
+                                                       DataKey="0"
+                                                       ScalingMode="Manual"
+                                                       GraphMin="{Binding RatingGraphMin}"
+                                                       GraphMax="{Binding RatingGraphMax}"
+                                                       Padding="12">
+
+                  <statistics_controls:StatisticsControl.ContextContainerTemplate>
+                    <statistics_controls:StatisticsContextContainerTemplate>
+                      <statistics_controls:StatisticsContextContainer>
+                        <statistics_controls:StatisticsContextContainer.ValueBindings>
+                          <Binding x:Key="0" Path="Statistics.Rating"/>
+                        </statistics_controls:StatisticsContextContainer.ValueBindings>
+                        <statistics_controls:StatisticsContextContainer.EnabledBindings>
+                          <Binding x:Key="0" Path="Statistics" Converter="{x:Static ObjectConverters.IsNotNull}"/>
+                        </statistics_controls:StatisticsContextContainer.EnabledBindings>
+                      </statistics_controls:StatisticsContextContainer>
+                    </statistics_controls:StatisticsContextContainerTemplate>
+                  </statistics_controls:StatisticsControl.ContextContainerTemplate>
+
+                  <statistics_controls:StatisticsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Canvas VerticalAlignment="Stretch"
+                              HorizontalAlignment="Stretch"
+                              UseLayoutRounding="False"
+                              IsVisible="{Binding $parent[statistics_controls:StatisticsContextContainer].Enabled}">
+                        <RelativePanel Canvas.Left="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasX}"
+                                       Canvas.Top="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasY}"
+                                       Width="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasWidth}"
+                                       Height="{Binding $parent[statistics_controls:StatisticsContextContainer].CanvasHeight}"
+                                       ClipToBounds="False">
+                          <Grid RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                RelativePanel.AlignVerticalCenterWithPanel="True">
+                            <Ellipse Width="5" Height="5" Fill="#FFAAAAAA"/>
+                            <Ellipse Width="12" Height="12" Stroke="#FF3498DB" StrokeThickness="2" IsVisible="{Binding IsSelected}" ZIndex="-100"/>
+                            <Ellipse Width="20" Height="20" IsHitTestVisible="True">
+                              <Ellipse.Styles>
+                                <Style Selector="Ellipse">
+                                  <Setter Property="Fill" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="Ellipse:pointerover">
+                                  <Setter Property="Fill" Value="#20FFFFFF"/>
+                                </Style>
+                              </Ellipse.Styles>
+                              <ToolTip.Tip>
+                                <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,*">
+                                  <TextBlock Grid.Column="0" Grid.Row="0" Text="#"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding IndexPlusOne}"/>
+                                  <TextBlock Grid.Column="0" Grid.Row="1" Text="Rating"/>
+                                  <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Statistics.Rating, StringFormat={}{0:N2}, Mode=OneWay}"/>
+                                  <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Text="{Binding File}" TextWrapping="Wrap" Margin="0 6 0 0"/>
+                                </Grid>
+                              </ToolTip.Tip>
+                            </Ellipse>
+                          </Grid>
+                        </RelativePanel>
+
+                        <Line IsVisible="{Binding $parent[statistics_controls:StatisticsContextContainer].HasPreviousPoint}"
+                              StartPoint="{Binding $parent[statistics_controls:StatisticsContextContainer].StartPoint}"
+                              EndPoint="{Binding $parent[statistics_controls:StatisticsContextContainer].EndPoint}"
+                              Stroke="#FF808080" StrokeThickness="1"
+                              IsHitTestVisible="False"/>
+                      </Canvas>
+                    </DataTemplate>
+                  </statistics_controls:StatisticsControl.ItemTemplate>
+
+                </statistics_controls:StatisticsControl>
+              </Panel>
+
+            </Grid>
+          </Border>
+
+        </Grid>
+      </HeaderedContentControl>
+
+      <GridSplitter Grid.Column="3" ResizeDirection="Columns" Background="Transparent"/>
+    </Grid>
+
+  </Grid>
+
+</Window>

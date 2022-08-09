@@ -1,0 +1,192 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.Controls.ProgressRing"
+             Name="Root">
+
+  <Viewbox Stretch="Uniform">
+    <Canvas Height="48" Width="48"
+            VerticalAlignment="Center" HorizontalAlignment="Center">
+
+      <Canvas.Styles>
+        <Style Selector="Ellipse">
+          <Setter Property="Width" Value="7"/>
+          <Setter Property="Height" Value="7"/>
+          <Setter Property="Fill" Value="#FF909090"/>
+          <Setter Property="StrokeThickness" Value="3"/>
+          <Setter Property="Stroke" Value="Transparent"/>
+        </Style>
+
+        <Style Selector="Ellipse.background">
+          <Setter Property="Fill" Value="Transparent"/>
+          <Setter Property="StrokeThickness" Value="0.5"/>
+          <Setter Property="Stroke" Value="#60DEDEDE"/>
+        </Style>
+
+        <Style Selector="Ellipse.circle_1">
+          <Setter Property="Opacity" Value="1.0"/>
+        </Style>
+        <Style Selector="Ellipse.circle_8">
+          <Setter Property="Opacity" Value="0.875"/>
+        </Style>
+        <Style Selector="Ellipse.circle_7">
+          <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+        <Style Selector="Ellipse.circle_6">
+          <Setter Property="Opacity" Value="0.675"/>
+        </Style>
+        <Style Selector="Ellipse.circle_5">
+          <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+        <Style Selector="Ellipse.circle_4">
+          <Setter Property="Opacity" Value="0.25"/>
+        </Style>
+        <Style Selector="Ellipse.circle_3">
+          <Setter Property="Opacity" Value="0.125"/>
+        </Style>
+        <Style Selector="Ellipse.circle_2">
+          <Setter Property="Opacity" Value="0.0"/>
+        </Style>
+
+        <!-- Animate circles -->
+        <Style Selector="Ellipse.animation_1">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_2">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.1" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_3">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.2" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_4">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.3" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_5">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.4" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_6">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.5" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_7">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.6" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+        <Style Selector="Ellipse.animation_8">
+          <Style.Animations>
+            <Animation Duration="0:0:0.8" Delay="0:0:0.7" RepeatCount="INFINITE">
+              <KeyFrame Cue="1%">
+                <Setter Property="Opacity" Value="1.0"/>
+              </KeyFrame>
+              <KeyFrame Cue="90%">
+                <Setter Property="Opacity" Value="0.0"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+      </Canvas.Styles>
+
+      <Ellipse Classes="background" Canvas.Left="1.75" Canvas.Top="21"/>
+      <Ellipse Classes="background" Canvas.Top="7" Canvas.Left="6.5"/>
+      <Ellipse Classes="background" Canvas.Left="20.5" Canvas.Top="0.75"/>
+      <Ellipse Classes="background" Canvas.Left="34.75" Canvas.Top="6.75"/>
+      <Ellipse Classes="background" Canvas.Left="40.5" Canvas.Top="20.75"/>
+      <Ellipse Classes="background" Canvas.Left="34.75" Canvas.Top="34.5"/>
+      <Ellipse Classes="background" Canvas.Left="20.75" Canvas.Top="39.75"/>
+      <Ellipse Classes="background" Canvas.Top="34.25" Canvas.Left="7"/>
+
+      <!-- Only set the animation classes if control is visible because animation system ignores visibility -->
+      <Ellipse Classes.animation_1="{Binding #Root.IsVisible}" Classes.circle_1="True" Canvas.Left="1.75" Canvas.Top="21"/>
+      <Ellipse Classes.animation_2="{Binding #Root.IsVisible}" Classes.circle_2="True" Canvas.Top="7" Canvas.Left="6.5"/>
+      <Ellipse Classes.animation_3="{Binding #Root.IsVisible}" Classes.circle_3="True" Canvas.Left="20.5" Canvas.Top="0.75"/>
+      <Ellipse Classes.animation_4="{Binding #Root.IsVisible}" Classes.circle_4="True" Canvas.Left="34.75" Canvas.Top="6.75"/>
+      <Ellipse Classes.animation_5="{Binding #Root.IsVisible}" Classes.circle_5="True" Canvas.Left="40.5" Canvas.Top="20.75"/>
+      <Ellipse Classes.animation_6="{Binding #Root.IsVisible}" Classes.circle_6="True" Canvas.Left="34.75" Canvas.Top="34.5"/>
+      <Ellipse Classes.animation_7="{Binding #Root.IsVisible}" Classes.circle_7="True" Canvas.Left="20.75" Canvas.Top="39.75"/>
+      <Ellipse Classes.animation_8="{Binding #Root.IsVisible}" Classes.circle_8="True" Canvas.Top="34.25" Canvas.Left="7"/>
+
+    </Canvas>
+  </Viewbox>
+
+</UserControl>

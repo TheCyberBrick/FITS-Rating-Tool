@@ -1,0 +1,146 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Design.PreviewWith>
+    <Border Padding="200" Background="#FF555555" UseLayoutRounding="False">
+      <StackPanel Spacing="20">
+        <Border Height="40">
+          <Separator Classes="vertical"/>
+        </Border>
+
+        <Separator/>
+
+        <Menu>
+          <MenuItem Header="Menu">
+            <MenuItem Header="Item 1"/>
+            <MenuItem Header="-"/>
+            <MenuItem Header="Item 2"/>
+          </MenuItem>
+        </Menu>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="Separator">
+    <Setter Property="Focusable" Value="False"/>
+  </Style>
+
+  <Style Selector="Separator">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Width" Value="NaN"/>
+    <Setter Property="Height" Value="2"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Padding="{TemplateBinding Margin}"
+                Height="{TemplateBinding Height}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid Name="SeparatorGrid"
+                ColumnDefinitions="*"
+                RowDefinitions="1,1">
+            <Grid.Resources>
+              <LinearGradientBrush x:Key="BorderSeparatorLight" StartPoint="0%,0%" EndPoint="100%,0%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0.0" Color="#00FFFFFF"/>
+                  <GradientStop Offset="0.15" Color="#10FFFFFF"/>
+                  <GradientStop Offset="0.85" Color="#10FFFFFF"/>
+                  <GradientStop Offset="1.0" Color="#00FFFFFF"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+              <LinearGradientBrush x:Key="BorderSeparatorDark" StartPoint="0%,0%" EndPoint="100%,0%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0.0" Color="#00000000"/>
+                  <GradientStop Offset="0.15" Color="#20000000"/>
+                  <GradientStop Offset="0.85" Color="#20000000"/>
+                  <GradientStop Offset="1.0" Color="#00000000"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+            </Grid.Resources>
+            <Rectangle Name="SeparatorDark"
+                       Grid.Row="0"
+                       Height="1"
+                       VerticalAlignment="Top"
+                       Fill="{DynamicResource BorderSeparatorDark}"/>
+            <Rectangle Name="SeparatorLight"
+                       Grid.Row="1"
+                       Height="1"
+                       VerticalAlignment="Top"
+                       Fill="{DynamicResource BorderSeparatorLight}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Separator.vertical">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Width" Value="2"/>
+    <Setter Property="Height" Value="NaN"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Padding="{TemplateBinding Margin}"
+                Width="{TemplateBinding Width}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid Name="SeparatorGrid"
+                ColumnDefinitions="1,1"
+                RowDefinitions="*">
+            <Grid.Resources>
+              <LinearGradientBrush x:Key="BorderSeparatorLight" StartPoint="0%,0%" EndPoint="0%,100%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0.0" Color="#00FFFFFF"/>
+                  <GradientStop Offset="0.15" Color="#10FFFFFF"/>
+                  <GradientStop Offset="0.85" Color="#10FFFFFF"/>
+                  <GradientStop Offset="1.0" Color="#00FFFFFF"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+              <LinearGradientBrush x:Key="BorderSeparatorDark" StartPoint="0%,0%" EndPoint="0%,100%">
+                <LinearGradientBrush.GradientStops>
+                  <GradientStop Offset="0.0" Color="#00000000"/>
+                  <GradientStop Offset="0.15" Color="#20000000"/>
+                  <GradientStop Offset="0.85" Color="#20000000"/>
+                  <GradientStop Offset="1.0" Color="#00000000"/>
+                </LinearGradientBrush.GradientStops>
+              </LinearGradientBrush>
+            </Grid.Resources>
+            <Rectangle Name="SeparatorDark"
+                       Grid.Column="0"
+                       Width="1"
+                       HorizontalAlignment="Left"
+                       Fill="{DynamicResource BorderSeparatorDark}"/>
+            <Rectangle Name="SeparatorLight"
+                       Grid.Column="1"
+                       Width="1"
+                       HorizontalAlignment="Left"
+                       Fill="{DynamicResource BorderSeparatorLight}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="MenuItem > Separator, ContextMenu > Separator">
+    <Setter Property="Margin" Value="0 1 0 1"/>
+  </Style>
+
+</Styles>

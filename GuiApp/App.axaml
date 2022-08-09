@@ -1,0 +1,58 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FitsRatingTool.GuiApp.App">
+
+  <Application.Styles>
+    <!-- Base theme & packages -->
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+    <StyleInclude Source="resm:OxyPlot.Avalonia.Themes.Default.xaml?assembly=OxyPlot.Avalonia"/>
+
+    <!-- Fluent Dark theme -->
+    <FluentTheme Mode="Dark"/>
+
+    <!-- Custom controls -->
+    <StyleInclude Source="/Assets/Styles/WindowControlButton.axaml"/>
+    <StyleInclude Source="/Assets/Styles/PrecisionSlider.axaml"/>
+    <StyleInclude Source="/Assets/Styles/StatisticsControl.axaml"/>
+
+    <!-- Custom theme -->
+    <StyleInclude Source="/Assets/Styles/Button.axaml"/>
+    <StyleInclude Source="/Assets/Styles/Window.axaml"/>
+    <StyleInclude Source="/Assets/Styles/GridSplitter.axaml"/>
+    <StyleInclude Source="/Assets/Styles/Border.axaml"/>
+    <StyleInclude Source="/Assets/Styles/HeaderedContentControl.axaml"/>
+    <StyleInclude Source="/Assets/Styles/FlyoutPresenter.axaml"/>
+    <StyleInclude Source="/Assets/Styles/Slider.axaml"/>
+    <StyleInclude Source="/Assets/Styles/PrecisionSlider.axaml"/>
+    <StyleInclude Source="/Assets/Styles/ComboBox.axaml"/>
+    <StyleInclude Source="/Assets/Styles/CheckBox.axaml"/>
+    <StyleInclude Source="/Assets/Styles/TextBox.axaml"/>
+    <StyleInclude Source="/Assets/Styles/MenuItem.axaml"/>
+    <StyleInclude Source="/Assets/Styles/Separator.axaml"/>
+    <StyleInclude Source="/Assets/Styles/NumericUpDown.axaml"/>
+    <StyleInclude Source="/Assets/Styles/ToolTip.axaml"/>
+    <StyleInclude Source="/Assets/Styles/ContextMenu.axaml"/>
+    <StyleInclude Source="/Assets/Styles/MenuFlyoutPresenter.axaml"/>
+    <StyleInclude Source="/Assets/Styles/DataGrid.axaml"/>
+    <StyleInclude Source="/Assets/Styles/ScrollableTabControl.axaml"/>
+  </Application.Styles>
+
+</Application>

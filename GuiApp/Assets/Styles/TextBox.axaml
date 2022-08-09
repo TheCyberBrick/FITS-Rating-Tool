@@ -1,0 +1,182 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters;assembly=FitsRatingTool"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls">
+  <Design.PreviewWith>
+    <Border Padding="20" Background="#FF555555">
+      <Border>
+        <StackPanel Orientation="Vertical" Spacing="10">
+          <TextBox Text="ABC"/>
+          <TextBox Text="DEF" IsEnabled="False"/>
+          <TextBox Text="ABCDEFGHIJKLMNOPQR"/>
+          <TextBox Text="ABCDEFGHIJKLMNOPQR" Width="50"/>
+          <TextBox Text="ABCDEFGHIJKLMNOPQR" Width="50" BorderThickness="0"/>
+          <TextBox Classes="readonly" Text="ABCDEFGHIJKLMNOPQR" Width="50"/>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="TextBox">
+    <Setter Property="TextBlock.FontFamily" Value="Tahoma"/>
+    <Setter Property="TextBlock.Foreground" Value="#FFEBEBEB"/>
+    <Setter Property="TextBlock.FontSize" Value="10.5"/>
+
+    <Setter Property="Padding" Value="4 3 0 0"/>
+    <Setter Property="MinHeight" Value="20"/>
+
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+
+    <Setter Property="Background" Value="#FF5F5F5F"/>
+
+    <Style.Resources>
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FF5F5F5F"/>
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FF5F5F5F"/>
+      <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+
+      <controls:FixedContextMenu x:Key="DefaultTextBoxContextMenu" x:Name="TextBoxContextMenu">
+        <MenuItem x:Name="TextBoxContextMenuCutItem" Header="Cut" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
+        <MenuItem x:Name="TextBoxContextMenuCopyItem" Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
+        <MenuItem x:Name="TextBoxContextMenuPasteItem" Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
+      </controls:FixedContextMenu>
+    </Style.Resources>
+
+    <!-- Using a contextmenu instead of a flyout for the popup position resetting bug -->
+    <Setter Property="ContextFlyout" Value="{x:Null}"/>
+    <Setter Property="ContextMenu" Value="{DynamicResource DefaultTextBoxContextMenu}"/>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataValidationErrors>
+          <Panel UseLayoutRounding="True">
+            <Border Name="PART_BorderElement"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MinHeight="{TemplateBinding MinHeight}">
+              <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Rectangle DockPanel.Dock="Top"
+                           VerticalAlignment="Top"
+                           HorizontalAlignment="Stretch"
+                           Height="{TemplateBinding BorderThickness, Converter={x:Static converters:ThicknessConverter.TopToDouble}}"
+                           Fill="#FF3C3C3C"/>
+                <Rectangle DockPanel.Dock="Bottom"
+                           VerticalAlignment="Bottom"
+                           HorizontalAlignment="Stretch"
+                           Height="{TemplateBinding BorderThickness, Converter={x:Static converters:ThicknessConverter.TopToDouble}}"
+                           Fill="#FF525252"/>
+                <Rectangle DockPanel.Dock="Left"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Left"
+                           Width="{TemplateBinding BorderThickness, Converter={x:Static converters:ThicknessConverter.TopToDouble}}"
+                           Fill="#FF4A4A4A"/>
+                <Rectangle DockPanel.Dock="Right"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Right"
+                           Width="{TemplateBinding BorderThickness, Converter={x:Static converters:ThicknessConverter.TopToDouble}}"
+                           Fill="#FF4A4A4A"/>
+              </DockPanel>
+            </Border>
+
+            <Border Margin="-1"
+                    Padding="{TemplateBinding BorderThickness}">
+              <Grid ColumnDefinitions="Auto,*,Auto,4">
+                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
+                <DockPanel x:Name="PART_InnerDockPanel" Grid.Column="1" Grid.ColumnSpan="1" Margin="{TemplateBinding Padding}">
+                  <TextBlock Name="PART_FloatingWatermark"
+                             Foreground="{DynamicResource SystemAccentColor}"
+                             FontSize="{TemplateBinding FontSize}"
+                             Text="{TemplateBinding Watermark}"
+                             DockPanel.Dock="Top"/>
+                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                    <Panel>
+                      <TextBlock Name="PART_Watermark"
+                              Opacity="0.5"
+                              Text="{TemplateBinding Watermark}"
+                              TextAlignment="{TemplateBinding TextAlignment}"
+                              TextWrapping="{TemplateBinding TextWrapping}"
+                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                      <TextPresenter Name="PART_TextPresenter"
+                                    Text="{TemplateBinding Text, Mode=TwoWay}"
+                                    CaretIndex="{TemplateBinding CaretIndex}"
+                                    SelectionStart="{TemplateBinding SelectionStart}"
+                                    SelectionEnd="{TemplateBinding SelectionEnd}"
+                                    TextAlignment="{TemplateBinding TextAlignment}"
+                                    TextWrapping="{TemplateBinding TextWrapping}"
+                                    PasswordChar="{TemplateBinding PasswordChar}"
+                                    RevealPassword="{TemplateBinding RevealPassword}"
+                                    SelectionBrush="{TemplateBinding SelectionBrush}"
+                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                    CaretBrush="{TemplateBinding CaretBrush}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Panel>
+                  </ScrollViewer>
+                </DockPanel>
+                <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
+              </Grid>
+            </Border>
+          </Panel>
+        </DataValidationErrors>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TextBox:disabled">
+    <Setter Property="Foreground" Value="#50FFFFFF"/>
+  </Style>
+
+  <Style Selector="TextBox:disabled /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="#FF505050"/>
+  </Style>
+
+  <Style Selector="TextBox:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="Transparent"/>
+  </Style>
+
+  <Style Selector="TextBox:focus /template/ Border#border">
+    <Setter Property="BorderBrush" Value="Transparent"/>
+  </Style>
+
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
+  </Style>
+
+  <Style Selector="TextBox.readonly">
+    <Setter Property="Foreground" Value="#FFDEDEDE"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="IsReadOnly" Value="True"/>
+  </Style>
+
+  <Style Selector="TextBox.readonly:pointerover /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
+
+  <Style Selector="TextBox.readonly:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
+</Styles>

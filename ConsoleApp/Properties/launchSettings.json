@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "\"E:\\Git Repos\\FITS Rating Tool\\ConsoleApp\\bin\\Release\\net6.0\\ConsoleApp.exe\" --job \"E:\\FITS Rating Tool Testset\\testjob4.json\" --job \"Q:\\Light\" --path \"Q:\\Light\" --filepattern \"(?i)^(?(?!calibrated).)*$\" --progress --debug"
+    }
+  }
+}

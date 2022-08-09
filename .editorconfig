@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# VSTHRD100: Avoid async void methods
+dotnet_diagnostic.VSTHRD100.severity = suggestion

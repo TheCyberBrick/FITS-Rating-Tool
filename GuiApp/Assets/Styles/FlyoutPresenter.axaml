@@ -1,0 +1,419 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="10">
+        <Button Content="Click me (default)">
+          <Button.Flyout>
+            <Flyout>
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (sharp)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="sharp">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (window)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="window">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (window_round)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="window_round">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (window_compact)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="window_compact">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (window_compact_arrow)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button Content="Click me (window_round_compact)">
+          <Button.Flyout>
+            <Flyout Flyout.FlyoutPresenterClasses="window_round_compact">
+              <TextBlock Text="Hello"/>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <StyleInclude Source="/Assets/Styles/Border.axaml"/>
+
+  <Style Selector="FlyoutPresenter">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Classes="themed"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+            <ContentControl Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  
+  <Style Selector="FlyoutPresenter.sharp">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Classes="themed"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="0">
+          <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+            <ContentControl Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter.window">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Classes="themed"
+                BorderThickness="1"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="0"
+                Margin="10"
+                BoxShadow="1 1 8 1 #80000000">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="#FF3D3D3D"/>
+          </Border.BorderBrush>
+          <Panel>
+            <Rectangle>
+              <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,8">
+                  <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.0" Color="#FF525252"/>
+                    <GradientStop Offset="1.0" Color="#FF4C4C4C"/>
+                  </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+              </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Fill="#FF595959" Height="1" VerticalAlignment="Top"/>
+            <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                          VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+              <ContentControl Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+            </ScrollViewer>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter.window_round">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Classes="themed"
+                BorderThickness="1"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="3"
+                Margin="10"
+                BoxShadow="1 1 8 1 #80000000">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="#FF3D3D3D"/>
+          </Border.BorderBrush>
+          <Panel>
+            <Rectangle>
+              <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,8">
+                  <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.0" Color="#FF525252"/>
+                    <GradientStop Offset="1.0" Color="#FF4C4C4C"/>
+                  </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+              </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Fill="#FF595959" Height="1" VerticalAlignment="Top"/>
+            <Border Classes="themed"
+                    Background="Transparent"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Margin="-1"/>
+            <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+              <ContentControl Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+            </ScrollViewer>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter.window_compact">
+    <Style.Resources>
+      <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+      <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+      <x:Double x:Key="FlyoutThemeMinHeight">10</x:Double>
+      <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+    </Style.Resources>
+    <Setter Property="Padding" Value="5"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                  Classes="themed"
+                  BorderThickness="1"
+                  Padding="{DynamicResource FlyoutBorderThemePadding}"
+                  CornerRadius="0"
+                  Margin="10"
+                  BoxShadow="1 1 8 1 #80000000">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="#FF3D3D3D"/>
+          </Border.BorderBrush>
+          <Panel>
+            <Rectangle>
+              <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,8">
+                  <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.0" Color="#FF525252"/>
+                    <GradientStop Offset="1.0" Color="#FF4C4C4C"/>
+                  </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+              </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Fill="#FF595959" Height="1" VerticalAlignment="Top"/>
+            <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                          VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+              <ContentControl Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+            </ScrollViewer>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter.window_compact_arrow">
+    <Style.Resources>
+      <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+      <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+      <x:Double x:Key="FlyoutThemeMinHeight">10</x:Double>
+      <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+    </Style.Resources>
+    <Setter Property="Padding" Value="5"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Background="Transparent"
+                  Width="15" Height="1"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Center"
+                  Margin="0 0 0 18"
+                  BoxShadow="0 10 11 1 Black"/>
+          <Border Background="Transparent"
+                  Width="10" Height="1"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Center"
+                  Margin="0 0 0 18"
+                  BoxShadow="12 5 15 1 #B0000000"/>
+          <Border Background="Transparent"
+                  Width="10" Height="1"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Center"
+                  Margin="0 0 0 18"
+                  BoxShadow="-12 5 15 1 #B0000000"/>
+          <Border Name="LayoutRoot"
+                  Classes="themed"
+                  BorderThickness="1"
+                  Padding="{DynamicResource FlyoutBorderThemePadding}"
+                  CornerRadius="0"
+                  Margin="10 10 10 13"
+                  BoxShadow="1 1 8 1 #80000000">
+            <Border.BorderBrush>
+              <SolidColorBrush Color="#FF3D3D3D"/>
+            </Border.BorderBrush>
+            <Panel>
+              <Rectangle>
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,8">
+                    <LinearGradientBrush.GradientStops>
+                      <GradientStop Offset="0.0" Color="#FF525252"/>
+                      <GradientStop Offset="1.0" Color="#FF4C4C4C"/>
+                    </LinearGradientBrush.GradientStops>
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+              </Rectangle>
+              <Rectangle Fill="#FF595959" Height="1" VerticalAlignment="Top"/>
+              <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                <ContentControl Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch" />
+              </ScrollViewer>
+            </Panel>
+          </Border>
+          <Path Fill="#FF4C4C4C"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0 -14 0 0">
+            <Path.Data>
+              <PathGeometry>m 15 7.5 l 15 -7.5 l -30 0 z</PathGeometry>
+            </Path.Data>
+          </Path>
+          <Path Stroke="#FF393939" StrokeThickness="1"
+                StrokeLineCap="Round"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0 -14 0 0">
+            <Path.Data>
+              <PathGeometry>m 0 0.5 l 15 7.5 l 15 -7.5</PathGeometry>
+            </Path.Data>
+          </Path>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter.window_round_compact">
+    <Style.Resources>
+      <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+      <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+      <x:Double x:Key="FlyoutThemeMinHeight">10</x:Double>
+      <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+    </Style.Resources>
+    <Setter Property="Padding" Value="5"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Classes="themed"
+                BorderThickness="1"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="3"
+                Margin="10"
+                BoxShadow="1 1 8 1 #80000000">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="#FF3D3D3D"/>
+          </Border.BorderBrush>
+          <Panel>
+            <Rectangle>
+              <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,8">
+                  <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0.0" Color="#FF525252"/>
+                    <GradientStop Offset="1.0" Color="#FF4C4C4C"/>
+                  </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+              </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Fill="#FF595959" Height="1" VerticalAlignment="Top"/>
+            <Border Classes="themed"
+                    Background="Transparent"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Margin="-1"/>
+            <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+              <ContentControl Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+            </ScrollViewer>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="FlyoutPresenter">
+    <Style.Animations>
+      <Animation Duration="0:0:0.1">
+        <KeyFrame Cue="0%">
+          <Setter Property="Opacity" Value="0.0"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Opacity" Value="1.0"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+
+  </Style>
+
+
+</Styles>

@@ -1,0 +1,89 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="FitsRatingTool.GuiApp.UI.JobConfigurator.Views.JobGroupingConfiguratorView">
+
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+    <CheckBox Grid.Row="0" Content="Object" IsChecked="{Binding IsGroupedByObject}"/>
+    <CheckBox Grid.Row="1" Content="Filter" IsChecked="{Binding IsGroupedByFilter}"/>
+    <CheckBox Grid.Row="2" Content="Exposure Time" IsChecked="{Binding IsGroupedByExposureTime}"/>
+    <CheckBox Grid.Row="3" Content="Gain &amp; Offset" IsChecked="{Binding IsGroupedByGainAndOffset}"/>
+    <Panel Grid.Row="4">
+      <CheckBox Content="Parent Directory"
+                IsChecked="{Binding IsGroupedByParentDir}"
+                IsVisible="{Binding IsSingleGroupingParentDir}"/>
+      <CheckBox Content="{Binding GroupingParentDirs, StringFormat={}{0} Parent Directories, Mode=OneWay}"
+                IsChecked="{Binding IsGroupedByParentDir}"
+                IsVisible="{Binding IsSingleGroupingParentDir, Converter={x:Static BoolConverters.Not}}"/>
+      <StackPanel HorizontalAlignment="Right"
+                  Orientation="Horizontal"
+                  Spacing="4"
+                  IsVisible="{Binding IsGroupedByParentDir}">
+        <Button Content="-"
+                Width="15" Height="15"
+                CornerRadius="1" Padding="1.5 -4 0 0"
+                VerticalAlignment="Center" HorizontalAlignment="Right"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                Command="{Binding DecreaseGroupingParentDirs}"/>
+        <Button Content="+"
+                Width="15" Height="15"
+                CornerRadius="1" Padding="0 -4 0 0"
+                VerticalAlignment="Center" HorizontalAlignment="Right"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                Command="{Binding IncreaseGroupingParentDirs}"/>
+      </StackPanel>
+    </Panel>
+    <Panel Grid.Row="5">
+      <CheckBox Content="FIT Keywords" IsChecked="{Binding IsGroupedByFitsKeyword}"/>
+      <Button IsVisible="{Binding IsGroupedByFitsKeyword}"
+              Content="+"
+              Width="15" Height="15"
+              CornerRadius="1" Padding="0 -4 0 0"
+              VerticalAlignment="Center" HorizontalAlignment="Right"
+              VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+              Command="{Binding AddNewGroupingFitsKeyword}"/>
+    </Panel>
+    <ScrollViewer Grid.Row="6"
+                  IsVisible="{Binding IsGroupedByFitsKeyword}"
+                  VerticalScrollBarVisibility="Hidden">
+      <ItemsControl Items="{Binding GroupingFitsKeywords}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="*,4,Auto" RowDefinitions="*" Margin="0 1">
+              <TextBox Grid.Column="0" Text="{Binding Keyword}"/>
+              <Button Grid.Column="2"
+                      Content="-"
+                      Width="15" Height="15"
+                      CornerRadius="1" Padding="1.5 -4 0 0"
+                      VerticalAlignment="Center" HorizontalAlignment="Right"
+                      VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                      Command="{Binding Remove}"/>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+
+</UserControl>

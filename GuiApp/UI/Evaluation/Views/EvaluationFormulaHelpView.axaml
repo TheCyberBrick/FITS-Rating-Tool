@@ -1,0 +1,49 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="FitsRatingTool.GuiApp.UI.Evaluation.Views.EvaluationFormulaHelpView">
+
+  <Border Width="22" Height="22"
+          ToolTip.ShowDelay="100">
+    <ToolTip.Tip>
+      <StackPanel Spacing="8">
+        <TextBlock Text="Built-in variables: Stars, Median, Noise, NoiseRatio, Eccentricity, SNR, SNRWeight, FWHM, HFR, HFD, Residual" TextWrapping="Wrap"/>
+        <TextBlock Text="All variables - including custom ones defined in the formula - have Min, Max, Median and Sigma versions, e.g. FWHMSigma or HFRSubMinMedian, which are calculated over all subs in each group." TextWrapping="Wrap"/>
+        <TextBlock Text="All variables except Stars, Noise and NoiseRatio have MeanDev versions, e.g. MedianMeanDev, which are calculated individually for each sub." TextWrapping="Wrap"/>
+        <TextBlock Text="All variables except Stars, Median, Noise and NoiseRatio have SubMin, SubMax, SubMean, SubMedian and SubMeanDev (=MeanDev) versions, e.g. FWHMSubMin, which are calculated individually for each sub." TextWrapping="Wrap"/>
+        <Grid ColumnDefinitions="Auto,*">
+          <Viewbox Grid.Column="0"
+                   Width="16" Height="16"
+                   Margin="4 4 10 4">
+            <Image Source="/Assets/Icons/warning.png"/>
+          </Viewbox>
+          <TextBlock Grid.Column="1" Text="Note: Min, Max, Median and Sigma variables depend on the grouping!" VerticalAlignment="Center" TextWrapping="Wrap"/>
+        </Grid>
+      </StackPanel>
+    </ToolTip.Tip>
+
+    <Image Source="/Assets/Icons/question.png"
+           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Border>
+
+</UserControl>

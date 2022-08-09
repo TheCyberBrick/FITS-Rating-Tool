@@ -1,0 +1,222 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;assembly=FitsRatingTool"
+        mc:Ignorable="d"
+        SizeToContent="WidthAndHeight"
+        MinWidth="180" MinHeight="100"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.MessageBox.Windows.MessageBoxWindow"
+        Title="{Binding Title}"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Classes="nomaximize nominimize"
+        Classes.noclose="{Binding !IsCloseable}">
+
+  <Design.DataContext>
+    <!--
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.Ok}" Title="Title" Message="Message" Header="Header" Icon="{x:Static vm:MessageBoxIcon.Info}"/>
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.OkCancel}" Title="Title" Message="Message" Icon="{x:Static vm:MessageBoxIcon.Info}"/>
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.YesNo}" Title="Title" Message="Message" IsCloseable="False" Icon="{x:Static vm:MessageBoxIcon.Question}"/>
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.YesNoCancel}" Title="Title" Message="Message" Icon="{x:Static vm:MessageBoxIcon.Question}"/>
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.AbortRetryIgnore}" Title="Title" Message="Message" IsCloseable="False" Icon="{x:Static vm:MessageBoxIcon.Error}"/>
+    -->
+    <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.Ok}" Title="Title" Message="Message" Header="Header" Icon="{x:Static vm:MessageBoxIcon.Info}"/>
+  </Design.DataContext>
+
+  <Grid RowDefinitions="Auto,Auto,Auto">
+
+    <Border Grid.Row="0"
+            Classes="themed inner"
+            Margin="-6 -6 -6 0"
+            Padding="6 6 6 4"
+            BorderThickness="0">
+      <Grid RowDefinitions="Auto"
+            ColumnDefinitions="Auto,Auto"
+            Margin="8 16">
+
+        <Panel Grid.Column="0">
+
+          <Image Source="/Assets/Icons/info.png"
+                 IsVisible="{Binding IsInfo}"
+                 VerticalAlignment="Center"
+                 Width="40" Height="40"
+                 Margin="0 0 12 0"/>
+
+          <Image Source="/Assets/Icons/question.png"
+                 IsVisible="{Binding IsQuestion}"
+                 VerticalAlignment="Center"
+                 Width="40" Height="40"
+                 Margin="0 0 12 0"/>
+
+          <Image Source="/Assets/Icons/warning.png"
+                 IsVisible="{Binding IsWarning}"
+                 VerticalAlignment="Center"
+                 Width="40" Height="40"
+                 Margin="0 0 12 0"/>
+
+          <Image Source="/Assets/Icons/error.png"
+                 IsVisible="{Binding IsError}"
+                 VerticalAlignment="Center"
+                 Width="40" Height="40"
+                 Margin="0 0 12 0"/>
+
+        </Panel>
+
+        <StackPanel Grid.Column="1" Grid.Row="0"
+                    Spacing="16"
+                    VerticalAlignment="Center">
+
+          <TextBox IsVisible="{Binding Header, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Text="{Binding Header}"
+                   TextWrapping="Wrap"
+                   MinHeight="0"
+                   MaxWidth="350"
+                   FontWeight="UltraBlack"
+                   FontSize="11"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   IsReadOnly="True"/>
+
+          <TextBox Text="{Binding Message}"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   MinHeight="0"
+                   MaxWidth="350"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   IsReadOnly="True"
+                   Margin="0 2 0 0"
+                   Padding="4 0 0 4"/>
+
+        </StackPanel>
+
+      </Grid>
+    </Border>
+
+    <Separator Grid.Row="1"/>
+
+    <Panel Grid.Row="2"
+           Margin="3 9 3 5">
+
+      <Grid IsVisible="{Binding IsOkStyle}"
+            ColumnDefinitions="*">
+        <Button Content="OK"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Ok}"/>
+      </Grid>
+
+      <Grid IsVisible="{Binding IsOkCancelStyle}"
+            ColumnDefinitions="Auto,10,Auto">
+        <Button Grid.Column="0"
+                Content="OK"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Ok}"/>
+        <Button Grid.Column="2"
+                Content="Cancel"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Cancel}"/>
+      </Grid>
+
+      <Grid IsVisible="{Binding IsYesNoStyle}"
+            ColumnDefinitions="Auto,10,Auto">
+        <Button Grid.Column="0"
+                Content="Yes"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Yes}"/>
+        <Button Grid.Column="2"
+                Content="No"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.No}"/>
+      </Grid>
+
+      <Grid IsVisible="{Binding IsYesNoCancelStyle}"
+            ColumnDefinitions="Auto,10,Auto,10,Auto">
+        <Button Grid.Column="0"
+                Content="Yes"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Yes}"/>
+        <Button Grid.Column="2"
+                Content="No"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.No}"/>
+        <Button Grid.Column="4"
+                Content="Cancel"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Cancel}"/>
+      </Grid>
+
+      <Grid IsVisible="{Binding IsAbortRetryIgnoreStyle}"
+            ColumnDefinitions="Auto,10,Auto,10,Auto">
+        <Button Grid.Column="0"
+                Content="Abort"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Abort}"/>
+        <Button Grid.Column="2"
+                Content="Retry"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Retry}"/>
+        <Button Grid.Column="4"
+                Content="Ignore"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Center"
+                Width="100"
+                Command="{Binding Close}"
+                CommandParameter="{x:Static vm:MessageBoxResult.Ignore}"/>
+      </Grid>
+
+    </Panel>
+  </Grid>
+
+</Window>

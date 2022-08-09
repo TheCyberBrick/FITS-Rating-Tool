@@ -1,0 +1,251 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
+    <TrimMode>copyused</TrimMode>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <AssemblyName>FitsRatingTool</AssemblyName>
+    <RootNamespace>FitsRatingTool.GuiApp</RootNamespace>
+    <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Remove="Assets\Styles\Border.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\Button.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\ButtonSpinner.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\CheckBox.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\ComboBox.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\ContextMenu.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\DataGrid.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\FlyoutPresenter.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\GridSplitter.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\HeaderedContentControl.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\MenuFlyoutPresenter.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\MenuItem.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\NumericUpDown.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\PrecisionSlider.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\RepeatButton.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\ScrollableTabControl.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\Separator.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\Slider.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\StatisticsControl.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\TextBox.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\ToolTip.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\Window.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\WindowControlButton.axaml" />
+    <None Remove=".gitignore" />
+    <None Remove="Assets\Icons\close.png" />
+    <None Remove="Assets\Icons\error.png" />
+    <None Remove="Assets\Icons\export.png" />
+    <None Remove="Assets\Icons\external.png" />
+    <None Remove="Assets\Icons\external_multiple.png" />
+    <None Remove="Assets\Icons\eye.png" />
+    <None Remove="Assets\Icons\flip_page.png" />
+    <None Remove="Assets\Icons\flip_page_back.png" />
+    <None Remove="Assets\Icons\formula.png" />
+    <None Remove="Assets\Icons\funnel.png" />
+    <None Remove="Assets\Icons\gears.png" />
+    <None Remove="Assets\Icons\hourglass.png" />
+    <None Remove="Assets\Icons\images.png" />
+    <None Remove="Assets\Icons\import.png" />
+    <None Remove="Assets\Icons\info.png" />
+    <None Remove="Assets\Icons\link.png" />
+    <None Remove="Assets\Icons\list.png" />
+    <None Remove="Assets\Icons\monitor.png" />
+    <None Remove="Assets\Icons\new_file.png" />
+    <None Remove="Assets\Icons\open.png" />
+    <None Remove="Assets\Icons\question.png" />
+    <None Remove="Assets\Icons\save.png" />
+    <None Remove="Assets\Icons\statistics.png" />
+    <None Remove="Assets\Icons\undo.png" />
+    <None Remove="Assets\Icons\warning.png" />
+    <None Remove="Assets\Icons\wrench.png" />
+    <None Remove="Assets\logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--This helps with theme dll-s trimming.
+	If you will publish your application in self-contained mode with p:PublishTrimmed=true and it will use Fluent theme Default theme will be trimmed from the output and vice versa.
+	https://github.com/AvaloniaUI/Avalonia/issues/5593 -->
+    <TrimmableAssembly Include="Avalonia.Themes.Fluent" />
+    <TrimmableAssembly Include="Avalonia.Themes.Default" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.11" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.11" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.11" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
+    <PackageReference Include="DryIoc.dll" Version="5.0.2" />
+    <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Preview1" />
+    <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Styles\HeaderedContentControl.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Styles\Border.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Styles\GridSplitter.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Styles\Window.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Update="Assets\Styles\Button.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="UI\App\Windows\AppWindow.axaml.cs">
+      <DependentUpon>AppWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Evaluation\Views\EvaluationExporterConfiguratorView.axaml.cs">
+      <DependentUpon>EvaluationExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Evaluation\Windows\EvaluationExporterWindow.axaml.cs">
+      <DependentUpon>EvaluationExporterWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Evaluation\Windows\EvaluationExportProgressWindow.axaml.cs">
+      <DependentUpon>EvaluationExportProgressWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Exporters\Views\VoyagerExporterConfiguratorView.axaml.cs">
+      <DependentUpon>VoyagerExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Exporters\Views\FitsHeaderExporterConfiguratorView.axaml.cs">
+      <DependentUpon>FitsHeaderExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Exporters\Views\CSVExporterConfiguratorView.axaml.cs">
+      <DependentUpon>CSVExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Exporters\Views\BaseExporterConfiguratorView.axaml.cs">
+      <DependentUpon>BaseExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FileTable\Windows\FileTableWindow.axaml.cs">
+      <DependentUpon>FileTableWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageCornerViewerView.axaml.cs">
+      <DependentUpon>FitsImageCornerViewerView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageSectionViewerView.axaml.cs">
+      <DependentUpon>FitsImageSectionViewerView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageMultiViewerView.axaml.cs">
+      <DependentUpon>FitsImageMultiViewerView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerControlsView.axaml.cs">
+      <DependentUpon>FitsImageViewerControlsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerSettingsView.axaml.cs">
+      <DependentUpon>FitsImageViewerSettingsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerStretchView.axaml.cs">
+      <DependentUpon>FitsImageViewerStretchView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerStatisticsView.axaml.cs">
+      <DependentUpon>FitsImageViewerStatisticsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerHeaderView.axaml.cs">
+      <DependentUpon>FitsImageViewerHeaderView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageHistogramView.axaml.cs">
+      <DependentUpon>FitsImageHistogramView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Windows\FitsImageCornerViewerWindow.axaml.cs">
+      <DependentUpon>FitsImageCornerViewerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Windows\FitsImagePeekViewerWindow.axaml.cs">
+      <DependentUpon>FitsImagePeekViewerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Windows\FitsImageViewerWindow.axaml.cs">
+      <DependentUpon>FitsImageViewerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Info\Windows\LicensesWindow.axaml.cs">
+      <DependentUpon>LicensesWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Info\Windows\AboutWindow.axaml.cs">
+      <DependentUpon>AboutWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\JobConfigurator\Views\JobGroupingConfigurationHelpView.axaml.cs">
+      <DependentUpon>JobGroupingConfigurationHelpView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\JobConfigurator\Views\JobGroupingConfiguratorView.axaml.cs">
+      <DependentUpon>JobGroupingConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Windows\FitsImageLoadProgressWindow.axaml.cs">
+      <DependentUpon>FitsImageLoadProgressWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\JobConfigurator\Windows\JobConfiguratorWindow.axaml.cs">
+      <DependentUpon>JobConfiguratorWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Evaluation\Windows\EvaluationFormulaWindow.axaml.cs">
+      <DependentUpon>EvaluationFormulaWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Windows\FitsImageAllStatisticsProgressWindow.axaml.cs">
+      <DependentUpon>FitsImageAllStatisticsProgressWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Evaluation\Windows\EvaluationTableWindow.axaml.cs">
+      <DependentUpon>EvaluationTableWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\FitsImage\Views\FitsImageViewerView.axaml.cs">
+      <DependentUpon>FitsImageViewerView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Controls\ProgressRing.axaml.cs">
+      <DependentUpon>ProgressRing.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\JobRunner\Windows\JobRunnerProgressWindow.axaml.cs">
+      <DependentUpon>JobRunnerProgressWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\JobRunner\Windows\JobRunnerWindow.axaml.cs">
+      <DependentUpon>JobRunnerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\MessageBox\Windows\MessageBoxWindow.axaml.cs">
+      <DependentUpon>MessageBoxWindow.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\App\Views\" />
+    <Folder Include="UI\FileTable\Views\" />
+    <Folder Include="UI\Info\Views\" />
+    <Folder Include="UI\Info\ViewModels\" />
+    <Folder Include="UI\JobRunner\Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Exporters\Exporters.csproj" />
+    <ProjectReference Include="..\VoyagerAPI\VoyagerAPI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+</Project>

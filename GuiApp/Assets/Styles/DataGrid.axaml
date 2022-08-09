@@ -1,0 +1,138 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20"
+            Width="200"
+            Height="200">
+      <DataGrid VerticalScrollBarVisibility="Visible"
+                HorizontalScrollBarVisibility="Visible"
+                AutoGenerateColumns="False"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                CanUserResizeColumns="True"
+                CanUserReorderColumns="True"
+                GridLinesVisibility="Vertical"
+                SelectedItem="{Binding SelectedRecord}"
+                SelectionMode="Extended">
+        <DataGrid.Items>ABC</DataGrid.Items>
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Header 1" Binding="{Binding .}"/>
+          <DataGridTextColumn Header="Header 2" Binding="{Binding .}"/>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="DataGrid">
+    <Setter Property="VerticalGridLinesBrush">
+      <LinearGradientBrush StartPoint="100%,0%" EndPoint="0%,0%">
+        <GradientStop Offset="0.0" Color="#AA5F5F5F"/>
+        <GradientStop Offset="0.5" Color="#AA5F5F5F"/>
+        <GradientStop Offset="0.5" Color="#AA4A4A4A"/>
+        <GradientStop Offset="1.0" Color="#AA4A4A4A"/>
+      </LinearGradientBrush>
+    </Setter>
+
+    <Setter Property="GridLinesVisibility" Value="Vertical"/>
+  </Style>
+
+  <Style Selector="DataGridColumn">
+    <Style.Resources>
+      <SolidColorBrush x:Key="DataGridColumnSelectedUnfocusedBackgroundColor" Color="Red"/>
+      <SolidColorBrush x:Key="DataGridColumnSelectedHoveredUnfocusedBackgroundColor" Color="Red"/>
+      <SolidColorBrush x:Key="DataGridColumnSelectedBackgroundColor" Color="Red"/>
+      <SolidColorBrush x:Key="DataGridColumnSelectedHoveredBackgroundOpacity" Color="Red"/>
+    </Style.Resources>
+  </Style>
+
+  <Style Selector="DataGridRow">
+    <Style.Resources>
+      <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundColor" Color="#22FFFFFF"/>
+      <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundColor" Color="#22FFFFFF"/>
+      <SolidColorBrush x:Key="DataGridRowSelectedBackgroundColor" Color="#22FFFFFF"/>
+      <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundOpacity" Color="#22FFFFFF"/>
+    </Style.Resources>
+  </Style>
+
+  <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SystemControlTransparentBrush}" />
+  </Style>
+  <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource SystemListLowColor}" />
+  </Style>
+  <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundColor}" />
+    <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundOpacity}" />
+  </Style>
+  <Style Selector="DataGridRow:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundColor}" />
+    <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundOpacity}" />
+  </Style>
+  <Style Selector="DataGridRow:selected:focus /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedBackgroundColor}" />
+    <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedBackgroundOpacity}" />
+  </Style>
+  <Style Selector="DataGridRow:selected:pointerover:focus /template/ Rectangle#BackgroundRectangle">
+    <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundColor}" />
+    <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundOpacity}" />
+  </Style>
+
+  <Style Selector="DataGrid /template/ Rectangle#PART_ColumnHeadersAndRowsSeparator">
+    <Setter Property="Margin" Value="0 -1"/>
+    <Setter Property="MinHeight" Value="2"/>
+    <Setter Property="Fill">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0.0" Color="#FF4A4A4A"/>
+        <GradientStop Offset="0.5" Color="#FF4A4A4A"/>
+        <GradientStop Offset="0.5" Color="#FF5F5F5F"/>
+        <GradientStop Offset="1.0" Color="#FF5F5F5F"/>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="DataGridCell /template/ Rectangle#PART_RightGridLine">
+    <Setter Property="MinWidth" Value="2"/>
+  </Style>
+
+  <Style Selector="DataGridColumnHeader">
+    <Setter Property="AreSeparatorsVisible" Value="True"/>
+    <Setter Property="SeparatorBrush">
+      <LinearGradientBrush StartPoint="100%,0%" EndPoint="0%,0%">
+        <GradientStop Offset="0.0" Color="#FF5F5F5F"/>
+        <GradientStop Offset="0.5" Color="#FF5F5F5F"/>
+        <GradientStop Offset="0.5" Color="#FF4A4A4A"/>
+        <GradientStop Offset="1.0" Color="#FF4A4A4A"/>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+  <Style Selector="DataGridColumnHeader /template/ Rectangle#VerticalSeparator">
+    <Setter Property="MinWidth" Value="2"/>
+    <Setter Property="OpacityMask">
+      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0.0" Color="#00000000"/>
+        <GradientStop Offset="0.5" Color="#FFFFFFFF"/>
+        <GradientStop Offset="1.0" Color="#00000000"/>
+      </LinearGradientBrush>
+    </Setter>
+  </Style>
+
+</Styles>

@@ -1,0 +1,241 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:vm="clr-namespace:FitsRatingTool.GuiApp.UI.App.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        Width="1200" Height="700"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.App.Windows.AppWindow"
+        Icon="/Assets/logo.ico"
+        Title="FITS Rating Tool"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        DragDrop.AllowDrop="True">
+
+  <Design.DataContext>
+    <vm:AppViewModel/>
+  </Design.DataContext>
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/logo.ico"/>
+        </Template>
+      </Setter>
+    </Style>
+
+    <Style Selector="Window /template/ ContentPresenter#PART_StatusBarContentPresenter">
+      <Setter Property="Content">
+        <Template>
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right"
+                       Text="v0.0.1"
+                       FontSize="12"
+                       Padding="3" Margin="2"
+                       HorizontalAlignment="Right"/>
+            <TextBlock DockPanel.Dock="Left"
+                       Text="Voyager Connected"
+                       FontSize="12"
+                       Padding="3" Margin="2"
+                       HorizontalAlignment="Left"
+                       IsVisible="{Binding IsVoyagerIntegrationConnected}"/>
+            <TextBlock DockPanel.Dock="Left"
+                       Text="Voyager Disconnected"
+                       FontSize="12"
+                       Padding="3" Margin="2"
+                       HorizontalAlignment="Left"
+                       IsVisible="{Binding !IsVoyagerIntegrationConnected}"/>
+          </DockPanel>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+    <Grid ColumnDefinitions="250,9,*" RowDefinitions="Auto,*" ClipToBounds="True">
+      <Menu Grid.Column="0" Grid.Row="0"
+            Height="24"
+            Margin="-2 -4 0 5"
+            ClipToBounds="False">
+        <MenuItem Header="File">
+          <MenuItem Header="Open..." Command="{Binding LoadImagesWithOpenFileDialog}" HotKey="Ctrl+O" InputGesture="Ctrl+O">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/open.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="-"/>
+          <MenuItem Header="File Table" Command="{Binding ShowFileTable}" HotKey="Ctrl+F" InputGesture="Ctrl+F">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/list.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="Hide File Table" Command="{Binding HideFileTable}" HotKey="Ctrl+Shift+F" InputGesture="Ctrl+Shift+F"/>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Remove All" Command="{Binding UnloadAllImages}">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/close.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Exit" Command="{Binding Exit}" HotKey="Alt+F4" InputGesture="Alt+F4"/>
+        </MenuItem>
+        <MenuItem Header="View">
+          <MenuItem Header="Switch Image" Command="{Binding SwitchImage}" HotKey="Space" InputGesture="Space">
+            <MenuItem.Icon>
+              <Panel>
+                <Image Source="/Assets/Icons/flip_page.png"
+                       Width="22" Height="22"
+                       IsVisible="{Binding !IsImageSwitched}"/>
+                <Image Source="/Assets/Icons/flip_page_back.png"
+                       Width="22" Height="22"
+                       IsVisible="{Binding IsImageSwitched}"/>
+              </Panel>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="Show Image File" Command="{Binding ShowImageFile}" CommandParameter="{Binding MultiViewer.SelectedInstance.Viewer.File, FallbackValue={x:Null}, TargetNullValue={x:Null}}" HotKey="F3" InputGesture="F3">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/external.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
+        <MenuItem Header="Analysis">
+          <MenuItem Header="Analyze Image" Command="{Binding MultiViewer.SelectedInstance.Viewer.CalculateStatisticsWithProgressDialog}" HotKey="Ctrl+A" InputGesture="Ctrl+A">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/gears.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="Analyze All Images" Command="{Binding CalculateAllStatisticsWithProgressDialog}" HotKey="Ctrl+Shift+A" InputGesture="Ctrl+Shift+A">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/gears.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
+        <MenuItem Header="Evaluation">
+          <MenuItem Header="Evaluation Formula" Command="{Binding ShowEvaluationFormula}" InputGesture="Ctrl+E">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/formula.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="Evaluation Table" Command="{Binding ShowEvaluationTable}" InputGesture="Ctrl+E">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/list.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="Show Evaluation Formula &amp; Table" IsVisible="False" Command="{Binding ShowEvaluationTableAndFormula}" HotKey="Ctrl+E"/>
+          <MenuItem Header="Hide Evaluation Formula &amp; Table" Command="{Binding HideEvaluationTableAndFormula}" HotKey="Ctrl+Shift+E" InputGesture="Ctrl+Shift+E"/>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Export..." Command="{Binding ShowEvaluationExporter}" HotKey="Ctrl+S" InputGesture="Ctrl+S">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/export.png" Width="20" Height="20"/>
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
+        <MenuItem Header="Job">
+          <MenuItem Header="New" Command="{Binding ShowJobConfigurator}" HotKey="Ctrl+J" InputGesture="Ctrl+J">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/new_file.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Import..." Command="{Binding ShowJobConfiguratorWithOpenFileDialog}" HotKey="Ctrl+Shift+J" InputGesture="Ctrl+Shift+J">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/import.png" Width="20" Height="20"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Run..." Command="{Binding ShowJobRunner}" HotKey="Ctrl+R" InputGesture="Ctrl+R">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/gears.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
+        <MenuItem Header="Help">
+          <MenuItem Header="About FITS Rating Tool" Command="{Binding ShowAboutDialog}">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/info.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+        </MenuItem>
+      </Menu>
+
+      <HeaderedContentControl Grid.Column="0" Grid.Row="1" Padding="4">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18" Margin="0 -2">
+                <Image Source="/Assets/Icons/images.png"/>
+              </Viewbox>
+              <TextBlock Text="Images" VerticalAlignment="Center"/>
+            </StackPanel>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+
+        <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
+          <Border Grid.Column="0" Grid.Row="1"
+                  Classes="themed inner"
+                  Margin="-2 -2 -2 -2">
+            <ListBox Items="{Binding Items}"
+                     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                     Background="Transparent">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <ContentControl Name="ImagePresenter"
+                                  Content="{Binding Image}"
+                                  MaxWidth="256">
+                    <ContentControl.ContextMenu>
+                      <controls:FixedContextMenu >
+                        <MenuItem Header="Remove"
+                                  Command="{Binding Remove}">
+                          <MenuItem.Icon>
+                            <Image Source="/Assets/Icons/close.png" Width="16" Height="16"/>
+                          </MenuItem.Icon>
+                        </MenuItem>
+                      </controls:FixedContextMenu>
+                    </ContentControl.ContextMenu>
+                  </ContentControl>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+            </ListBox>
+          </Border>
+        </Grid>
+      </HeaderedContentControl>
+
+      <GridSplitter ResizeDirection="Columns" Background="Transparent" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"/>
+
+      <!--
+      <views:FitsImageViewerControlsView Grid.Column="2" DataContext="{Binding Viewer}"/>
+      -->
+      <views:FitsImageMultiViewerView Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" DataContext="{Binding MultiViewer}"/>
+    </Grid>
+  </DockPanel>
+
+</Window>

@@ -1,0 +1,148 @@
+﻿<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.Converters;assembly=FitsRatingTool">
+  <Design.PreviewWith>
+    <Border Padding="100" Background="#FF555555">
+      <StackPanel Spacing="0">
+        <CheckBox Content="ABC"/>
+
+        <CheckBox Content="ABC" IsChecked="True"/>
+
+        <CheckBox Content="ABC" FontSize="20" IsChecked="True"/>
+
+        <CheckBox Content="ABC" FontSize="20" IsChecked="True" IsEnabled="False"/>
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+
+  <Style Selector="CheckBox">
+    <Style.Resources>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked" Color="Transparent"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" Color="#30EBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" Color="#60EBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled" Color="Transparent"/>
+
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUnchecked" Color="#FFAAAAAA"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" Color="#FFEBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" Color="#FFEBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedDisabled" Color="#FFAAAAAA"/>
+
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="Transparent"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#30EBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#60EBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedDisabled" Color="Transparent"/>
+
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="#FFAAAAAA"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="#FFEBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="#FFEBEBEB"/>
+      <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedDisabled" Color="#FFAAAAAA"/>
+    </Style.Resources>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid x:Name="RootGrid" RowDefinitions="Auto" ColumnDefinitions="12,*">
+          <Border x:Name="PART_Border"
+                  Grid.ColumnSpan="2"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"/>
+
+          <Grid VerticalAlignment="Center" Height="18">
+            <Border x:Name="NormalRectangle"
+                BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Height="12"
+                Width="12"/>
+
+            <Viewbox UseLayoutRounding="False"
+                     Width="10"
+                     Height="10"
+                     Margin="2 0 0 2">
+              <Path Name="CheckGlyph" Stretch="Uniform" StrokeThickness="1" VerticalAlignment="Center" />
+            </Viewbox>
+          </Grid>
+
+          <ContentPresenter x:Name="ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            RecognizesAccessKey="True"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Grid.Column="1"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Setter Property="TextBlock.FontFamily" Value="Tahoma"/>
+    <Setter Property="TextBlock.Foreground" Value="#FFEBEBEB"/>
+    <Setter Property="TextBlock.FontSize" Value="10.5"/>
+
+    <Setter Property="MinHeight" Value="19"/>
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border#NormalRectangle">
+    <Setter Property="Padding" Value="0"/>
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border#NormalRectangle">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.075"/>
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border#PART_Border">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.075"/>
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- Fix for dark fluent theme using CheckBoxCheckBackgroundFillChecked for border -->
+  <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+    <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeChecked}" />
+    <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillChecked}" />
+  </Style>
+
+  <Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+    <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeCheckedPointerOver}" />
+    <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillCheckedPointerOver}" />
+  </Style>
+
+  <Style Selector="CheckBox:checked:pressed /template/ Border#NormalRectangle">
+    <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeCheckedPressed}" />
+    <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillCheckedPressed}" />
+  </Style>
+
+  <Style Selector="CheckBox /template/ Path#CheckGlyph">
+    <Setter Property="Stroke" Value="#FFEBEBEB"/>
+  </Style>
+
+  <Style Selector="CheckBox:disabled /template/ Path#CheckGlyph">
+    <Setter Property="Stroke" Value="#FFBBBBBB"/>
+  </Style>
+
+</Styles>

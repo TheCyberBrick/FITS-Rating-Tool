@@ -1,0 +1,129 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:collections="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+        mc:Ignorable="d" d:DesignWidth="400"
+        Width="375" MinWidth="375" MaxWidth="375"
+        SizeToContent="Height"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.Info.Windows.AboutWindow"
+        Icon="/Assets/Icons/info.png"
+        Title="About"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        Classes="nomaximize nominimize"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/info.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="8">
+    <Grid Grid.Row="0"
+          ColumnDefinitions="Auto,*"
+          RowDefinitions="Auto,Auto">
+      <Image Grid.RowSpan="2" Grid.Column="0"
+             Source="/Assets/logo.ico"
+             Width="80" Height="80"
+             VerticalAlignment="Center"
+             HorizontalAlignment="Right"
+             Margin="5 0 20 0"/>
+      <StackPanel Grid.Row="0" Grid.Column="1"
+                  Margin="0 0 0 20">
+        <TextBlock Text="FITS Rating Tool" FontSize="20" FontWeight="Bold"/>
+      </StackPanel>
+      <StackPanel Grid.Row="1" Grid.Column="1">
+        <TextBox Classes="readonly" Foreground="#FFECECEC" MinHeight="0" Padding="2 1 2 1" xml:space="preserve">
+Version 0.0.1
+Copyright © 2022 TheCyberBrick.
+Licensed under the GNU General
+Public License 3.
+      </TextBox>
+      </StackPanel>
+    </Grid>
+    <StackPanel Grid.Row="1" Margin="0 15 0 5">
+      <TextBlock Text="Third-party acknowledgements" FontWeight="Bold"/>
+    </StackPanel>
+    <StackPanel Grid.Row="2">
+      <ItemsPresenter>
+        <ItemsPresenter.Items>
+          <collections:List x:TypeArguments="sys:String">
+            <sys:String>This product is based on software from the PixInsight project, developed by Pleiades Astrophoto and its contributors (http://pixinsight.com/).</sys:String>
+            <sys:String>CFITSIO (https://heasarc.gsfc.nasa.gov/fitsio/).</sys:String>
+            <sys:String>SEP (https://github.com/kbarbary/sep).</sys:String>
+            <sys:String>CSharpFITS (http://vo.iucaa.ernet.in/~voi/CSharpFITS.html).</sys:String>
+            <sys:String>This product includes software developed by the University of Chicago, as Operator of Argonne National Laboratory. (https://github.com/devernay/cminpack)</sys:String>
+            <sys:String>PThreads (http://sourceware.org/pthreads-win32/).</sys:String>
+            <sys:String>MathEval (https://matheval.org/).</sys:String>
+            <sys:String>Avalonia (https://avaloniaui.net/).</sys:String>
+            <sys:String>PanAndZoom (https://github.com/wieslawsoltes/PanAndZoom).</sys:String>
+            <sys:String>DryIoc (https://github.com/dadhi/DryIoc).</sys:String>
+            <sys:String>Json.NET (https://www.newtonsoft.com/json).</sys:String>
+            <sys:String>OxyPlot (https://github.com/oxyplot/oxyplot-avalonia).</sys:String>
+            <sys:String>Microsoft.VisualStudio.Threading (https://github.com/microsoft/vs-threading).</sys:String>
+            <sys:String>StreamJsonRpc (https://github.com/microsoft/vs-streamjsonrpc).</sys:String>
+            <sys:String>Icons by Icons8 (https://icons8.com).</sys:String>
+          </collections:List>
+        </ItemsPresenter.Items>
+        <ItemsPresenter.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Spacing="2"/>
+          </ItemsPanelTemplate>
+        </ItemsPresenter.ItemsPanel>
+        <ItemsPresenter.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Width="3" Height="3"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Center"
+                       Margin="4 5 4 0"
+                       Fill="#FFEFEFEF"/>
+              <TextBox Classes="readonly"
+                       Foreground="#FFECECEC"
+                       Text="{Binding .}"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       Width="350" MinHeight="0"
+                       Padding="2 1 2 1"/>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsPresenter.ItemTemplate>
+      </ItemsPresenter>
+    </StackPanel>
+    <StackPanel Grid.Row="3" Margin="0 5 0 0">
+      <Button Command="{Binding $parent[Window].ShowLicensesDialog}" Cursor="Hand" Padding="0" Margin="0" BorderThickness="0" Background="Transparent">
+        <TextBlock Text="Licenses" TextDecorations="Underline" Foreground="#2196F3"/>
+      </Button>
+    </StackPanel>
+  </Grid>
+
+</Window>

@@ -1,0 +1,65 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        Width="600" Height="400"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Windows.FitsImageViewerWindow"
+        Icon="/Assets/Icons/eye.png"
+        Title="Image Viewer"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True"
+        Classes="pinnable"
+        Padding="0">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/eye.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Border Background="#FF383838">
+    <Panel>
+      <views:FitsImageViewerView DataContext="{Binding .}"/>
+
+      <TextBlock Text="(Too many stars - only a subset is shown)" VerticalAlignment="Top" Margin="8 8 0 0">
+        <TextBlock.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="IsShownPhotometryIncomplete"/>
+            <Binding Path="ShowPhotometry"/>
+          </MultiBinding>
+        </TextBlock.IsVisible>
+      </TextBlock>
+    </Panel>
+  </Border>
+
+</Window>

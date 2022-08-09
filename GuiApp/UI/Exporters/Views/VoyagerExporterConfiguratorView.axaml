@@ -1,0 +1,79 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.VoyagerExporterConfiguratorView">
+
+  <Grid RowDefinitions="Auto">
+    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,4,Auto,4,Auto" ColumnDefinitions="Auto,10,*">
+
+      <TextBlock Grid.Row="0" Grid.Column="0"
+                 Text="Hostname"
+                 VerticalAlignment="Center"/>
+      <TextBox Grid.Row="0" Grid.Column="2"
+               Text="{Binding ApplicationServerHostname}"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="0"
+                 Text="Port"
+                 VerticalAlignment="Center"/>
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Value="{Binding ApplicationServerPort}"
+                     Minimum="0"
+                     Maximum="65535"
+                     ClipValueToMinMax="True"/>
+
+      <TextBlock Grid.Row="4" Grid.Column="0"
+                 Text="Credentials File"
+                 VerticalAlignment="Center"/>
+      <Grid Grid.Row="4" Grid.Column="2"
+            ColumnDefinitions="*,Auto" Grid.ColumnSpan="3">
+        <TextBox Grid.Column="0"
+                
+                 Text="{Binding CredentialsFile}"/>
+        <Button Grid.Column="1"
+                Height="20"
+                Width="22"
+                Content="..."
+                Padding="1 -2"
+                HorizontalContentAlignment="Center"
+                Margin="2 0 0 0"
+                Command="{Binding SelectCredentialsFileWithOpenFileDialog}"/>
+      </Grid>
+
+      <CheckBox Grid.Row="6" Grid.Column="0"
+                Content="Min. Rating Threshold"
+                IsChecked="{Binding IsMinRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="6" Grid.Column="2"
+                     Value="{Binding MinRatingThreshold}"
+                     IsEnabled="{Binding IsMinRatingThresholdEnabled}"/>
+
+      <CheckBox Grid.Row="8" Grid.Column="0"
+                Content="Max. Rating Threshold"
+                IsChecked="{Binding IsMaxRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="8" Grid.Column="2"
+                     Value="{Binding MaxRatingThreshold}"
+                     IsEnabled="{Binding IsMaxRatingThresholdEnabled}"/>
+
+    </Grid>
+  </Grid>
+
+</UserControl>
