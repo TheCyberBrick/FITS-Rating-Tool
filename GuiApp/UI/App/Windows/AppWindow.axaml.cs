@@ -40,6 +40,9 @@ using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
 using FitsRatingTool.GuiApp.UI.FileTable.Windows;
 using System.Reactive.Disposables;
 using FitsRatingTool.GuiApp.UI.Info.Windows;
+using Avalonia.Utilities;
+using System.IO;
+using System.Reactive.Concurrency;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
@@ -47,9 +50,9 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
     {
         private readonly IWindowManager windowManager;
 
-        public AppWindow() : this(null!) { }
+        public AppWindow() : this(null!, null!) { }
 
-        public AppWindow(IWindowManager windowManager)
+        public AppWindow(IWindowManager windowManager, IOpenFileEventManager openFileEventManager)
         {
             InitializeComponent();
 #if DEBUG
@@ -226,6 +229,11 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
 
             AddHandler(DragDrop.DropEvent, DropAsync);
             AddHandler(DragDrop.DragOverEvent, DragOver);
+
+            if (openFileEventManager != null)
+            {
+                WeakEventHandlerManager.Subscribe<IOpenFileEventManager, IOpenFileEventManager.OpenFileEventArgs, AppWindow>(openFileEventManager, nameof(openFileEventManager.OnOpenFile), OnOpenFile);
+            }
         }
 
         private void OnViewerLoaded(object? sender, IFitsImageMultiViewerViewModel.ViewerEventArgs e)
@@ -396,6 +404,14 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
             var files = await dialog.ShowAsync(this);
 
             ctx.SetOutput(files != null && files.Length == 1 ? files[0] : "");
+        }
+
+        private void OnOpenFile(object? sender, IOpenFileEventManager.OpenFileEventArgs e)
+        {
+            if (File.Exists(e.File))
+            {
+                RxApp.MainThreadScheduler.Schedule(Activate);
+            }
         }
     }
 }

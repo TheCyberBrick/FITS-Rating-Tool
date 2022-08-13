@@ -17,20 +17,114 @@
 */
 
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Pipes;
+using System.Threading;
 
 namespace FitsRatingTool.GuiApp
 {
     internal class Program
     {
+        private static string MUTEX_GUID = "3bfc03af-2ba0-422b-ab8d-affa158b9af3";
+        private static string PIPE_GUID = "f1e0964f-010f-4f6f-8bcf-75d7401c79a9";
+
+        private static EventHandler<string>? _onOpenFile;
+        public static event EventHandler<string> OnOpenFile
+        {
+            add => _onOpenFile += value;
+            remove => _onOpenFile -= value;
+        }
+
+        public static string? LaunchFilePath
+        {
+            get;
+            private set;
+        }
+
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args) => BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        public static void Main(string[] args)
+        {
+            var mutex = new Mutex(true, MUTEX_GUID, out bool isOwner);
+
+            if (isOwner)
+            {
+                // Wait for new pipe connections and raise OnOpenFile event
+                // when a file is received
+                var serverThread = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            using (var stream = new NamedPipeServerStream(PIPE_GUID, PipeDirection.InOut, 1))
+                            {
+                                stream.WaitForConnection();
+
+                                using (var reader = new StreamReader(stream))
+                                {
+                                    var file = reader.ReadLine();
+                                    if (file != null)
+                                    {
+                                        _onOpenFile?.Invoke(null, file);
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine("Failed receiving file path:");
+                            Debug.WriteLine(ex.Message);
+                            Debug.WriteLine(ex.StackTrace);
+
+                            Thread.Sleep(500);
+                        }
+                    }
+                });
+                serverThread.Name = "FileOpenThread";
+                serverThread.IsBackground = true;
+                serverThread.Start();
+            }
+
+            if (args.Length >= 1)
+            {
+                LaunchFilePath = args[0];
+
+                if (!isOwner)
+                {
+                    // Delegate to already running instance
+                    try
+                    {
+                        using (var stream = new NamedPipeClientStream(PIPE_GUID))
+                        {
+                            stream.Connect(1000);
+
+                            using (var writer = new StreamWriter(stream))
+                            {
+                                writer.WriteLine(LaunchFilePath);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("Failed sending file path:");
+                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine(ex.StackTrace);
+                    }
+
+                    // And exit
+                    return;
+                }
+            }
+
+            // Launch Avalonia App
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()

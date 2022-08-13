@@ -26,7 +26,7 @@ namespace FitsRatingTool.GuiApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new AppWindow(container.Resolve<IWindowManager>())
+                desktop.MainWindow = new AppWindow(container.Resolve<IWindowManager>(), container.Resolve<IOpenFileEventManager>())
                 {
                     DataContext = container.Resolve<IAppViewModel>()
                 };

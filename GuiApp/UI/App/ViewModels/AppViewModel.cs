@@ -179,7 +179,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IJobConfigManager jobConfigManager, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory,
             IEvaluationExporterViewModel.IFactory evaluationExporterFactory, IJobRunnerViewModel.IFactory jobRunnerFactory, IFileTableViewModel.IFactory fileTableFactory,
-            IFileSystemService fileSystemService)
+            IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
@@ -212,7 +212,10 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     }
                     return null;
                 });
-                if (image != null) AddImage(image, out var _);
+                if (image != null && !AddImage(image, out var _))
+                {
+                    image.Dispose();
+                }
             });
 
             UnloadAllImages = ReactiveCommand.Create(() =>
@@ -238,7 +241,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            LoadImagesWithProgress = ReactiveCommand.Create<IEnumerable<string>, IFitsImageLoadProgressViewModel>(files => imageLoadProgressFactory.Create(files, image => AddImage(image, out var _)));
+            LoadImagesWithProgress = ReactiveCommand.Create<IEnumerable<string>, IFitsImageLoadProgressViewModel>(files => imageLoadProgressFactory.Create(files, image =>
+            {
+                if (!AddImage(image, out var _))
+                {
+                    image.Dispose();
+                }
+            }));
 
             LoadImagesWithProgressDialog = ReactiveCommand.CreateFromTask<IEnumerable<string>>(async files =>
             {
@@ -385,7 +394,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
+            WeakEventHandlerManager.Subscribe<IOpenFileEventManager, IOpenFileEventManager.OpenFileEventArgs, AppViewModel>(openFileEventManager, nameof(openFileEventManager.OnOpenFile), OnOpenFile);
+
             RxApp.MainThreadScheduler.Schedule(Initialize);
+
+            if (openFileEventManager.LaunchFilePath != null)
+            {
+                OnOpenFile(this, new IOpenFileEventManager.OpenFileEventArgs(openFileEventManager.LaunchFilePath));
+            }
         }
 
         private async void Initialize()
@@ -550,6 +566,19 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private async Task AutoLoadNewImageAsync(string file, bool select)
         {
+            // Check if image is already loaded, and if so, select it
+            foreach (var item in Items)
+            {
+                if (file.Equals(item.Image.File))
+                {
+                    if (select)
+                    {
+                        SelectedItem = item;
+                    }
+                    return;
+                }
+            }
+
             var image = await Task.Run(async () =>
             {
                 try
@@ -594,6 +623,22 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                         SelectedItem = newItem;
                     }
                 }
+                else
+                {
+                    image.Dispose();
+                }
+            }
+        }
+
+        private void OnOpenFile(object? sender, IOpenFileEventManager.OpenFileEventArgs e)
+        {
+            if (File.Exists(e.File))
+            {
+                async void open()
+                {
+                    await AutoLoadNewImageAsync(e.File, true);
+                };
+                RxApp.MainThreadScheduler.Schedule(open);
             }
         }
 
