@@ -60,14 +60,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                        Text="Voyager Connected"
                        FontSize="12"
                        Padding="3" Margin="2"
-                       HorizontalAlignment="Left"
-                       IsVisible="{Binding IsVoyagerIntegrationConnected}"/>
+                       HorizontalAlignment="Left">
+              <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="IsVoyagerIntegrationEnabled"/>
+                  <Binding Path="IsVoyagerIntegrationConnected"/>
+                </MultiBinding>
+              </TextBlock.IsVisible>
+            </TextBlock>
             <TextBlock DockPanel.Dock="Left"
                        Text="Voyager Disconnected"
                        FontSize="12"
                        Padding="3" Margin="2"
-                       HorizontalAlignment="Left"
-                       IsVisible="{Binding !IsVoyagerIntegrationConnected}"/>
+                       HorizontalAlignment="Left">
+              <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="IsVoyagerIntegrationEnabled"/>
+                  <Binding Path="!IsVoyagerIntegrationConnected"/>
+                </MultiBinding>
+              </TextBlock.IsVisible>
+            </TextBlock>
           </DockPanel>
         </Template>
       </Setter>
@@ -173,6 +185,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </MenuItem>
         </MenuItem>
         <MenuItem Header="Help">
+          <MenuItem Header="Settings" Command="{Binding ShowSettingsDialog}">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/wrench.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Header="-"/>
           <MenuItem Header="About FITS Rating Tool" Command="{Binding ShowAboutDialog}">
             <MenuItem.Icon>
               <Image Source="/Assets/Icons/info.png" Width="16" Height="16"/>

@@ -87,6 +87,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
     <PackageReference Include="DryIoc.dll" Version="5.0.2" />
     <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Preview1" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +120,18 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Views\IntegerSettingView.axaml.cs">
+      <DependentUpon>IntegerSettingView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Views\StringSettingView.axaml.cs">
+      <DependentUpon>StringSettingView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Views\BoolSettingView.axaml.cs">
+      <DependentUpon>BoolSettingView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Windows\AppConfigWindow.axaml.cs">
+      <DependentUpon>AppConfigWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\App\Windows\AppWindow.axaml.cs">
       <DependentUpon>AppWindow.axaml</DependentUpon>

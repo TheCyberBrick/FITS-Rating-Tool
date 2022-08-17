@@ -1,0 +1,112 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.UI.AppConfig.ViewModels"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+        Width="400" Height="300"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.AppConfig.Windows.AppConfigWindow"
+        Icon="/Assets/Icons/wrench.png"
+        Title="Settings"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Classes="nominimize nomaximize">
+
+  <Design.DataContext>
+    <vm:AppConfigViewModel/>
+  </Design.DataContext>
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/wrench.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="*,Auto">
+    <controls:ScrollableTabControl
+               Grid.Row="0"
+               Name="ViewerTabs"
+               Items="{Binding Categories}">
+
+      <TabControl.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Name}"/>
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+
+      <TabControl.ContentTemplate>
+        <DataTemplate>
+          <Border Classes="themed inner dark"
+                  Margin="-5">
+            <ItemsControl Items="{Binding Settings}"
+                          Grid.IsSharedSizeScope="True">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Classes.is_setting_modified="{Binding Setting.IsModified}">
+                    <Border.Styles>
+                      <Style Selector="Border.is_setting_modified">
+                        <Setter Property="Background" Value="#802196F3"/>
+                      </Style>
+                    </Border.Styles>
+                    <ContentControl Content="{Binding .}"
+                                  Margin="4 2"/>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </DataTemplate>
+      </TabControl.ContentTemplate>
+
+    </controls:ScrollableTabControl>
+
+    <StackPanel Grid.Row="1"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="4"
+                Margin="0 4 0 0">
+      <Button Grid.Column="1"
+              Content="Save and exit"
+              MinWidth="60"
+              HorizontalContentAlignment="Center"
+              Command="{Binding SaveAndExit}"/>
+      <Button Grid.Column="1"
+              Content="Apply"
+              MinWidth="60"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Apply}"/>
+      <Button Grid.Column="1"
+              Content="Cancel"
+              MinWidth="60"
+              HorizontalContentAlignment="Center"
+              Command="{Binding Cancel}"/>
+    </StackPanel>
+  </Grid>
+
+</Window>

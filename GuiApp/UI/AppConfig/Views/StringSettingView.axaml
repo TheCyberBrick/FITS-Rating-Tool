@@ -1,0 +1,118 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="using:FitsRatingTool.GuiApp.UI.AppConfig.Views"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.AppConfig.Views.StringSettingView">
+  
+  <Grid RowDefinitions="Auto">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" SharedSizeGroup="NameColumn"/>
+      <ColumnDefinition Width="10" SharedSizeGroup="SpacingColum"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <TextBlock Classes.has_description="{Binding HasDescription}"
+               Grid.Column="0"
+               Text="{Binding Name}"
+               VerticalAlignment="Center"/>
+    <TextBox Classes.has_description="{Binding HasDescription}"
+             Classes.is_secret="{Binding IsSecret}"
+             Grid.Column="2"
+             Text="{Binding Setting.Value}"
+             RevealPassword="{Binding IsSecretRevealed}">
+      <TextBox.InnerRightContent>
+        <ToggleButton Grid.Column="3"
+                      BorderThickness="0"
+                      Padding="1"
+                      IsChecked="{Binding IsSecretRevealed}"
+                      IsVisible="{Binding IsSecret}">
+          <Viewbox Width="18" Height="18">
+            <Image Source="/Assets/Icons/eye.png"/>
+          </Viewbox>
+        </ToggleButton>
+      </TextBox.InnerRightContent>
+    </TextBox>
+  </Grid>
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.has_description">
+      <Setter Property="ToolTip.Tip" Value="{Binding Description}"/>
+    </Style>
+    <Style Selector="TextBox.has_description">
+      <Setter Property="ToolTip.Tip" Value="{Binding Description}"/>
+    </Style>
+    <Style Selector="TextBox.is_secret">
+      <Setter Property="PasswordChar" Value="*"/>
+    </Style>
+
+    <Style Selector="ToggleButton">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:checked:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:indeterminate /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:indeterminate:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:indeterminate:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton:indeterminate:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector="ToggleButton /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="0.2"/>
+    </Style>
+    <Style Selector="ToggleButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+    <Style Selector="ToggleButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="0.925"/>
+    </Style>
+    <Style Selector="ToggleButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="1.0"/>
+    </Style>
+  </UserControl.Styles>
+
+</UserControl>

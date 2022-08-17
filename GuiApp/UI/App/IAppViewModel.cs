@@ -26,6 +26,7 @@ using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
 using FitsRatingTool.GuiApp.UI.FileTable;
+using FitsRatingTool.GuiApp.UI.AppConfig;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -39,6 +40,8 @@ namespace FitsRatingTool.GuiApp.UI.App
         ReactiveCommand<Unit, Unit> Exit { get; }
 
         ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
+
+        ReactiveCommand<Unit, IAppConfigViewModel> ShowSettingsDialog { get; }
         #endregion
 
         #region +++ Images +++
@@ -82,6 +85,8 @@ namespace FitsRatingTool.GuiApp.UI.App
         bool IsImageSwitched { get; }
 
         ReactiveCommand<string, Unit> ShowImageFile { get; }
+
+        int AutoLoadMaxImageCount { get; }
         #endregion
 
         #region +++ Evaluation +++
@@ -132,15 +137,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         bool IsVoyagerIntegrationConnected { get; }
 
-        int AutoLoadMaxImageCount { get; }
-
         bool AutoLoadNewVoyagerImages { get; }
-
-        ReactiveCommand<Unit, Unit> EnableVoyagerIntegration { get; }
-
-        ReactiveCommand<Unit, Unit> DisableVoyagerIntegration { get; }
-
-        ReactiveCommand<Unit, Unit> ToggleVoyagerIntegration { get; }
         #endregion
     }
 }

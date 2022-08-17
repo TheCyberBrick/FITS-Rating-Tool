@@ -27,6 +27,8 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.Services.Impl;
 using FitsRatingTool.GuiApp.UI.App;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
+using FitsRatingTool.GuiApp.UI.AppConfig;
+using FitsRatingTool.GuiApp.UI.AppConfig.ViewModels;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Evaluation.ViewModels;
 using FitsRatingTool.GuiApp.UI.Exporters;
@@ -82,6 +84,8 @@ namespace FitsRatingTool.GuiApp
             container.Register<IExporterConfiguratorManager, ExporterConfiguratorManager>(Reuse.Singleton);
             container.Register<IFileSystemService, FileSystemService>(Reuse.Singleton);
             container.Register<IOpenFileEventManager, OpenFileEventManager>(Reuse.Singleton);
+            container.Register<IAppConfigManager, AppConfigManager>(Reuse.Singleton);
+            container.Register<IAppConfig, AppConfig>(Reuse.Singleton);
         }
 
         private static void RegisterViewModels(Container container)
@@ -118,6 +122,9 @@ namespace FitsRatingTool.GuiApp
             container.Register<IVoyagerExporterConfiguratorViewModel.IFactory, VoyagerExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
 
             container.Register<IFileTableViewModel.IFactory, FileTableViewModel.Factory>(Reuse.Singleton);
+
+            container.Register<IAppConfigViewModel.IFactory, AppConfigViewModel.Factory>(Reuse.Singleton);
+            container.Register<IAppConfigCategoryViewModel.IFactory, AppConfigCategoryViewModel.Factory>(Reuse.Singleton);
         }
 
         private static void RegisterExporters(Container container)

@@ -38,6 +38,7 @@ using Avalonia.Utilities;
 using static FitsRatingTool.GuiApp.UI.App.IAppViewModel;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
+using FitsRatingTool.GuiApp.UI.AppConfig;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -50,6 +51,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public ReactiveCommand<Unit, Unit> Exit { get; }
 
         public ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
+
+        public ReactiveCommand<Unit, IAppConfigViewModel> ShowSettingsDialog { get; }
 
         public IFitsImageMultiViewerViewModel MultiViewer { get; }
 
@@ -88,6 +91,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 
         public ReactiveCommand<string, Unit> ShowImageFile { get; }
+
+        private int _autoLoadMaxImageCount = 64;
+        public int AutoLoadMaxImageCount
+        {
+            get => _autoLoadMaxImageCount;
+            set => this.RaiseAndSetIfChanged(ref _autoLoadMaxImageCount, value);
+        }
 
 
         public ReactiveCommand<Unit, IFitsImageAllStatisticsProgressViewModel> CalculateAllStatisticsWithProgress { get; }
@@ -133,13 +143,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isVoyagerIntegrationConnected, value);
         }
 
-        private int _autoLoadMaxImageCount = 64;
-        public int AutoLoadMaxImageCount
-        {
-            get => _autoLoadMaxImageCount;
-            set => this.RaiseAndSetIfChanged(ref _autoLoadMaxImageCount, value);
-        }
-
         private bool _autoLoadNewVoyagerImages = true;
         public bool AutoLoadNewVoyagerImages
         {
@@ -147,11 +150,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             set => this.RaiseAndSetIfChanged(ref _autoLoadNewVoyagerImages, value);
         }
 
-        public ReactiveCommand<Unit, Unit> EnableVoyagerIntegration { get; }
-
-        public ReactiveCommand<Unit, Unit> DisableVoyagerIntegration { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleVoyagerIntegration { get; }
 
 
 
@@ -163,6 +161,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IFitsImageViewModel.IFactory fitsImageFactory;
         private readonly IVoyagerIntegration voyagerIntegration;
+        private readonly IAppConfig appConfig;
 
         // Designer only
 #pragma warning disable CS8618
@@ -179,11 +178,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IJobConfigManager jobConfigManager, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory,
             IEvaluationExporterViewModel.IFactory evaluationExporterFactory, IJobRunnerViewModel.IFactory jobRunnerFactory, IFileTableViewModel.IFactory fileTableFactory,
-            IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager)
+            IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager, IAppConfig appConfig, IAppConfigManager appConfigManager,
+            IAppConfigViewModel.IFactory appConfigFactory)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
             this.voyagerIntegration = voyagerIntegration;
+            this.appConfig = appConfig;
 
             RegisterExporterConfigurators(exporterConfiguratorManager, csvExporterConfiguratorFactory, fitsHeaderExporterConfiguratorFactory, voyagerExporterConfiguratorFactory);
 
@@ -195,6 +196,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             Exit = ReactiveCommand.Create(() => { });
 
             ShowAboutDialog = ReactiveCommand.Create(() => { });
+
+            ShowSettingsDialog = ReactiveCommand.Create(() => appConfigFactory.Create());
 
             LoadImage = ReactiveCommand.CreateFromTask<string>(async file =>
             {
@@ -354,20 +357,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             });
             ShowJobRunner = ReactiveCommand.Create(() => jobRunnerFactory.Create());
 
-            EnableVoyagerIntegration = ReactiveCommand.CreateFromTask(DoEnableVoyagerIntegrationAsync);
-            DisableVoyagerIntegration = ReactiveCommand.CreateFromTask(DoDisableVoyagerIntegrationAsync);
-            ToggleVoyagerIntegration = ReactiveCommand.CreateFromTask(async () =>
-            {
-                if (IsVoyagerIntegrationEnabled)
-                {
-                    await DoDisableVoyagerIntegrationAsync();
-                }
-                else
-                {
-                    await DoEnableVoyagerIntegrationAsync();
-                }
-            });
-
 
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>
             {
@@ -396,6 +385,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             WeakEventHandlerManager.Subscribe<IOpenFileEventManager, IOpenFileEventManager.OpenFileEventArgs, AppViewModel>(openFileEventManager, nameof(openFileEventManager.OnOpenFile), OnOpenFile);
 
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueChangedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValueChanged), OnConfigChanged);
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
+
             RxApp.MainThreadScheduler.Schedule(Initialize);
 
             if (openFileEventManager.LaunchFilePath != null)
@@ -404,22 +396,34 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             }
         }
 
+        private async Task ApplySettingsAsync()
+        {
+            AutoLoadMaxImageCount = appConfig.AutoLoadMaxImageCount;
+
+            if (appConfig.VoyagerIntegrationEnabled)
+            {
+                await EnableVoyagerIntegrationAsync();
+            }
+            else
+            {
+                await DisableVoyagerIntegrationAsync();
+            }
+        }
+
         private async void Initialize()
         {
-            await DoEnableVoyagerIntegrationAsync();
+            await ApplySettingsAsync();
         }
 
-        private async void Shutdown()
-        {
-            await DoDisableVoyagerIntegrationAsync();
-        }
-
-        private async Task DoEnableVoyagerIntegrationAsync()
+        private async Task EnableVoyagerIntegrationAsync()
         {
             if (!IsVoyagerIntegrationEnabled)
             {
-                //TODO
-                voyagerIntegration.ApplicationServerHostname = "172.30.203.126";
+                voyagerIntegration.ApplicationServerHostname = appConfig.VoyagerAddress;
+                voyagerIntegration.ApplicationServerPort = appConfig.VoyagerPort;
+                voyagerIntegration.ApplicationServerUsername = appConfig.VoyagerUsername;
+                voyagerIntegration.ApplicationServerPassword = appConfig.VoyagerPassword;
+                voyagerIntegration.RoboTargetSecret = appConfig.RoboTargetSecret;
 
                 voyagerIntegration.NewImage += OnNewVoyagerImage;
                 voyagerIntegration.ConnectionChanged += OnConnectionChanged;
@@ -428,7 +432,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             }
         }
 
-        private async Task DoDisableVoyagerIntegrationAsync()
+        private async Task DisableVoyagerIntegrationAsync()
         {
             if (IsVoyagerIntegrationEnabled)
             {
@@ -653,6 +657,21 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private void OnConnectionChanged(object? sender, IVoyagerIntegration.ConnectionChangedEventArgs e)
         {
             IsVoyagerIntegrationConnected = e.Connected;
+        }
+
+        private async void OnConfigChanged(object? sender, IAppConfigManager.ValueEventArgs e)
+        {
+            await ApplySettingsAsync();
+
+            if (IsVoyagerIntegrationEnabled
+                && (e.IsAffected(nameof(appConfig.VoyagerAddress)) || e.IsAffected(nameof(appConfig.VoyagerPassword))
+                 || e.IsAffected(nameof(appConfig.VoyagerPort)) || e.IsAffected(nameof(appConfig.VoyagerUsername))
+                 || e.IsAffected(nameof(appConfig.RoboTargetSecret))))
+            {
+                // Restart voyager integration to apply new config values
+                await DisableVoyagerIntegrationAsync();
+                await EnableVoyagerIntegrationAsync();
+            }
         }
 
         private void RegisterExporterConfigurators(IExporterConfiguratorManager exporterConfiguratorManager, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,

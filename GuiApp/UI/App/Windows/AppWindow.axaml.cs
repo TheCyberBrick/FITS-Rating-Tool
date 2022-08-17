@@ -43,6 +43,7 @@ using FitsRatingTool.GuiApp.UI.Info.Windows;
 using Avalonia.Utilities;
 using System.IO;
 using System.Reactive.Concurrency;
+using FitsRatingTool.GuiApp.UI.AppConfig.Windows;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
@@ -72,6 +73,18 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         async void showDialog()
                         {
                             await new AboutWindow().ShowDialog(this);
+                        }
+                        showDialog();
+                    }));
+
+                    d.Add(ViewModel.ShowSettingsDialog.Subscribe(vm =>
+                    {
+                        async void showDialog()
+                        {
+                            await new AppConfigWindow()
+                            {
+                                DataContext = vm
+                            }.ShowDialog(this);
                         }
                         showDialog();
                     }));

@@ -185,8 +185,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             if (runner == null && runnerTask == null)
             {
                 runner = new Runner(() => ApplicationServerHostname, () => ApplicationServerPort,
-                    ApplicationServerUsername != null || ApplicationServerPassword != null ? new Runner.Credentials() { Username = ApplicationServerUsername ?? "", Password = ApplicationServerPassword ?? "" } : null,
-                    RoboTargetSecret != null ? new Runner.Credentials() { Password = RoboTargetSecret } : null,
+                    !string.IsNullOrEmpty(ApplicationServerUsername) || !string.IsNullOrEmpty(ApplicationServerPassword) ? new Runner.Credentials() { Username = ApplicationServerUsername ?? "", Password = ApplicationServerPassword ?? "" } : null,
+                    !string.IsNullOrEmpty(RoboTargetSecret) ? new Runner.Credentials() { Password = RoboTargetSecret } : null,
                     m => new SilentRunnerLog());
 
                 runner.OnStateChange += OnStateChanged;

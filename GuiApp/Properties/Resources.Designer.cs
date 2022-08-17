@@ -145,6 +145,26 @@ namespace FitsRatingTool.GuiApp.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The MIT License (MIT)
         ///
+        ///Copyright (c) .NET Foundation and Contributors
+        ///
+        ///All rights reserved.
+        ///
+        ///Permission is hereby granted, free of charge, to any person obtaining a copy
+        ///of this software and associated documentation files (the &quot;Software&quot;), to deal
+        ///in the Software without restriction, including without limitation the rights
+        ///to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        ///copies of the Software, and to permit persons to whom the Software is
+        ///furnished to do so, subject to t [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        /// </summary>
+        internal static string LICENSE_DotNet {
+            get {
+                return ResourceManager.GetString("LICENSE_DotNet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The MIT License (MIT)
+        ///
         ///Copyright (c) 2013-2021 Maksim Volkau
         ///
         ///Permission is hereby granted, free of charge, to any person obtaining a copy
