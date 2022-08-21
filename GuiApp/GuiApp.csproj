@@ -121,8 +121,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="UI\AppConfig\Views\GroupingConfigurationSettingView.axaml.cs">
+      <DependentUpon>GroupingConfigurationSettingView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\AppConfig\Views\IntegerSettingView.axaml.cs">
       <DependentUpon>IntegerSettingView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Views\PathSettingView.axaml.cs">
+      <DependentUpon>PathSettingView.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\AppConfig\Views\StringSettingView.axaml.cs">
       <DependentUpon>StringSettingView.axaml</DependentUpon>

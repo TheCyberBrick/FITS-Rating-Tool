@@ -16,9 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.ComponentModel;
+
 namespace FitsRatingTool.GuiApp.Models
 {
-    public interface IConfigSetting
+    public interface IConfigSetting : INotifyPropertyChanged
     {
         object? Value { get; set; }
 

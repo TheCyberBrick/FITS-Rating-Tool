@@ -16,7 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Evaluation;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Reactive;
@@ -29,16 +31,18 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         {
             private readonly IAppConfig appConfig;
             private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
+            private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
 
-            public Factory(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory)
+            public Factory(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory)
             {
                 this.appConfig = appConfig;
                 this.appConfigCategoryFactory = appConfigCategoryFactory;
+                this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
             }
 
             public IAppConfigViewModel Create()
             {
-                return new AppConfigViewModel(appConfig, appConfigCategoryFactory);
+                return new AppConfigViewModel(appConfig, appConfigCategoryFactory, jobGroupingConfiguratorFactory);
             }
         }
 
@@ -54,6 +58,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
         private readonly IAppConfig appConfig;
         private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
+        private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
 
         // Designer only
 #pragma warning disable CS8618
@@ -66,16 +71,19 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             category1.Settings.Add(new BoolSettingViewModel("Boolean", () => b, v => b = v));
             category1.Settings.Add(new StringSettingViewModel("String", () => s, v => s = v));
             category1.Settings.Add(new StringSettingViewModel("Password", () => s, v => s = v, true));
+            category1.Settings.Add(new PathSettingViewModel("File", () => s, v => s = v, PathType.File, new List<string>() { "txt" }));
+            category1.Settings.Add(new PathSettingViewModel("Directory", () => s, v => s = v, PathType.Directory));
             Categories.Add(category1);
 
             Categories.Add(new AppConfigCategoryViewModel("Test 2"));
         }
 #pragma warning restore CS8618
 
-        public AppConfigViewModel(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory)
+        public AppConfigViewModel(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory)
         {
             this.appConfig = appConfig;
             this.appConfigCategoryFactory = appConfigCategoryFactory;
+            this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
 
             Categories.Add(CreateGeneralCategory());
             Categories.Add(CreateVoyagerCategory());
@@ -104,6 +112,14 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             category.Settings.Add(new IntegerSettingViewModel("Max. Auto Load Count", () => appConfig.AutoLoadMaxImageCount, v => appConfig.AutoLoadMaxImageCount = v, 1, 512, 1)
             {
                 Description = "Maximum number of automatically loaded images. This includes images opened via program launch argument."
+            });
+            category.Settings.Add(new PathSettingViewModel("Default Evaluation Formula", () => appConfig.DefaultEvaluationFormulaPath, v => appConfig.DefaultEvaluationFormulaPath = v, PathType.File, new List<string>() { "txt" })
+            {
+                Description = "Path to a text file containing the evaluation formula that should be used by default."
+            });
+            category.Settings.Add(new GroupingConfigurationSettingViewModel("Default Evaluation Grouping", () => appConfig.DefaultEvaluationGrouping, v => appConfig.DefaultEvaluationGrouping = v, jobGroupingConfiguratorFactory)
+            {
+                Description = "Evaluation grouping used by default."
             });
 
             return category;

@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using ReactiveUI;
 using System.Reactive.Concurrency;
 using Avalonia.Utilities;
+using System.IO;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -39,7 +40,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IEvaluationService evaluationService;
         private readonly IFitsImageManager manager;
 
-        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager)
+        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IAppConfig appConfig)
         {
             this.evaluationService = evaluationService;
             this.manager = manager;
@@ -61,6 +62,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             };
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationManager>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+
+            CurrentGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
+
+            LoadDefaultFormula(appConfig);
+        }
+
+        private void LoadDefaultFormula(IAppConfig appConfig)
+        {
+            var file = appConfig.DefaultEvaluationFormulaPath;
+            if (file.Length > 0)
+            {
+                try
+                {
+                    CurrentFormula = File.ReadAllText(file);
+                }
+                catch (Exception)
+                {
+                    CurrentFormula = $"Could not load default formula from file '{file}'. Please make sure it exists and is readable or adjust the default evaluation formula setting.";
+                }
+            }
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)

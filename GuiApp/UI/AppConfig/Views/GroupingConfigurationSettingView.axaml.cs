@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,34 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Models;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-namespace FitsRatingTool.GuiApp.Services
+namespace FitsRatingTool.GuiApp.UI.AppConfig.Views
 {
-    public interface IAppConfig
+    public partial class GroupingConfigurationSettingView : UserControl
     {
-        #region Viewer
-        public int AutoLoadMaxImageCount { get; set; }
-        #endregion
+        public GroupingConfigurationSettingView()
+        {
+            InitializeComponent();
+        }
 
-        #region Evaluation
-        public string DefaultEvaluationFormulaPath { get; set; }
-
-        public GroupingConfiguration DefaultEvaluationGrouping { get; set; }
-        #endregion
-
-        #region Voyager Integration
-        bool VoyagerIntegrationEnabled { get; set; }
-
-        string VoyagerAddress { get; set; }
-
-        int VoyagerPort { get; set; }
-
-        string VoyagerUsername { get; set; }
-
-        string VoyagerPassword { get; set; }
-
-        string RoboTargetSecret { get; set; }
-        #endregion
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }

@@ -63,8 +63,13 @@ namespace FitsRatingTool.GuiApp.Models
             IsGroupedByGainAndOffset = isGroupedByGainAndOffset;
             IsGroupedByParentDir = isGroupedByParentDir;
             IsGroupedByFitsKeyword = isGroupedByFitsKeyword;
-            GroupingParentDirs = groupingParentDirs;
-            GroupingFitsKeywords = groupingFitsKeywords != null ? new List<string>(groupingFitsKeywords) : null;
+            GroupingParentDirs = isGroupedByParentDir ? groupingParentDirs : 0;
+            var groupingFitsKeywordsCopy = groupingFitsKeywords != null && isGroupedByFitsKeyword ? new List<string>(groupingFitsKeywords) : null;
+            if (groupingFitsKeywordsCopy != null && groupingFitsKeywordsCopy.Count == 0)
+            {
+                groupingFitsKeywordsCopy = null;
+            }
+            GroupingFitsKeywords = groupingFitsKeywordsCopy;
         }
 
         public static bool TryParseGroupingKeys(IGroupingManager groupingManager, IEnumerable<string> groupingKeys, out GroupingConfiguration? groupingConfiguration)
@@ -162,6 +167,33 @@ namespace FitsRatingTool.GuiApp.Models
                 }
             }
             return groupingKeys;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is GroupingConfiguration configuration &&
+                   IsGroupedByObject == configuration.IsGroupedByObject &&
+                   IsGroupedByFilter == configuration.IsGroupedByFilter &&
+                   IsGroupedByExposureTime == configuration.IsGroupedByExposureTime &&
+                   IsGroupedByGainAndOffset == configuration.IsGroupedByGainAndOffset &&
+                   IsGroupedByParentDir == configuration.IsGroupedByParentDir &&
+                   IsGroupedByFitsKeyword == configuration.IsGroupedByFitsKeyword &&
+                   GroupingParentDirs == configuration.GroupingParentDirs &&
+                   EqualityComparer<IReadOnlyList<string>?>.Default.Equals(GroupingFitsKeywords, configuration.GroupingFitsKeywords);
+        }
+
+        public override int GetHashCode()
+        {
+            System.HashCode hash = new System.HashCode();
+            hash.Add(IsGroupedByObject);
+            hash.Add(IsGroupedByFilter);
+            hash.Add(IsGroupedByExposureTime);
+            hash.Add(IsGroupedByGainAndOffset);
+            hash.Add(IsGroupedByParentDir);
+            hash.Add(IsGroupedByFitsKeyword);
+            hash.Add(GroupingParentDirs);
+            hash.Add(GroupingFitsKeywords);
+            return hash.ToHashCode();
         }
     }
 }
