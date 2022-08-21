@@ -27,11 +27,19 @@ namespace FitsRatingTool.GuiApp.UI.Controls
     {
         public static DirectProperty<ScrollableTabControl, bool> IsOverflowingProperty = AvaloniaProperty.RegisterDirect<ScrollableTabControl, bool>(nameof(IsOverflowing), o => o.IsOverflowing);
 
+        public static StyledProperty<bool> QuickSelectDropdownProperty = AvaloniaProperty.Register<ScrollableTabControl, bool>(nameof(QuickSelectDropdown), true);
+
         private bool _isOverflowing;
         public bool IsOverflowing
         {
             get => _isOverflowing;
             private set => SetAndRaise(IsOverflowingProperty, ref _isOverflowing, value);
+        }
+
+        public bool QuickSelectDropdown
+        {
+            get => GetValue(QuickSelectDropdownProperty);
+            set => SetValue(QuickSelectDropdownProperty, value);
         }
 
         private ScrollViewer? tabScrollViewer;

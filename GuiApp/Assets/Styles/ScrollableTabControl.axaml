@@ -68,8 +68,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </Grid.Styles>
 
                 <Button Grid.Column="0"
-                        Classes="scrollButton"
-                        Command="{Binding ScrollLeft, RelativeSource={RelativeSource AncestorType=controls:ScrollableTabControl}}">
+                        Name="QuickSelectButton"
+                        Classes="scrollButton">
 
                   <Button.Resources>
                     <Thickness x:Key="ButtonPressedShrinkThickness">0</Thickness>
@@ -336,5 +336,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
   <Style Selector="controls|ScrollableTabControl TabItem:pointerover /template/ Border#PART_LayoutRoot">
     <Setter Property="TextBlock.Foreground" Value="#FFECECEC"/>
+  </Style>
+
+  <Style Selector="controls|ScrollableTabControl[QuickSelectDropdown=False] /template/ Button#QuickSelectButton">
+    <Setter Property="IsVisible" Value="False"/>
   </Style>
 </Styles>

@@ -18,16 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:jviews="using:FitsRatingTool.GuiApp.UI.JobConfigurator.Views"
         xmlns:eviews="using:FitsRatingTool.GuiApp.UI.Evaluation.Views"
         xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
         xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters;assembly=FitsRatingTool"
-        mc:Ignorable="d" d:DesignWidth="640"
-        Width="640" MinWidth="500"
-        SizeToContent="Height"
+        mc:Ignorable="d" d:DesignWidth="468" d:DesignHeight="400"
+        Width="468" MinWidth="150"
+        Height="400" MinHeight="130"
         UseLayoutRounding="True"
         x:Class="FitsRatingTool.GuiApp.UI.JobConfigurator.Windows.JobConfiguratorWindow"
         Icon="/Assets/Icons/new_file.png"
@@ -48,32 +47,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </Style>
   </Window.Styles>
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <Grid ColumnDefinitions="*,8,*">
-      <Grid Grid.Column="0"
-            RowDefinitions="*,Auto,Auto,Auto,Auto">
+  <Grid RowDefinitions="*,4,Auto">
+    <controls:ScrollableTabControl Grid.Row="0"
+                                   QuickSelectDropdown="False">
 
-        <HeaderedContentControl Grid.Row="0"
-                                Padding="4"
-                                MinHeight="120">
-          <HeaderedContentControl.Header>
-            <Grid ColumnDefinitions="Auto,*,Auto">
-              <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <Viewbox Width="16" Height="16" Margin="-1">
-                    <Image Source="/Assets/Icons/formula.png"/>
-                  </Viewbox>
-                  <TextBlock Text="Evaluation Formula" VerticalAlignment="Center"/>
-                </StackPanel>
-              </StackPanel>
-              <eviews:EvaluationFormulaHelpView
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"
-                    Margin="-4 -3 -2 -3"/>
-            </Grid>
-          </HeaderedContentControl.Header>
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="16" Height="16" Margin="-1">
+              <Image Source="/Assets/Icons/formula.png"/>
+            </Viewbox>
+            <TextBlock Text="Evaluation Formula" VerticalAlignment="Center" Margin="0 0 3 0"/>
+          </StackPanel>
+        </TabItem.Header>
 
+        <Panel ClipToBounds="True">
           <Grid ColumnDefinitions="*" RowDefinitions="*,4,Auto">
 
             <TextBox Text="{Binding EvaluationFormula.RatingFormula}"
@@ -107,27 +95,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </Grid>
 
           </Grid>
-        </HeaderedContentControl>
 
-        <HeaderedContentControl Grid.Row="1"
-                                Padding="4"
-                                Margin="0 8 0 0">
-          <HeaderedContentControl.Header>
-            <Panel>
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Viewbox Width="18" Height="18" Margin="0 -2">
-                  <Image Source="/Assets/Icons/link.png"/>
-                </Viewbox>
-                <TextBlock Text="Grouping" VerticalAlignment="Center"/>
-              </StackPanel>
-              <jviews:JobGroupingConfigurationHelpView
-                     HorizontalAlignment="Right"
-                     VerticalAlignment="Center"
-                     DataContext="{Binding GroupingConfigurator.GroupingConfiguration}"
-                     Margin="-4 -3 -2 -3"/>
-            </Panel>
-          </HeaderedContentControl.Header>
+          <eviews:EvaluationFormulaHelpView
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Right"
+                  Margin="3"/>
+        </Panel>
+      </TabItem>
+
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="18" Height="18" Margin="0 -2">
+              <Image Source="/Assets/Icons/link.png"/>
+            </Viewbox>
+            <TextBlock Text="Grouping" VerticalAlignment="Center" Margin="0 0 3 0"/>
+          </StackPanel>
+        </TabItem.Header>
+
+        <ScrollViewer>
           <Panel>
+            <jviews:JobGroupingConfigurationHelpView
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Top"
+                     DataContext="{Binding GroupingConfigurator.GroupingConfiguration}"
+                     Margin="3"/>
+
             <Grid RowDefinitions="Auto,4,Auto,4,Auto,4,Auto,4,Auto,4,Auto,4,Auto">
 
               <TextBlock Grid.Row="0" Text="Group by..."/>
@@ -212,136 +205,108 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             </Grid>
           </Panel>
-        </HeaderedContentControl>
+        </ScrollViewer>
+      </TabItem>
 
-        <HeaderedContentControl Grid.Row="2"
-                                Padding="4"
-                                Margin="0 8 0 0">
-          <HeaderedContentControl.Header>
-            <StackPanel Orientation="Horizontal">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Viewbox Width="16" Height="16">
-                  <Image Source="/Assets/Icons/gears.png"/>
-                </Viewbox>
-                <TextBlock Text="Processing" VerticalAlignment="Center"/>
-              </StackPanel>
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="16" Height="16">
+                <Image Source="/Assets/Icons/gears.png"/>
+              </Viewbox>
+              <TextBlock Text="Processing" VerticalAlignment="Center" Margin="0 0 3 0"/>
             </StackPanel>
-          </HeaderedContentControl.Header>
+          </StackPanel>
+        </TabItem.Header>
 
-          <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto">
+        <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto">
 
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Parallel Tasks"
-                       VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     Text="Parallel Tasks"
+                     VerticalAlignment="Center"/>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           Value="{Binding ParallelTasks}"
-                           Minimum="1"
-                           ClipValueToMinMax="True"
-                           Margin="0 2"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Value="{Binding ParallelTasks}"
+                         Minimum="1"
+                         ClipValueToMinMax="True"
+                         Margin="0 2"/>
 
-            <TextBlock Grid.Row="1" Grid.Column="0"
-                       Text="Parallel I/O"
-                       VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="1" Grid.Column="0"
+                     Text="Parallel I/O"
+                     VerticalAlignment="Center"/>
 
-            <NumericUpDown Grid.Row="1" Grid.Column="2"
-                           Value="{Binding ParallelIO}"
-                           Minimum="1"
-                           ClipValueToMinMax="True"
-                           Margin="0 2"/>
+          <NumericUpDown Grid.Row="1" Grid.Column="2"
+                         Value="{Binding ParallelIO}"
+                         Minimum="1"
+                         ClipValueToMinMax="True"
+                         Margin="0 2"/>
 
-          </Grid>
-        </HeaderedContentControl>
+        </Grid>
+      </TabItem>
 
-        <Button Grid.Row="4"
-                Margin="0 4 0 0"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                Command="{Binding SaveJobConfigWithSaveFileDialog}">
-
-          <Grid ColumnDefinitions="Auto,10,*">
-            <TextBlock Grid.Column="0"
-                       Text="Save As..."
-                       HorizontalAlignment="Left"
-                       Margin="4 0 0 0"/>
-            <Viewbox Grid.Column="2"
-                     Width="16" Height="16"
-                     HorizontalAlignment="Right"
-                     Margin="-2">
-              <Image Source="/Assets/Icons/save.png"/>
-            </Viewbox>
-          </Grid>
-        </Button>
-
-      </Grid>
-
-      <Grid Grid.Column="2"
-            RowDefinitions="Auto,*">
-
-        <HeaderedContentControl Grid.Row="0"
-                                Padding="4">
-          <HeaderedContentControl.Header>
-            <StackPanel Orientation="Horizontal">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Viewbox Width="18" Height="18" Margin="0 -1">
-                  <Image Source="/Assets/Icons/import.png"/>
-                </Viewbox>
-                <TextBlock Text="Input" VerticalAlignment="Center"/>
-              </StackPanel>
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18" Margin="0 -1">
+                <Image Source="/Assets/Icons/import.png"/>
+              </Viewbox>
+              <TextBlock Text="Input" VerticalAlignment="Center" Margin="0 0 3 0"/>
             </StackPanel>
-          </HeaderedContentControl.Header>
+          </StackPanel>
+        </TabItem.Header>
 
-          <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,Auto">
+        <Grid ColumnDefinitions="Auto,10,*" RowDefinitions="Auto,Auto,Auto">
 
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Max. Image Size (MB)"
-                       VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     Text="Max. Image Size (MB)"
+                     VerticalAlignment="Center"/>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1048576}"
-                           Minimum="1"
-                           ClipValueToMinMax="True"
-                           Margin="0 2"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1048576}"
+                         Minimum="1"
+                         ClipValueToMinMax="True"
+                         Margin="0 2"/>
 
-            <TextBlock Grid.Row="1" Grid.Column="0"
-                       Text="Max. Image Width"
-                       VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="1" Grid.Column="0"
+                     Text="Max. Image Width"
+                     VerticalAlignment="Center"/>
 
-            <NumericUpDown Grid.Row="1" Grid.Column="2"
-                           Value="{Binding MaxImageWidth}"
-                           Increment="128"
-                           Minimum="1"
-                           ClipValueToMinMax="True"
-                           Margin="0 2"/>
+          <NumericUpDown Grid.Row="1" Grid.Column="2"
+                         Value="{Binding MaxImageWidth}"
+                         Increment="128"
+                         Minimum="1"
+                         ClipValueToMinMax="True"
+                         Margin="0 2"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0"
-                       Text="Max. Image Height"
-                       VerticalAlignment="Center"/>
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     Text="Max. Image Height"
+                     VerticalAlignment="Center"/>
 
-            <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           Value="{Binding MaxImageHeight}"
-                           Increment="128"
-                           Minimum="1"
-                           ClipValueToMinMax="True"
-                           Margin="0 2"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         Value="{Binding MaxImageHeight}"
+                         Increment="128"
+                         Minimum="1"
+                         ClipValueToMinMax="True"
+                         Margin="0 2"/>
 
-          </Grid>
-        </HeaderedContentControl>
+        </Grid>
+      </TabItem>
 
-        <HeaderedContentControl Grid.Row="1"
-                                Padding="4"
-                                Margin="0 8 0 0">
-          <HeaderedContentControl.Header>
-            <StackPanel Orientation="Horizontal">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Viewbox Width="18" Height="18" Margin="0 -1">
-                  <Image Source="/Assets/Icons/export.png"/>
-                </Viewbox>
-                <TextBlock Text="Output" VerticalAlignment="Center"/>
-              </StackPanel>
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18" Margin="0 -1">
+                <Image Source="/Assets/Icons/export.png"/>
+              </Viewbox>
+              <TextBlock Text="Output" VerticalAlignment="Center" Margin="0 0 3 0"/>
             </StackPanel>
-          </HeaderedContentControl.Header>
+          </StackPanel>
+        </TabItem.Header>
 
+        <ScrollViewer>
           <Grid ColumnDefinitions="Auto,10,*,Auto" RowDefinitions="Auto,Auto,Auto,*">
 
             <TextBlock Grid.Row="0" Grid.Column="0"
@@ -386,10 +351,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                       DataContext="{Binding EvaluationExporterConfigurator}"/>
 
           </Grid>
-        </HeaderedContentControl>
+        </ScrollViewer>
+      </TabItem>
 
+    </controls:ScrollableTabControl>
+
+    <Button Grid.Row="2"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            Command="{Binding SaveJobConfigWithSaveFileDialog}">
+
+      <Grid ColumnDefinitions="Auto,10,*">
+        <TextBlock Grid.Column="0"
+                   Text="Save As..."
+                   HorizontalAlignment="Left"
+                   Margin="4 0 0 0"/>
+        <Viewbox Grid.Column="2"
+                 Width="16" Height="16"
+                 HorizontalAlignment="Right"
+                 Margin="-2">
+          <Image Source="/Assets/Icons/save.png"/>
+        </Viewbox>
       </Grid>
-    </Grid>
-  </ScrollViewer>
+    </Button>
+  </Grid>
 
 </Window>
