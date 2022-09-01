@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?if $(var.Platform) = x64 ?>
+<?define ProductName = "FITS Rating Tool (64 bit)" ?>
+<?define Win64 = "yes" ?>
+<?define Arch = "x64" ?>
+<?define ArchSuffix = "" ?>
+<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+<?else ?>
+<?define ProductName = "FITS Rating Tool (32 bit)" ?>
+<?define Win64 = "no" ?>
+<?define Arch = "x86" ?>
+<?define ArchSuffix = "32" ?>
+<?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+<?endif ?>
+<?define Resources = "resources\" ?>
+<?define Version = "1.0.0" ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.Version).0" Manufacturer="TCB" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.Resources)lgpl-3.0.rtf" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.Resources)background.bmp"/>
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.Resources)banner.bmp"/>
+    <UIRef Id="WixUI_FeatureTree" />
+
+    <Feature Id="FITSRatingTool" Title="FITS Rating Tool" Level="1" Absent="disallow" AllowAdvertise="no" TypicalDefault="install" Display="expand" Description="Essential components." ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentGroupRef Id="AppBinaries-$(var.Platform)" />
+    </Feature>
+    <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether a desktop shortcut should be created." ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+    <Feature Id="FileAssociationFeature" Title="File Association" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether FITS files should be associated with FITS Rating Tool." ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentRef Id="FileAssociationComponent" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+        <Directory Id="INSTALLFOLDER" Name="FITS Rating Tool" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="DesktopFolder" Name="Desktop">
+        <Component Id="DesktopShortcutComponent" Guid="887c3135-47ea-4156-acbf-9cb257dddf05">
+          <Shortcut
+            Id="DesktopShortcut"
+            Name="FITS Rating Tool"
+            Description="A tool for viewing and automatically grading FITS (Flexible Image Transport System) .fit/.fits/.fts files."
+            Target="[INSTALLFOLDER]FITSRatingTool.exe"
+            WorkingDirectory="INSTALLFOLDER" />
+          <RemoveFolder Id="CleanUpDesktopShortcut" On="uninstall" />
+          <RegistryValue Root="HKCU" Key="Software\TCB\FITSRatingTool" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <SetProperty Id='FileAssociationTargetProperty' Value="[INSTALLFOLDER]FITSRatingTool.exe" After="CostFinalize" />
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="FileAssociationComponent" Guid="fed5cb88-b206-4b31-8fa2-9f737edfc1ae" KeyPath="yes">
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\FITSRatingTool.exe\SupportedTypes" Name=".fits" Value="" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\FITSRatingTool.exe\SupportedTypes" Name=".fit" Value="" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\FITSRatingTool.exe\SupportedTypes" Name=".fts" Value="" Type="string" />
+
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\FITSRatingTool.exe\shell\open" Name="FriendlyAppName" Value="FITS Rating Tool" Type="string" />
+
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fits" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fit" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fts" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fits\shell\open" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fit\shell\open" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\FITSRatingTool.fts\shell\open" Name="FriendlyTypeName" Value="FITS Rating Tool" Type="string" />
+
+        <ProgId Id="FITSRatingTool.fits" Description="FITS Rating Tool">
+          <Extension Id="fits" ContentType="application/fits">
+            <Verb Id="open" Command="Open" TargetProperty="FileAssociationTargetProperty" Argument="&quot;%1&quot;"/>
+          </Extension>
+        </ProgId>
+
+        <ProgId Id="FITSRatingTool.fit" Description="FITS Rating Tool">
+          <Extension Id="fit" ContentType="application/fits">
+            <Verb Id="open" Command="Open" TargetProperty="FileAssociationTargetProperty" Argument="&quot;%1&quot;"/>
+          </Extension>
+        </ProgId>
+
+        <ProgId Id="FITSRatingTool.fts" Description="FITS Rating Tool">
+          <Extension Id="fts" ContentType="application/fits">
+            <Verb Id="open" Command="Open" TargetProperty="FileAssociationTargetProperty" Argument="&quot;%1&quot;"/>
+          </Extension>
+        </ProgId>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

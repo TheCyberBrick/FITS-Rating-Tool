@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?define ProductName = "FITS Rating Tool" ?>
+<?define Resources = "resources\" ?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+  <Bundle Name="$(var.ProductName)" Version="!(bind.packageVersion.FITSRatingTool64)" Manufacturer="TCB" UpgradeCode="3535e416-1d32-40b3-8228-470b5a0f2bce">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+      <bal:WixStandardBootstrapperApplication LicenseUrl="" SuppressOptionsUI="yes" LogoFile="$(var.Resources)logo.png" />
+    </BootstrapperApplicationRef>
+
+    <Chain>
+      <PackageGroupRef Id="VCRedist"/>
+      <PackageGroupRef Id="FITSRatingTool"/>
+    </Chain>
+  </Bundle>
+
+  <Fragment>
+    <PackageGroup Id="VCRedist">
+
+      <ExePackage
+        Id="VCRedist32"
+        Name="Microsoft Visual C++ 2015-2022 Redistributable (x86)"
+        DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x86)"
+        InstallCondition="NOT VersionNT64"
+        Cache="no"
+        Compressed="yes"
+        PerMachine="yes"
+        Permanent="yes"
+        Vital="yes"
+        InstallCommand="/install /quiet /norestart"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7331f052-6c2d-4890-8041-8058fee5fb0f/CF92A10C62FFAB83B4A2168F5F9A05E5588023890B5C0CC7BA89ED71DA527B0F/VC_redist.x86.exe">
+        <RemotePayload
+          Description="Microsoft Visual C++ 2015-2022 Redistributable (x86) 14.32.31332"
+          ProductName="Microsoft Visual C++ 2015-2022 Redistributable (x86) 14.32.31332"
+          Size="13730768"
+          Version="14.32.31332.0"
+          Hash="29E23DD7C19B03EB59304F9D1F8E7209C1167348" />
+        <!-- Reboot required -->
+        <ExitCode Value="3010" Behavior="forceReboot"/>
+        <!-- Ignore "Newer version installed" error -->
+        <ExitCode Value="1638" Behavior="success"/>
+      </ExePackage>
+
+      <ExePackage
+        Id="VCRedist64"
+        Name="Microsoft Visual C++ 2015-2022 Redistributable (x64)"
+        DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)"
+        InstallCondition="VersionNT64"
+        Cache="no"
+        Compressed="yes"
+        PerMachine="yes"
+        Permanent="yes"
+        Vital="yes"
+        InstallCommand="/install /quiet /norestart"
+        DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/7331f052-6c2d-4890-8041-8058fee5fb0f/CE6593A1520591E7DEA2B93FD03116E3FC3B3821A0525322B0A430FAA6B3C0B4/VC_redist.x64.exe">
+        <RemotePayload
+          Description="Microsoft Visual C++ 2015-2022 Redistributable (x64) 14.32.31332"
+          ProductName="Microsoft Visual C++ 2015-2022 Redistributable (x64) 14.32.31332"
+          Size="25234792"
+          Version="14.32.31332.0"
+          Hash="D4F9181E70E3F1AA6C8EDFFCC15B3C3D4BABE36B" />
+        <!-- Reboot required -->
+        <ExitCode Value="3010" Behavior="forceReboot" />
+        <!-- Ignore "Newer version installed" error -->
+        <ExitCode Value="1638" Behavior="success" />
+      </ExePackage>
+
+    </PackageGroup>
+  </Fragment>
+
+  <Fragment>
+    <PackageGroup Id="FITSRatingTool">
+      <!--<MsiPackage Id="FITSRatingTool32" InstallCondition="NOT VersionNT64" SourceFile="..\WinInstaller\bin\x86\Release\FITS Rating Tool (x86).msi" DisplayInternalUI="yes" />-->
+      <MsiPackage Id="FITSRatingTool64" InstallCondition="VersionNT64" SourceFile="..\WinInstaller\bin\x64\Release\FITS Rating Tool (x64).msi" DisplayInternalUI="yes" />
+    </PackageGroup>
+  </Fragment>
+
+</Wix>

@@ -55,7 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </StackPanel>
     </Panel>
     <Panel Grid.Row="5">
-      <CheckBox Content="FIT Keywords" IsChecked="{Binding IsGroupedByFitsKeyword}"/>
+      <CheckBox Content="FITS Keywords" IsChecked="{Binding IsGroupedByFitsKeyword}"/>
       <Button IsVisible="{Binding IsGroupedByFitsKeyword}"
               Content="+"
               Width="15" Height="15"

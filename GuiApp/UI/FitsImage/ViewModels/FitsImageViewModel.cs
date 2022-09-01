@@ -333,7 +333,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             fitsImageRef = image.Ref();
             if (!image.IsImageDataValid)
             {
-                throw new Exception("Invalid FIT image data");
+                throw new Exception("Invalid FITS image data");
             }
             IsImageDataValid = true;
             Histogram = image.Histogram;
@@ -348,12 +348,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             fitsImage = imageLoader.LoadFit(file, maxInputSize, maxWidth, maxHeight)!;
             if (fitsImage == null)
             {
-                throw new Exception($"Failed loading FIT '{file}'");
+                throw new Exception($"Failed loading FITS '{file}'");
             }
             fitsImageRef = fitsImage.Ref();
             if (!fitsImage.LoadImageData(loaderParameters))
             {
-                throw new Exception($"Failed loading FIT '{file}': Invalid image data");
+                throw new Exception($"Failed loading FITS '{file}': Invalid image data");
             }
             IsImageDataValid = fitsImage.IsImageDataValid;
             Histogram = fitsImage.Histogram;

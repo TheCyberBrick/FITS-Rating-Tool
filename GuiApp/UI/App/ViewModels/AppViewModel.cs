@@ -678,7 +678,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory)
         {
             exporterConfiguratorManager.Register("csv", new IExporterConfiguratorManager.Factory("CSV", csvExporterConfiguratorFactory.Create));
-            exporterConfiguratorManager.Register("fits_header", new IExporterConfiguratorManager.Factory("FIT Header", fitsHeaderExporterConfiguratorFactory.Create));
+            exporterConfiguratorManager.Register("fits_header", new IExporterConfiguratorManager.Factory("FITS Header", fitsHeaderExporterConfiguratorFactory.Create));
             exporterConfiguratorManager.Register("voyager", new IExporterConfiguratorManager.Factory("Voyager RoboTarget", voyagerExporterConfiguratorFactory.Create));
         }
     }

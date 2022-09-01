@@ -72,19 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,22 +104,11 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib/cfitsio32.lib;lib/pthread32.lib;lib/zlib32.lib;lib/sep32.lib;lib/cminpack_dll32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib/cfitsio32.lib;lib/pthread32.lib;lib/zlib32.lib;lib/sep32.lib;lib/cminpack32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)bin\cfitsio32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\zlib32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\sep32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-copy /Y $(ProjectDir)bin\pthread32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y $(ProjectDir)bin\cminpack_dll32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-
-xcopy /Y "$(ProjectDir)bin\cfitsio32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\zlib32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\sep32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-copy /Y $(ProjectDir)bin\pthread32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y $(ProjectDir)bin\cminpack_dll32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,22 +129,11 @@ xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(Solution
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib/cfitsio32.lib;lib/pthread32.lib;lib/zlib32.lib;lib/sep32.lib;lib/cminpack_dll32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib/cfitsio32.lib;lib/pthread32.lib;lib/zlib32.lib;lib/sep32.lib;lib/cminpack32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)bin\cfitsio32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\zlib32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\sep32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-copy /Y $(ProjectDir)bin\pthread32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y $(ProjectDir)bin\cminpack_dll32.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-
-xcopy /Y "$(ProjectDir)bin\cfitsio32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\zlib32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)bin\sep32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-copy /Y $(ProjectDir)bin\pthread32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y $(ProjectDir)bin\cminpack_dll32.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -168,22 +150,11 @@ xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(Solution
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib/cfitsio.lib;lib/pthread.lib;lib/zlib.lib;lib/sep.lib;lib/cminpack_dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib/cfitsio.lib;lib/pthread.lib;lib/zlib.lib;lib/sep.lib;lib/cminpack.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)dll\cfitsio.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\zlib.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\sep.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-copy /Y "$(ProjectDir)dll\pthread.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y "$(ProjectDir)dll\cminpack_dll.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-
-xcopy /Y "$(ProjectDir)dll\cfitsio.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\zlib.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\sep.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-copy /Y "$(ProjectDir)dll\pthread.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y "$(ProjectDir)dll\cminpack_dll.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -204,22 +175,11 @@ xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(Solution
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>lib/cfitsio.lib;lib/pthread.lib;lib/zlib.lib;lib/sep.lib;lib/cminpack_dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib/cfitsio.lib;lib/pthread.lib;lib/zlib.lib;lib/sep.lib;lib/cminpack.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(ProjectDir)dll\cfitsio.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\zlib.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\sep.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-copy /Y "$(ProjectDir)dll\pthread.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y "$(ProjectDir)dll\cminpack_dll.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)GuiApp\bin\$(Configuration)\net6.0\"
-
-xcopy /Y "$(ProjectDir)dll\cfitsio.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\zlib.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-xcopy /Y "$(ProjectDir)dll\sep.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"
-copy /Y "$(ProjectDir)dll\pthread.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\pthreadVC2.dll"
-copy /Y "$(ProjectDir)dll\cminpack_dll.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\cminpack_dll.dll"
-xcopy /Y "$(SolutionDir)$(Platform)\$(Configuration)\FitsLoader.dll" "$(SolutionDir)ConsoleApp\bin\$(Configuration)\net6.0\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

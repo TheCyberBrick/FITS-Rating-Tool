@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -13,8 +13,43 @@
     <PackageReference Include="org.matheval" Version="1.0.0.2" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Include32Bit Condition=" '$(Include32Bit)'=='' ">false</Include32Bit>
+    <Include64Bit Condition=" '$(Include64Bit)'=='' ">false</Include64Bit>
+    <Include32Bit Condition=" '$(Platform)'=='x86' OR '$(Platform)'=='AnyCpu' ">true</Include32Bit>
+    <Include64Bit Condition=" '$(Platform)'=='x64' OR '$(Platform)'=='AnyCpu' ">true</Include64Bit>
+  </PropertyGroup>
+
+  <Target Name="BuildFitsLoader" BeforeTargets="Compile">
+    <MSBuild Condition="$(Include32Bit)" Projects="..\FitsLoader\FitsLoader.vcxproj" Properties="Platform=Win32;" />
+    <MSBuild Condition="$(Include64Bit)" Projects="..\FitsLoader\FitsLoader.vcxproj" Properties="Platform=x64;" />
+  </Target>
+
   <ItemGroup>
-    <ProjectReference Include="..\FitsLoader\FitsLoader.vcxproj" />
+    <Content Condition="$(Include32Bit)" Include="..\FitsLoader\bin\Win32\$(Configuration)\*.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)32%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include64Bit)" Include="..\FitsLoader\bin\x64\$(Configuration)\*.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include32Bit)" Include="..\FitsLoader\dll\*32.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include64Bit)" Include="..\FitsLoader\dll\*.dll" Exclude="..\FitsLoader\dll\*32.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
