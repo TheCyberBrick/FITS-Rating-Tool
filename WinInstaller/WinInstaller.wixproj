@@ -52,5 +52,6 @@
     <Error Condition=" '$(Configuration)'!='Release' " Text="Installer can only be built with 'Release' configuration." />
     <MSBuild Condition=" '$(DeployOnBuild)'!='true' AND '$(Platform)'=='x86' " Projects="..\GuiApp\GuiApp.csproj" Properties="DeployOnBuild=true;PublishProfile=Win32;" Targets="Restore;Publish" RunEachTargetSeparately="false" />
     <MSBuild Condition=" '$(DeployOnBuild)'!='true' AND '$(Platform)'=='x64' " Projects="..\GuiApp\GuiApp.csproj" Properties="DeployOnBuild=true;PublishProfile=Win64;" Targets="Restore;Publish" RunEachTargetSeparately="false" />
+    <MSBuild Projects="..\ConsoleApp\ConsoleApp.csproj" Properties="Platform=AnyCPU;" Targets="Restore;Build" RunEachTargetSeparately="false" />
   </Target>
 </Project>

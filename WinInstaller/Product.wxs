@@ -28,6 +28,7 @@
 
     <Feature Id="FITSRatingTool" Title="FITS Rating Tool" Level="1" Absent="disallow" AllowAdvertise="no" TypicalDefault="install" Display="expand" Description="Essential components." ConfigurableDirectory="INSTALLFOLDER">
       <ComponentGroupRef Id="AppBinaries$(var.Platform)" />
+      <ComponentRef Id="AppCliBinaries" />
     </Feature>
     <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether a desktop shortcut should be created." ConfigurableDirectory="INSTALLFOLDER">
       <ComponentRef Id="DesktopShortcutComponent" />
@@ -119,6 +120,15 @@
             <Verb Id="open" Command="Open" TargetProperty="FileAssociationTargetProperty" Argument="&quot;%1&quot;"/>
           </Extension>
         </ProgId>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="AppCliBinaries" Guid="d20d68b0-33f4-4840-9b68-37e08b4a365d">
+        <File Id="FitsRatingToolCli.exe" Source="..\ConsoleApp\bin\Release\net6.0\FitsRatingToolCli.exe" KeyPath="yes"/>
+        <File Id="FitsRatingToolCli.dll" Source="..\ConsoleApp\bin\Release\net6.0\FitsRatingToolCli.dll"/>
       </Component>
     </DirectoryRef>
   </Fragment>
