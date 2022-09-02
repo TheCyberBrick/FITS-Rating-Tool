@@ -21,6 +21,7 @@ using ReactiveUI;
 using System;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
+using FitsRatingTool.FitsLoader.Models;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {

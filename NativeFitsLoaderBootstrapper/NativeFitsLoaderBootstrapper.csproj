@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace></RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FitsLoader\FitsLoader.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Include32Bit Condition=" '$(Include32Bit)'=='' ">false</Include32Bit>
+    <Include64Bit Condition=" '$(Include64Bit)'=='' ">false</Include64Bit>
+    <Include32Bit Condition=" '$(Platform)'=='x86' OR '$(Platform)'=='AnyCpu' ">true</Include32Bit>
+    <Include64Bit Condition=" '$(Platform)'=='x64' OR '$(Platform)'=='AnyCpu' ">true</Include64Bit>
+  </PropertyGroup>
+
+  <Target Name="BuildNativeFitsLoader" BeforeTargets="Compile">
+    <MSBuild Condition="$(Include32Bit)" Projects="..\NativeFitsLoader\NativeFitsLoader.vcxproj" Properties="Platform=Win32;" />
+    <MSBuild Condition="$(Include64Bit)" Projects="..\NativeFitsLoader\NativeFitsLoader.vcxproj" Properties="Platform=x64;" />
+  </Target>
+
+  <ItemGroup>
+    <Content Condition="$(Include32Bit)" Include="..\NativeFitsLoader\bin\Win32\$(Configuration)\NativeFitsLoader32.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include32Bit)" Include="..\NativeFitsLoader\dll\*32.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include64Bit)" Include="..\NativeFitsLoader\bin\x64\$(Configuration)\NativeFitsLoader.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Condition="$(Include64Bit)" Include="..\NativeFitsLoader\dll\*.dll" Exclude="..\NativeFitsLoader\dll\*32.dll">
+      <InProject>false</InProject>
+      <Visible>false</Visible>
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

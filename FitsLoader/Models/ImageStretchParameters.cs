@@ -16,25 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Models
 {
-    public readonly struct FitsImageHeaderRecord : IFitsImageHeaderRecord
+    public struct ImageStretchParameters
     {
-        private readonly string keyword;
-        private readonly string value;
-        private readonly string comment;
-
-        public FitsImageHeaderRecord(string keyword, string value, string comment)
-        {
-            this.keyword = keyword;
-            this.value = value;
-            this.comment = comment;
-        }
-
-        public string Keyword => keyword;
-
-        public string Value => value;
-
-        public string Comment => comment;
+        public ChannelStretchParameters rk, g, b;
     }
 }

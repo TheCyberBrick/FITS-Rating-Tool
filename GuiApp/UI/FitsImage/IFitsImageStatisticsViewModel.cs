@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Models;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {

@@ -18,7 +18,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Models
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct PhotometryObject

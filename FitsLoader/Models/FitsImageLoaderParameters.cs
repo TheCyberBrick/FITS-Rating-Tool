@@ -16,14 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Models
 {
-    public interface IFitsImageHeaderRecord
+    public struct FitsImageLoaderParameters
     {
-        string Keyword { get; }
-
-        string Value { get; }
-
-        string Comment { get; }
+        public bool monoColorOutline;
+        public float saturation;
+        public ImageStretchParameters stretchParameters;
     }
 }

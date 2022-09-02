@@ -16,29 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Native
 {
-    public readonly struct FitsImageDim : IFitsImageDim
+    public readonly struct FitsImageDataHandle
     {
-        private readonly int nx;
-        private readonly int ny;
-        private readonly int nc;
-        private readonly int n;
-
-        public FitsImageDim(int nx, int ny, int nc, int n)
-        {
-            this.nx = nx;
-            this.ny = ny;
-            this.nc = nc;
-            this.n = n;
-        }
-
-        public int Width => nx;
-
-        public int Height => ny;
-
-        public int Channels => nc;
-
-        public int NumElements => n;
+        public readonly byte valid;
+        public readonly IntPtr image;
+        public readonly IntPtr data;
     }
 }

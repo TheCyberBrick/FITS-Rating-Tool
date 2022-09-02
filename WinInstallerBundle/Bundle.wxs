@@ -70,7 +70,7 @@
 
   <Fragment>
     <PackageGroup Id="FITSRatingTool">
-      <!--<MsiPackage Id="FITSRatingTool32" InstallCondition="NOT VersionNT64" SourceFile="..\WinInstaller\bin\x86\Release\FITS Rating Tool (x86).msi" DisplayInternalUI="yes" />-->
+      <MsiPackage Id="FITSRatingTool32" InstallCondition="NOT VersionNT64" SourceFile="..\WinInstaller\bin\x86\Release\FITS Rating Tool (x86).msi" DisplayInternalUI="yes" />
       <MsiPackage Id="FITSRatingTool64" InstallCondition="VersionNT64" SourceFile="..\WinInstaller\bin\x64\Release\FITS Rating Tool (x64).msi" DisplayInternalUI="yes" />
     </PackageGroup>
   </Fragment>

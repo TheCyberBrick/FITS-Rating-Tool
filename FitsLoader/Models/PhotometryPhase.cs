@@ -16,22 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.FitsLoader.Models;
-
-namespace FitsRatingTool.GuiApp.UI.FitsImage
+namespace FitsRatingTool.FitsLoader.Models
 {
-    public interface IFitsImageHeaderRecordViewModel : IFitsImageHeaderRecord
+    public enum PhotometryPhase
     {
-        public interface IFactory
-        {
-            IFitsImageHeaderRecordViewModel Create(FitsImageHeaderRecord record);
-        }
-
-        // Data grid sorting only seems to work if all
-        // properties are explicitly declared in the
-        // interface the data grid is bound to...
-        new string Keyword { get; }
-        new string Value { get; }
-        new string Comment { get; }
+        Median, Background, Extract, Object, Statistics, Completed
     }
 }

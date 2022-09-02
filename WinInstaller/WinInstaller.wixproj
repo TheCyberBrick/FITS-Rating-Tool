@@ -49,6 +49,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
+    <Error Condition=" '$(Configuration)'!='Release' " Text="Installer can only be built with 'Release' configuration." />
     <MSBuild Condition=" '$(DeployOnBuild)'!='true' AND '$(Platform)'=='x86' " Projects="..\GuiApp\GuiApp.csproj" Properties="DeployOnBuild=true;PublishProfile=Win32;" Targets="Restore;Publish" RunEachTargetSeparately="false" />
     <MSBuild Condition=" '$(DeployOnBuild)'!='true' AND '$(Platform)'=='x64' " Projects="..\GuiApp\GuiApp.csproj" Properties="DeployOnBuild=true;PublishProfile=Win64;" Targets="Restore;Publish" RunEachTargetSeparately="false" />
   </Target>

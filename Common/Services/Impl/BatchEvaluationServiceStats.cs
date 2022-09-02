@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Models;
 using static FitsRatingTool.Common.Models.FitsImage.IFitsImageStatistics;
 
 namespace FitsRatingTool.Common.Services.Impl

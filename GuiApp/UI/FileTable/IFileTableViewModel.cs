@@ -18,6 +18,7 @@
 
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Models;
 using ReactiveUI;
 using System.Collections;
 using System.Collections.Generic;

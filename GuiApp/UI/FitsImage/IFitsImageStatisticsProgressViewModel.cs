@@ -20,7 +20,7 @@ using FitsRatingTool.Common.Models.FitsImage;
 using System;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Progress;
-using static FitsRatingTool.Common.Models.FitsImage.NativeFitsImage;
+using FitsRatingTool.FitsLoader.Models;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {

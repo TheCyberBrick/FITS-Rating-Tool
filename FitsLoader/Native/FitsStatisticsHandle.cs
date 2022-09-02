@@ -18,20 +18,13 @@
 
 using FitsRatingTool.FitsLoader.Models;
 
-namespace FitsRatingTool.GuiApp.UI.FitsImage
+namespace FitsRatingTool.FitsLoader.Native
 {
-    public interface IFitsImageHeaderRecordViewModel : IFitsImageHeaderRecord
+    public readonly struct FitsStatisticsHandle
     {
-        public interface IFactory
-        {
-            IFitsImageHeaderRecordViewModel Create(FitsImageHeaderRecord record);
-        }
-
-        // Data grid sorting only seems to work if all
-        // properties are explicitly declared in the
-        // interface the data grid is bound to...
-        new string Keyword { get; }
-        new string Value { get; }
-        new string Comment { get; }
+        public readonly byte valid;
+        public readonly IntPtr catalog;
+        public readonly int count;
+        public readonly PhotometryStatistics statistics;
     }
 }

@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.FitsLoader.Native;
 using System.Text;
 
 namespace FitsRatingTool.Common.Models.FitsImage
@@ -49,10 +51,12 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         private int refCount = 0;
 
-        private NativeFitsLoader.FitsHandle fitsHandle;
-        private NativeFitsLoader.FitsImageDataHandle dataHandle;
-        private NativeFitsLoader.FitsStatisticsHandle statisticsHandle;
-        private NativeFitsLoader.FitsImageHandle imgHandle;
+        private readonly INativeFitsLoader loader;
+
+        private FitsHandle fitsHandle;
+        private FitsImageDataHandle dataHandle;
+        private FitsStatisticsHandle statisticsHandle;
+        private FitsImageHandle imgHandle;
 
         private volatile bool disposed = false;
 
@@ -88,8 +92,9 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         public FitsImageDim OutDim => fitsHandle.outDim;
 
-        internal NativeFitsImage(string file, NativeFitsLoader.FitsHandle fitsHandle)
+        internal NativeFitsImage(INativeFitsLoader loader, string file, FitsHandle fitsHandle)
         {
+            this.loader = loader;
             File = file;
             this.fitsHandle = fitsHandle;
 
@@ -99,7 +104,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 StringBuilder value = new(fitsHandle.max_header_value_size);
                 StringBuilder comment = new(fitsHandle.max_header_comment_size);
 
-                NativeFitsLoader.ReadHeaderRecord(fitsHandle, i, keyword, (uint)keyword.Capacity + 1, value, (uint)value.Capacity + 1, comment, (uint)comment.Capacity + 1);
+                loader.ReadHeaderRecord(fitsHandle, i, keyword, (uint)keyword.Capacity + 1, value, (uint)value.Capacity + 1, comment, (uint)comment.Capacity + 1);
 
                 string valueStr = value.ToString();
                 if (valueStr.StartsWith("'") && valueStr.EndsWith("'"))
@@ -138,7 +143,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 if (fitsHandle.info.ToInt64() != 0)
                 {
                     IsFileClosed = true;
-                    NativeFitsLoader.CloseFitFile(fitsHandle);
+                    loader.CloseFitFile(fitsHandle);
                 }
             }
         }
@@ -158,11 +163,11 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 }
                 if (dataHandle.data.ToInt64() != 0)
                 {
-                    NativeFitsLoader.FreeImageData(dataHandle);
+                    loader.FreeImageData(dataHandle);
                     dataHandle = default;
                 }
                 uint[] newHistogram = new uint[Histogram.Length];
-                dataHandle = NativeFitsLoader.LoadImageData(fitsHandle, parameters, newHistogram, (uint)newHistogram.Length);
+                dataHandle = loader.LoadImageData(fitsHandle, parameters, newHistogram, (uint)newHistogram.Length);
                 Histogram = newHistogram;
                 return IsImageDataValid = dataHandle.valid == 1;
             }
@@ -179,7 +184,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 IsImageDataValid = false;
                 if (dataHandle.data.ToInt64() != 0)
                 {
-                    NativeFitsLoader.FreeImageData(dataHandle);
+                    loader.FreeImageData(dataHandle);
                     dataHandle = default;
                 }
             }
@@ -187,7 +192,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         public bool ComputeStatisticsAndPhotometry(IFitsImage.PhotometryCallback? callback = null)
         {
-            NativeFitsLoader.FitsStatisticsHandle handle;
+            FitsStatisticsHandle handle;
             lock (this)
             {
                 if (disposed)
@@ -204,10 +209,10 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 }
                 if (statisticsHandle.catalog.ToInt64() != 0)
                 {
-                    NativeFitsLoader.FreeStatistics(statisticsHandle);
+                    loader.FreeStatistics(statisticsHandle);
                     statisticsHandle = default;
                 }
-                handle = NativeFitsLoader.ComputeStatistics(fitsHandle, dataHandle, callback != null ? (phase, nobj, iobj, nstars) => callback(phase, nobj, iobj, nstars, false, null) : null);
+                handle = loader.ComputeStatistics(fitsHandle, dataHandle, callback != null ? (phase, nobj, iobj, nstars) => callback(phase, nobj, iobj, nstars, false, null) : null);
                 statisticsHandle = handle;
                 IsStatisticsValid = handle.valid == 1;
                 var cb = callback;
@@ -253,7 +258,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return false;
                 }
                 photometry = new PhotometryObject[statisticsHandle.count];
-                return NativeFitsLoader.GetPhotometry(statisticsHandle, 0, statisticsHandle.count, 0, photometry);
+                return loader.GetPhotometry(statisticsHandle, 0, statisticsHandle.count, 0, photometry);
             }
         }
 
@@ -275,7 +280,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     parameters = default;
                     return false;
                 }
-                parameters = NativeFitsLoader.ComputeStretch(fitsHandle, dataHandle);
+                parameters = loader.ComputeStretch(fitsHandle, dataHandle);
             }
             return true;
         }
@@ -320,11 +325,11 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 }
                 if (imgHandle.data.ToInt64() != 0)
                 {
-                    NativeFitsLoader.FreeImage(imgHandle);
+                    loader.FreeImage(imgHandle);
                     imgHandle = default;
                 }
                 uint[] newHistogram = new uint[StretchedHistogram.Length];
-                imgHandle = NativeFitsLoader.ProcessImage(fitsHandle, dataHandle, imgHandle, computeStretch, parameters, newHistogram, (uint)newHistogram.Length);
+                imgHandle = loader.ProcessImage(fitsHandle, dataHandle, imgHandle, computeStretch, parameters, newHistogram, (uint)newHistogram.Length);
                 StretchedHistogram = newHistogram;
                 IsImageValid = true;
                 data = new NativeFitsImageData(imgHandle.data);
@@ -349,24 +354,24 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 {
                     if (imgHandle.data.ToInt64() != 0)
                     {
-                        NativeFitsLoader.FreeImage(imgHandle);
+                        loader.FreeImage(imgHandle);
                         imgHandle = default;
                     }
 
                     if (statisticsHandle.catalog.ToInt64() != 0)
                     {
-                        NativeFitsLoader.FreeStatistics(statisticsHandle);
+                        loader.FreeStatistics(statisticsHandle);
                         statisticsHandle = default;
                     }
 
                     if (dataHandle.image.ToInt64() != 0)
                     {
-                        NativeFitsLoader.FreeImageData(dataHandle);
+                        loader.FreeImageData(dataHandle);
                         dataHandle = default;
                     }
 
-                    NativeFitsLoader.CloseFitFile(fitsHandle);
-                    NativeFitsLoader.FreeFit(fitsHandle);
+                    loader.CloseFitFile(fitsHandle);
+                    loader.FreeFit(fitsHandle);
                     fitsHandle = default;
 
                     disposed = true;

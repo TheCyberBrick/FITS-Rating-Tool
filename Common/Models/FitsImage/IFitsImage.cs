@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.FitsLoader.Models;
+
 namespace FitsRatingTool.Common.Models.FitsImage
 {
     public interface IFitsImage : IFitsImageMetadata, IDisposable

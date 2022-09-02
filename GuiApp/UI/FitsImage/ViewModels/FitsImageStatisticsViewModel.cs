@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Models;
 using ReactiveUI;
 using System;
 using static FitsRatingTool.Common.Models.FitsImage.IFitsImageStatistics;

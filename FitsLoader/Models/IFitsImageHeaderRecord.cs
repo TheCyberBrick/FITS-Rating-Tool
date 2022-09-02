@@ -16,10 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Models
 {
-    public enum PhotometryPhase
+    public interface IFitsImageHeaderRecord
     {
-        Median, Background, Extract, Object, Statistics, Completed
+        string Keyword { get; }
+
+        string Value { get; }
+
+        string Comment { get; }
     }
 }

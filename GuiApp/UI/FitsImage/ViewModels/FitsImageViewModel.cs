@@ -20,6 +20,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Visuals.Media.Imaging;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Services;
+using FitsRatingTool.FitsLoader.Models;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;

@@ -17,18 +17,26 @@
 */
 
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Native;
 
 namespace FitsRatingTool.Common.Services.Impl
 {
     public class FitsImageLoader : IFitsImageLoader
     {
+        private readonly INativeFitsLoader loader;
+
+        public FitsImageLoader()
+        {
+            loader = NativeFitsLoaderFactory.Create();
+        }
+
         public IFitsImage? LoadFit(string file, long maxInputSize, int maxWidth, int maxHeight)
         {
-            var fitsHandle = NativeFitsLoader.LoadFit(file, maxInputSize, maxWidth, maxHeight);
+            var fitsHandle = loader.LoadFit(file, maxInputSize, maxWidth, maxHeight);
 
             if (fitsHandle.valid == 1)
             {
-                return new NativeFitsImage(file, fitsHandle);
+                return new NativeFitsImage(loader, file, fitsHandle);
             }
 
             return null;

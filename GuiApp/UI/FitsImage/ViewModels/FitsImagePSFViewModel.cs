@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.FitsLoader.Models;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {

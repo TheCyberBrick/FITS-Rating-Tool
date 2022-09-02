@@ -16,14 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.FitsLoader.Native
 {
-    public struct ChannelStretchParameters
+    public readonly struct FitsImageHandle
     {
-        public int max_input;
-
-        public float shadows;
-        public float highlights;
-        public float midtones;
-    };
+        public readonly IntPtr data;
+    }
 }
