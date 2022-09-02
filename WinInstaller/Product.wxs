@@ -32,6 +32,9 @@
     <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether a desktop shortcut should be created." ConfigurableDirectory="INSTALLFOLDER">
       <ComponentRef Id="DesktopShortcutComponent" />
     </Feature>
+    <Feature Id="MenuShortcutFeature" Title="Start Menu Shortcut" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether a start menu shortcut should be created." ConfigurableDirectory="INSTALLFOLDER">
+      <ComponentRef Id="MenuShortcutComponent" />
+    </Feature>
     <Feature Id="FileAssociationFeature" Title="File Association" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether FITS files should be associated with FITS Rating Tool." ConfigurableDirectory="INSTALLFOLDER">
       <ComponentRef Id="FileAssociationComponent" />
     </Feature>
@@ -58,6 +61,25 @@
           <RemoveFolder Id="CleanUpDesktopShortcut" On="uninstall" />
           <RegistryValue Root="HKCU" Key="Software\TCB\FITSRatingTool" Name="installed" Type="integer" Value="1" KeyPath="yes" />
         </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="MenuFolder" Name="FITS Rating Tool">
+          <Component Id="MenuShortcutComponent" Guid="ad4132fc-476f-4a5a-98c2-99f8bf698986">
+            <Shortcut
+              Id="MenuShortcut"
+              Name="FITS Rating Tool"
+              Description="A tool for viewing and automatically grading FITS (Flexible Image Transport System) .fit/.fits/.fts files."
+              Target="[INSTALLFOLDER]FITSRatingTool.exe"
+              WorkingDirectory="INSTALLFOLDER" />
+            <RemoveFolder Id="CleanUpMenuShortcut" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\TCB\FITSRatingTool" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+        </Directory>
       </Directory>
     </DirectoryRef>
   </Fragment>
