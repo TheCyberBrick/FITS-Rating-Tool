@@ -26,14 +26,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:paz="using:Avalonia.Controls.PanAndZoom"
              xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
-             x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerView">
+             x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerView"
+             Cursor="Cross">
 
   <Panel ClipToBounds="True">
 
     <paz:ZoomBorder Name="ZoomBorder" Stretch="Uniform" ZoomSpeed="1.2"
                     Background="Transparent" ClipToBounds="True" Focusable="True"
                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                    MinZoomX="1" MinZoomY="1" EnableConstrains="True">
+                    MinZoomX="1" MinZoomY="1" EnableConstrains="True"
+                    PanButton="Middle" AltPanButton="Right"
+                    AltCtrlPanButton="Left" AltCtrlPanButtonRequiresCtrl="{Binding IsPeekViewerEnabled}">
       <Border Padding="-1"
               VerticalAlignment="Center"
               HorizontalAlignment="Center"

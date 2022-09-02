@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
-    <HarvestDirectory Include="$(HarvestPath)" ComponentGroupName="AppBinaries-$(Platform)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.HarvestPath" AutogenerateGuids="true" SuppressRegistry="true" SuppressRootDirectory="true" SuppressCom="true" />
+    <HarvestDirectory Include="$(HarvestPath)" ComponentGroupName="AppBinaries$(Platform)" DirectoryRefId="INSTALLFOLDER" PreprocessorVariable="var.HarvestPath" AutogenerateGuids="true" SuppressRegistry="true" SuppressRootDirectory="true" SuppressCom="true" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />

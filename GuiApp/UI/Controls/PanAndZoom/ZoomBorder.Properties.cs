@@ -26,6 +26,24 @@ public partial class ZoomBorder
         AvaloniaProperty.Register<ZoomBorder, ButtonName>(nameof(PanButton), ButtonName.Middle, false, BindingMode.TwoWay);
 
     /// <summary>
+    /// Identifies the <seealso cref="AltPanButton"/> avalonia property.
+    /// </summary>
+    public static StyledProperty<ButtonName?> AltPanButtonProperty =
+        AvaloniaProperty.Register<ZoomBorder, ButtonName?>(nameof(AltPanButton), null, false, BindingMode.TwoWay);
+
+    /// <summary>
+    /// Identifies the <seealso cref="AltCtrlPanButton"/> avalonia property.
+    /// </summary>
+    public static StyledProperty<ButtonName?> AltCtrlPanButtonProperty =
+        AvaloniaProperty.Register<ZoomBorder, ButtonName?>(nameof(AltCtrlPanButton), null, false, BindingMode.TwoWay);
+
+    /// <summary>
+    /// Identifies the <seealso cref="AltCtrlPanButton"/> avalonia property.
+    /// </summary>
+    public static StyledProperty<bool> AltCtrlPanButtonRequiresCtrlProperty =
+        AvaloniaProperty.Register<ZoomBorder, bool>(nameof(AltCtrlPanButtonRequiresCtrl), true, false, BindingMode.TwoWay);
+
+    /// <summary>
     /// Identifies the <seealso cref="ZoomSpeed"/> avalonia property.
     /// </summary>
     public static StyledProperty<double> ZoomSpeedProperty =
@@ -199,6 +217,33 @@ public partial class ZoomBorder
     {
         get => GetValue(PanButtonProperty);
         set => SetValue(PanButtonProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets alternative pan input button.
+    /// </summary>
+    public ButtonName? AltPanButton
+    {
+        get => GetValue(AltPanButtonProperty);
+        set => SetValue(AltPanButtonProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets alternative ctrl pan input button.
+    /// </summary>
+    public ButtonName? AltCtrlPanButton
+    {
+        get => GetValue(AltCtrlPanButtonProperty);
+        set => SetValue(AltCtrlPanButtonProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether alternative ctrl pan input button requires ctrl to be pressed.
+    /// </summary>
+    public bool AltCtrlPanButtonRequiresCtrl
+    {
+        get => GetValue(AltCtrlPanButtonRequiresCtrlProperty);
+        set => SetValue(AltCtrlPanButtonRequiresCtrlProperty, value);
     }
 
     /// <summary>

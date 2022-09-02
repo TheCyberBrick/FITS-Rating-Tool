@@ -194,17 +194,24 @@ public partial class ZoomBorder : Border
         ZoomDeltaTo(e.Delta.Y, point.X, point.Y);
     }
 
+    private bool IsPressed(ButtonName button, PointerPointProperties? properties)
+    {
+        return properties != null
+            && ((properties.IsLeftButtonPressed && button == ButtonName.Left)
+            || (properties.IsRightButtonPressed && button == ButtonName.Right)
+            || (properties.IsMiddleButtonPressed && button == ButtonName.Middle));
+    }
+
     private void Pressed(PointerPressedEventArgs e)
     {
         if (!EnablePan)
         {
             return;
         }
-        var button = PanButton;
         var properties = e.GetCurrentPoint(this).Properties;
-        if ((!properties.IsLeftButtonPressed || button != ButtonName.Left)
-            && (!properties.IsRightButtonPressed || button != ButtonName.Right)
-            && (!properties.IsMiddleButtonPressed || button != ButtonName.Middle))
+        if (!IsPressed(PanButton, properties)
+            && (AltPanButton == null || !IsPressed(AltPanButton.Value, properties))
+            && ((!e.KeyModifiers.HasFlag(KeyModifiers.Control) && AltCtrlPanButtonRequiresCtrl) || AltCtrlPanButton == null || !IsPressed(AltCtrlPanButton.Value, properties)))
         {
             return;
         }

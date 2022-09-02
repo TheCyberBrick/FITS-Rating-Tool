@@ -57,7 +57,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.Views
 
             zoomBorder.PointerPressed += (_, e) =>
             {
-                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && window != null && imageView != null && !isPeekViewerOpen && ViewModel != null && ViewModel.IsPeekViewerEnabled)
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !e.KeyModifiers.HasFlag(KeyModifiers.Control) && window != null && imageView != null && !isPeekViewerOpen && ViewModel != null && ViewModel.IsPeekViewerEnabled)
                 {
                     CancellationTokenSource cts = new();
 

@@ -27,7 +27,7 @@
     <UIRef Id="WixUI_FeatureTree" />
 
     <Feature Id="FITSRatingTool" Title="FITS Rating Tool" Level="1" Absent="disallow" AllowAdvertise="no" TypicalDefault="install" Display="expand" Description="Essential components." ConfigurableDirectory="INSTALLFOLDER">
-      <ComponentGroupRef Id="AppBinaries-$(var.Platform)" />
+      <ComponentGroupRef Id="AppBinaries$(var.Platform)" />
     </Feature>
     <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1" Absent="allow" AllowAdvertise="no" TypicalDefault="install" Description="Whether a desktop shortcut should be created." ConfigurableDirectory="INSTALLFOLDER">
       <ComponentRef Id="DesktopShortcutComponent" />
