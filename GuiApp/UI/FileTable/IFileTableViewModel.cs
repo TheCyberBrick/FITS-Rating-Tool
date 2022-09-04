@@ -20,6 +20,7 @@ using Avalonia.Collections;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.FitsLoader.Models;
 using ReactiveUI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -48,19 +49,29 @@ namespace FitsRatingTool.GuiApp.UI.FileTable
 
             public string FileName => Path.GetFileName(File);
 
+            public long FileSize { get; }
+
+            public DateTime CreationDate { get; }
+
+            public DateTime ModificationDate { get; }
+
             public IFitsImageMetadata? Metadata { get; }
 
             public IReadOnlyList<IFitsImageHeaderRecord> Header { get; }
 
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
-            public Record(string file, string? obj, string? date, string? filter, float? exposureTime, IFitsImageMetadata? metadata, IReadOnlyList<IFitsImageHeaderRecord> header)
+            public Record(string file, string? obj, string? date, string? filter, float? exposureTime, long fileSize,
+                DateTime creationDate, DateTime modificationDate, IFitsImageMetadata? metadata, IReadOnlyList<IFitsImageHeaderRecord> header)
             {
                 File = file;
                 Object = obj;
                 Date = date;
                 Filter = filter;
                 ExposureTime = exposureTime;
+                FileSize = fileSize;
+                CreationDate = creationDate;
+                ModificationDate = modificationDate;
                 Metadata = metadata;
                 Header = header;
                 Remove = ReactiveCommand.Create(() => { });
@@ -69,7 +80,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable
 
         AvaloniaList<Record> Records { get; }
 
-        IFileTableViewModel.Record? SelectedRecord { get; set; }
+        Record? SelectedRecord { get; set; }
 
         ReactiveCommand<IEnumerable, Unit> RemoveRecords { get; }
     }

@@ -46,21 +46,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </Style>
   </Window.Styles>
 
-  <Grid ColumnDefinitions="*,9,Auto">
+  <Grid ColumnDefinitions="*,Auto,Auto">
 
-    <HeaderedContentControl Grid.Column="0"
-                            Padding="4">
-      <HeaderedContentControl.Header>
-        <StackPanel Orientation="Horizontal">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Viewbox Width="16" Height="16">
-              <Image Source="/Assets/Icons/list.png"/>
-            </Viewbox>
-            <TextBlock Text="Files" VerticalAlignment="Center"/>
-          </StackPanel>
-        </StackPanel>
-      </HeaderedContentControl.Header>
-
+    <Border Grid.Column="0"
+            Classes="themed"
+            Padding="1">
       <DataGrid Items="{Binding Records}"
                 VerticalScrollBarVisibility="Visible"
                 HorizontalScrollBarVisibility="Visible"
@@ -95,19 +85,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </controls:FixedContextMenu>
             </Setter>
           </Style>
-
-          <Style Selector="DataGridColumnHeader">
-            <Setter Property="Margin" Value="4 0 4 0"/>
-            <Setter Property="Padding" Value="4 4 12 4"/>
-          </Style>
-
-          <Style Selector="DataGridCell /template/ Grid">
-            <Setter Property="Margin" Value="4 0 4 0"/>
-          </Style>
         </DataGrid.Styles>
 
         <DataGrid.Columns>
-          <controls:DataGridSelectableTextColumn Header="Filename" Binding="{Binding FileName, FallbackValue=-, Mode=OneWay}"/>
+          <controls:DataGridSelectableTextColumn Header="File Name" Binding="{Binding FileName, FallbackValue=-, Mode=OneWay}"/>
           <controls:DataGridSelectableTextColumn Header="File" Binding="{Binding File, FallbackValue=-, Mode=OneWay}" Width="50"/>
           <controls:DataGridSelectableTextColumn Header="Date" Binding="{Binding Date, FallbackValue=-, Mode=OneWay}"/>
           <controls:DataGridSelectableTextColumn Header="Object" Binding="{Binding Object, FallbackValue=-, Mode=OneWay}"/>
@@ -115,50 +96,80 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <controls:DataGridSelectableTextColumn Header="Exposure" Binding="{Binding ExposureTime, StringFormat={}{0:#.##}s, FallbackValue=-, Mode=OneWay}"/>
         </DataGrid.Columns>
       </DataGrid>
-    </HeaderedContentControl>
+    </Border>
 
-    <GridSplitter Grid.Column="1" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Background="Transparent"/>
-    
-    <HeaderedContentControl Grid.Column="2"
-                            Padding="4">
-      <HeaderedContentControl.Header>
-        <StackPanel Orientation="Horizontal">
+    <GridSplitter Grid.Column="1"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
+                  Background="Transparent"
+                  Width="9"
+                  IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+    <Grid RowDefinitions="Auto,*"
+          Grid.Column="2"
+          IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNotNull}}">
+
+      <HeaderedContentControl Grid.Row="0" Padding="4" Margin="0 0 0 4">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="16" Height="16">
+                <Image Source="/Assets/Icons/info.png"/>
+              </Viewbox>
+              <TextBlock Text="File Info" VerticalAlignment="Center" Margin="0 0 20 0"/>
+            </StackPanel>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+
+        <Grid ColumnDefinitions="Auto,10,*"
+              RowDefinitions="Auto,4,Auto,4,Auto">
+          <TextBlock Grid.Column="0" Grid.Row="0" Foreground="#FFDEDEDE" Text="Size"/>
+          <TextBlock Grid.Column="2" Grid.Row="0" Foreground="#FFDEDEDE" Text="{Binding SelectedRecord.FileSize, Converter={x:Static converters:FileSizeConverter.StringWithSuffix}}" HorizontalAlignment="Right"/>
+          <TextBlock Grid.Column="0" Grid.Row="2" Foreground="#FFDEDEDE" Text="Creation date"/>
+          <TextBlock Grid.Column="2" Grid.Row="2" Foreground="#FFDEDEDE" Text="{Binding SelectedRecord.CreationDate, StringFormat={}{0:dd/MM/yyyy HH:mm}}" HorizontalAlignment="Right"/>
+          <TextBlock Grid.Column="0" Grid.Row="4" Foreground="#FFDEDEDE" Text="Modification date"/>
+          <TextBlock Grid.Column="2" Grid.Row="4" Foreground="#FFDEDEDE" Text="{Binding SelectedRecord.ModificationDate, StringFormat={}{0:dd/MM/yyyy HH:mm}}" HorizontalAlignment="Right"/>
+        </Grid>
+
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Row="1" Padding="4" Margin="0 4 0 0">
+        <HeaderedContentControl.Header>
           <StackPanel Orientation="Horizontal" Spacing="8">
             <Viewbox Width="16" Height="16">
-              <Image Source="/Assets/Icons/info.png"/>
+              <Image Source="/Assets/Icons/list.png"/>
             </Viewbox>
-            <TextBlock Text="Info" VerticalAlignment="Center" Margin="0 0 20 0"/>
+            <TextBlock Text="FITS Header"/>
           </StackPanel>
-        </StackPanel>
-      </HeaderedContentControl.Header>
+        </HeaderedContentControl.Header>
 
-      <DataGrid Items="{Binding SelectedRecord.Header}"
-            VerticalScrollBarVisibility="Visible"
-            HorizontalScrollBarVisibility="Visible"
-            AutoGenerateColumns="False"
-            VerticalAlignment="Top"
-            IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=True}">
-        <DataGrid.Styles>
-          <Style Selector="DataGridCell">
-            <Setter Property="ToolTip.Tip">
-              <Template>
-                <Grid ColumnDefinitions="Auto,12,Auto" RowDefinitions="Auto,5,Auto">
-                  <TextBlock Grid.Column="0" Grid.Row="0" Text="Keyword"/>
-                  <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Keyword, Mode=OneWay}"/>
-                  <TextBlock Grid.Column="0" Grid.Row="2" Text="Value"/>
-                  <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Value, Mode=OneWay}"/>
-                </Grid>
-              </Template>
-            </Setter>
-          </Style>
-        </DataGrid.Styles>
-        <DataGrid.Columns>
-          <controls:DataGridSelectableTextColumn Header="Keyword" Binding="{Binding Keyword, Mode=OneWay}" Foreground="#FFDEDEDE"/>
-          <controls:DataGridSelectableTextColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Foreground="#FFDEDEDE"/>
-        </DataGrid.Columns>
-      </DataGrid>
+        <DataGrid Items="{Binding SelectedRecord.Header}"
+                  VerticalScrollBarVisibility="Visible"
+                  HorizontalScrollBarVisibility="Visible"
+                  AutoGenerateColumns="False"
+                  VerticalAlignment="Top"
+                  IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=True}">
+          <DataGrid.Styles>
+            <Style Selector="DataGridCell">
+              <Setter Property="ToolTip.Tip">
+                <Template>
+                  <Grid ColumnDefinitions="Auto,12,Auto" RowDefinitions="Auto,5,Auto">
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Keyword"/>
+                    <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Keyword, Mode=OneWay}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Value"/>
+                    <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Value, Mode=OneWay}"/>
+                  </Grid>
+                </Template>
+              </Setter>
+            </Style>
+          </DataGrid.Styles>
+          <DataGrid.Columns>
+            <controls:DataGridSelectableTextColumn Header="Keyword" Binding="{Binding Keyword, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+            <controls:DataGridSelectableTextColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </HeaderedContentControl>
 
-    </HeaderedContentControl>
+    </Grid>
 
   </Grid>
 

@@ -27,6 +27,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -134,11 +135,28 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                 }
             }
 
+            long fileSize = 0;
+            DateTime creationDate = new DateTime();
+            DateTime modificationDate = new DateTime();
+
+            try
+            {
+                var info = new FileInfo(file);
+                fileSize = info.Length;
+                creationDate = info.CreationTime;
+                modificationDate = info.LastWriteTime;
+            }
+            catch (Exception)
+            {
+                // OK
+            }
+
             var newRecord = new IFileTableViewModel.Record(file,
                 GetObjectFromHeader(header),
                 GetDateStringFromHeader(header),
                 GetFilterFromHeader(header),
                 GetExposureTimeFromHeader(header),
+                fileSize, creationDate, modificationDate,
                 metadata, records);
 
             newRecord.Remove.Subscribe(_ => manager.Remove(newRecord.File));
