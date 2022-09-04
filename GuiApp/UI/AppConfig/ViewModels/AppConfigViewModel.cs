@@ -109,9 +109,13 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         {
             var category = appConfigCategoryFactory.Create("General");
 
+            category.Settings.Add(new BoolSettingViewModel("Open Files In New Window", () => appConfig.OpenFileInNewWindow, v => appConfig.OpenFileInNewWindow = v)
+            {
+                Description = "Whether files opened through the explorer should be opened in a new window. Changing this setting may require restarting the currently open instance(s) to take effect."
+            });
             category.Settings.Add(new IntegerSettingViewModel("Max. Auto Load Count", () => appConfig.AutoLoadMaxImageCount, v => appConfig.AutoLoadMaxImageCount = v, 1, 512, 1)
             {
-                Description = "Maximum number of automatically loaded images. This includes images opened via program launch argument."
+                Description = "Maximum number of automatically loaded images. This includes images opened through the explorer, voyager integration or via program launch argument."
             });
             category.Settings.Add(new PathSettingViewModel("Default Evaluation Formula", () => appConfig.DefaultEvaluationFormulaPath, v => appConfig.DefaultEvaluationFormulaPath = v, PathType.File, new List<string>() { "txt" })
             {

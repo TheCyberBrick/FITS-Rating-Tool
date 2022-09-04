@@ -38,6 +38,13 @@ namespace FitsRatingTool.GuiApp
             remove => _onOpenFile -= value;
         }
 
+        private static volatile bool _openFileInNewWindow = false;
+        public static bool OpenFileInNewWindow
+        {
+            get => _openFileInNewWindow;
+            set => _openFileInNewWindow = value;
+        }
+
         public static string? LaunchFilePath
         {
             get;
@@ -66,12 +73,21 @@ namespace FitsRatingTool.GuiApp
                             {
                                 stream.WaitForConnection();
 
-                                using (var reader = new StreamReader(stream))
+                                if (OpenFileInNewWindow)
                                 {
-                                    var file = reader.ReadLine();
-                                    if (file != null)
+                                    stream.WriteByte(1);
+                                }
+                                else
+                                {
+                                    stream.WriteByte(0);
+
+                                    using (var reader = new StreamReader(stream))
                                     {
-                                        _onOpenFile?.Invoke(null, file);
+                                        var file = reader.ReadLine();
+                                        if (file != null)
+                                        {
+                                            _onOpenFile?.Invoke(null, file);
+                                        }
                                     }
                                 }
                             }
@@ -97,16 +113,22 @@ namespace FitsRatingTool.GuiApp
 
                 if (!isOwner)
                 {
-                    // Delegate to already running instance
                     try
                     {
                         using (var stream = new NamedPipeClientStream(PIPE_GUID))
                         {
                             stream.Connect(1000);
 
-                            using (var writer = new StreamWriter(stream))
+                            if (stream.ReadByte() == 0)
                             {
-                                writer.WriteLine(LaunchFilePath);
+                                // Delegate to already running instance
+                                using (var writer = new StreamWriter(stream))
+                                {
+                                    writer.WriteLine(LaunchFilePath);
+                                }
+
+                                // And exit
+                                return;
                             }
                         }
                     }
@@ -115,10 +137,8 @@ namespace FitsRatingTool.GuiApp
                         Debug.WriteLine("Failed sending file path:");
                         Debug.WriteLine(ex.Message);
                         Debug.WriteLine(ex.StackTrace);
+                        return;
                     }
-
-                    // And exit
-                    return;
                 }
             }
 

@@ -22,6 +22,10 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public interface IAppConfig
     {
+        #region Misc
+        public bool OpenFileInNewWindow { get; set; }
+        #endregion
+
         #region Viewer
         public int AutoLoadMaxImageCount { get; set; }
         #endregion

@@ -32,6 +32,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.groupingManager = groupingManager;
         }
 
+        #region Misc
+        public bool OpenFileInNewWindow
+        {
+            get => bool.TryParse(manager.Get("OpenFileInNewWindow"), out bool value) ? value : false;
+            set => manager.Set("OpenFileInNewWindow", value.ToString());
+        }
+        #endregion
+
         #region Viewer
         public int AutoLoadMaxImageCount
         {

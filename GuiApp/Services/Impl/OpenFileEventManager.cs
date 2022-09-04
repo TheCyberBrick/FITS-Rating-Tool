@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia.Utilities;
 using System;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
@@ -32,15 +33,35 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public string? LaunchFilePath { get; private set; }
 
-        public OpenFileEventManager()
+
+        private readonly IAppConfig appConfig;
+
+        public OpenFileEventManager(IAppConfigManager configManager, IAppConfig appConfig)
         {
+            this.appConfig = appConfig;
+
             Program.OnOpenFile += OnProgramOpenFile;
             LaunchFilePath = Program.LaunchFilePath;
+
+            SyncSettings();
+
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueEventArgs, OpenFileEventManager>(configManager, nameof(configManager.ValueChanged), OnConfigChanged);
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueEventArgs, OpenFileEventManager>(configManager, nameof(configManager.ValuesReloaded), OnConfigChanged);
         }
 
         private void OnProgramOpenFile(object? sender, string file)
         {
             _onOpenFile?.Invoke(this, new IOpenFileEventManager.OpenFileEventArgs(file));
+        }
+
+        private void OnConfigChanged(object? sender, IAppConfigManager.ValueEventArgs e)
+        {
+            SyncSettings();
+        }
+
+        private void SyncSettings()
+        {
+            Program.OpenFileInNewWindow = appConfig.OpenFileInNewWindow;
         }
     }
 }
