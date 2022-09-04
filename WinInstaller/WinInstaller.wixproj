@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="../Directory.Build.Props"/>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -31,7 +32,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <HarvestPath>..\GuiApp\bin\$(Configuration)\net6.0\publish\win-$(Platform)\</HarvestPath>
-    <DefineConstants>HarvestPath=$(HarvestPath)</DefineConstants>
+	<DefineConstants>HarvestPath=$(HarvestPath);ProductName=$(ProductName);Authors=$(Authors);Copyright=$(Copyright);</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <WixExtension Include="WixUIExtension">

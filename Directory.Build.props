@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <ProductName>FITS Rating Tool</ProductName>
+    <Authors>TheCyberBrick</Authors>
+    <Copyright>Copyright © 2022 TheCyberBrick</Copyright>
+    <AssemblyTitle>This component is part of FITS Rating Tool.</AssemblyTitle>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Product>$(ProductName)</Product>
+    <AssemblyName>FITSRatingTool.$(MSBuildProjectName)</AssemblyName>
+    <AssemblyVersionMajor>$(VersionPrefix.Split('.')[0])</AssemblyVersionMajor>
+    <AssemblyVersionMinor>$(VersionPrefix.Split('.')[1])</AssemblyVersionMinor>
+    <AssemblyVersionPatch>$(VersionPrefix.Split('.')[2])</AssemblyVersionPatch>
+  </PropertyGroup>
+</Project>

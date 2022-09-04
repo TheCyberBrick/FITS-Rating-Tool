@@ -450,6 +450,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             ResetStretch = ReactiveCommand.CreateFromTask(async () =>
             {
+                KeepStretch = false;
                 try
                 {
                     var image = FitsImage;

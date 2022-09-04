@@ -75,13 +75,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)32</TargetName>
+    <TargetName>$(AssemblyName)32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)32</TargetName>
+    <TargetName>$(AssemblyName)32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -113,6 +113,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FILE_DESCRIPTION=$(AssemblyTitle);FILE_VERSION=$(VersionPrefix).0;INTERNAL_NAME=$(TargetName)$(TargetExt);LEGAL_COPYRIGHT=$(Copyright);ORIGINAL_FILENAME=$(TargetName)$(TargetExt);PRODUCT_NAME=$(ProductName);PRODUCT_VERSION=$(VersionPrefix).0;RC_VERSION_MAJOR=$(AssemblyVersionMajor);RC_VERSION_MINOR=$(AssemblyVersionMinor);RC_VERSION_PATCH=$(AssemblyVersionPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -138,6 +141,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FILE_DESCRIPTION=$(AssemblyTitle);FILE_VERSION=$(VersionPrefix).0;INTERNAL_NAME=$(TargetName)$(TargetExt);LEGAL_COPYRIGHT=$(Copyright);ORIGINAL_FILENAME=$(TargetName)$(TargetExt);PRODUCT_NAME=$(ProductName);PRODUCT_VERSION=$(VersionPrefix).0;RC_VERSION_MAJOR=$(AssemblyVersionMajor);RC_VERSION_MINOR=$(AssemblyVersionMinor);RC_VERSION_PATCH=$(AssemblyVersionPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -159,6 +165,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FILE_DESCRIPTION=$(AssemblyTitle);FILE_VERSION=$(VersionPrefix).0;INTERNAL_NAME=$(TargetName)$(TargetExt);LEGAL_COPYRIGHT=$(Copyright);ORIGINAL_FILENAME=$(TargetName)$(TargetExt);PRODUCT_NAME=$(ProductName);PRODUCT_VERSION=$(VersionPrefix).0;RC_VERSION_MAJOR=$(AssemblyVersionMajor);RC_VERSION_MINOR=$(AssemblyVersionMinor);RC_VERSION_PATCH=$(AssemblyVersionPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -184,6 +193,9 @@
       <Command>
       </Command>
     </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FILE_DESCRIPTION=$(AssemblyTitle);FILE_VERSION=$(VersionPrefix).0;INTERNAL_NAME=$(TargetName)$(TargetExt);LEGAL_COPYRIGHT=$(Copyright);ORIGINAL_FILENAME=$(TargetName)$(TargetExt);PRODUCT_NAME=$(ProductName);PRODUCT_VERSION=$(VersionPrefix).0;RC_VERSION_MAJOR=$(AssemblyVersionMajor);RC_VERSION_MINOR=$(AssemblyVersionMinor);RC_VERSION_PATCH=$(AssemblyVersionPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fitsattributes.h" />
@@ -193,6 +205,7 @@
     <ClInclude Include="hsv.h" />
     <ClInclude Include="fitsdataloader.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stretch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -200,6 +213,9 @@
     <ClCompile Include="dll.cpp" />
     <ClCompile Include="fitsloader.cpp" />
     <ClCompile Include="fitsdatatype.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="NativeFitsLoader.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

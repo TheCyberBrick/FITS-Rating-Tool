@@ -22,7 +22,7 @@ namespace FitsRatingTool.FitsLoader.Native
 {
     public class NativeFitsLoaderFactory
     {
-        private const string NativeFitsLoaderBootstrapperAssembly = "NativeFitsLoaderBootstrapper";
+        private const string NativeFitsLoaderBootstrapperAssembly = "FITSRatingTool.NativeFitsLoaderBootstrapper";
         private const string NativeFitsLoaderBootstrapperType = "NativeFitsLoaderBootstrapper";
 
         private static readonly string AssemblyPath = Path.GetDirectoryName(typeof(NativeFitsLoaderFactory).Assembly.Location) ?? "";
@@ -52,7 +52,7 @@ namespace FitsRatingTool.FitsLoader.Native
         {
             if (assemblyName == "NativeFitsLoader")
             {
-                assemblyName = Environment.Is64BitProcess ? "NativeFitsLoader.dll" : "NativeFitsLoader32.dll";
+                assemblyName = Environment.Is64BitProcess ? "FITSRatingTool.NativeFitsLoader.dll" : "FITSRatingTool.NativeFitsLoader32.dll";
                 return Path.Combine(AssemblyPath, assemblyName);
             }
             return null;

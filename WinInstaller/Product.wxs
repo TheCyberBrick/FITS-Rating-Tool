@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?if $(var.Platform) = x64 ?>
-<?define ProductName = "FITS Rating Tool (64 bit)" ?>
+<?define ProductName = "$(var.ProductName) (64 bit)" ?>
 <?define Win64 = "yes" ?>
 <?define Arch = "x64" ?>
 <?define ArchSuffix = "" ?>
 <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
 <?else ?>
-<?define ProductName = "FITS Rating Tool (32 bit)" ?>
+<?define ProductName = "$(var.ProductName) (32 bit)" ?>
 <?define Win64 = "no" ?>
 <?define Arch = "x86" ?>
 <?define ArchSuffix = "32" ?>
@@ -15,7 +15,7 @@
 <?define Resources = "resources\" ?>
 <?define Version = "1.0.0" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.Version).0" Manufacturer="TCB" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
+  <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.Version).0" Manufacturer="$(var.Authors)" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed." />

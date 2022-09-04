@@ -24,7 +24,7 @@
   </Target>
 
   <ItemGroup>
-    <Content Condition="$(Include32Bit)" Include="..\NativeFitsLoader\bin\Win32\$(Configuration)\NativeFitsLoader32.dll">
+    <Content Condition="$(Include32Bit)" Include="..\NativeFitsLoader\bin\Win32\$(Configuration)\FITSRatingTool.NativeFitsLoader32.dll">
       <InProject>false</InProject>
       <Visible>false</Visible>
       <Link>%(Filename)%(Extension)</Link>
@@ -36,7 +36,7 @@
       <Link>%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Condition="$(Include64Bit)" Include="..\NativeFitsLoader\bin\x64\$(Configuration)\NativeFitsLoader.dll">
+    <Content Condition="$(Include64Bit)" Include="..\NativeFitsLoader\bin\x64\$(Configuration)\FITSRatingTool.NativeFitsLoader.dll">
       <InProject>false</InProject>
       <Visible>false</Visible>
       <Link>%(Filename)%(Extension)</Link>
