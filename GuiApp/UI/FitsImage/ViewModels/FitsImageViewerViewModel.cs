@@ -34,7 +34,6 @@ using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.Utils;
-using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
@@ -147,6 +146,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
+
+        private bool _isPrimaryViewer = true;
+        public bool IsPrimaryViewer
+        {
+            get => _isPrimaryViewer;
+            set => this.RaiseAndSetIfChanged(ref _isPrimaryViewer, value);
+        }
 
         private bool _keepStretch;
         public bool KeepStretch
@@ -291,6 +297,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         public ReactiveCommand<BitmapInterpolationMode, Unit> SetInterpolationMode { get; }
 
         public ReactiveCommand<Unit, Unit> ResetStretch { get; }
+
+        public ReactiveCommand<Unit, Unit> ApplyStretchToAll { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
@@ -462,6 +470,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 {
                     // Don't care, image no longer used
                 }
+            });
+
+            ApplyStretchToAll = ReactiveCommand.Create(() =>
+            {
+                KeepStretch = true;
             });
 
             CalculateStatistics = ReactiveCommand.CreateFromTask(async () =>

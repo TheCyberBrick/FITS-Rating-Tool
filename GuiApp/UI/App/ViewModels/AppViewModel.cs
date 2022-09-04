@@ -39,6 +39,7 @@ using static FitsRatingTool.GuiApp.UI.App.IAppViewModel;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
 using FitsRatingTool.GuiApp.UI.AppConfig;
+using System.Collections.Specialized;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -265,7 +266,52 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             {
                 var files = await LoadImagesOpenFileDialog.Handle(Unit.Default);
 
-                await LoadImagesWithProgressDialog.Execute(files);
+                Item? lastAddedItem = null;
+
+                void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                    if (e.NewItems != null)
+                    {
+                        var item = e.NewItems[e.NewItems.Count - 1] as Item;
+                        if (files.Contains(item?.Image.File))
+                        {
+                            lastAddedItem = item;
+                        }
+                    }
+                }
+
+                Items.CollectionChanged += OnItemsChanged;
+
+                try
+                {
+                    await LoadImagesWithProgressDialog.Execute(files);
+                }
+                finally
+                {
+                    Items.CollectionChanged -= OnItemsChanged;
+                }
+
+                if (lastAddedItem != null)
+                {
+                    SelectedItem = lastAddedItem;
+                }
+                else
+                {
+                    foreach (var file in files.Reverse())
+                    {
+                        if (manager.Contains(file))
+                        {
+                            foreach (var item in Items)
+                            {
+                                if (item.Image.File == file)
+                                {
+                                    SelectedItem = item;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             SwitchImage = ReactiveCommand.Create<Unit>(_ =>

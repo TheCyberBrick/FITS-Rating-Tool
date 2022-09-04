@@ -53,6 +53,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         int MaxConcurrentLoadingImages { get; set; }
 
+        bool IsPrimaryViewer { get; set; }
+
         bool KeepStretch { get; set; }
 
         bool ShowPhotometry { get; set; }
@@ -98,6 +100,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
         ReactiveCommand<BitmapInterpolationMode, Unit> SetInterpolationMode { get; }
 
         ReactiveCommand<Unit, Unit> ResetStretch { get; }
+
+        ReactiveCommand<Unit, Unit> ApplyStretchToAll { get; }
 
         ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 

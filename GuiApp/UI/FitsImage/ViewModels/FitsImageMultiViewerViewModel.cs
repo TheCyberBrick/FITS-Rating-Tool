@@ -194,9 +194,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             newInstance.Close.Subscribe(_ => RemoveInstance(newInstance));
 
+            newInstance.Viewer.ApplyStretchToAll.Subscribe(_ => ApplyStretchToAll(newInstance));
+
             if (isFirstInstance)
             {
                 Instances.Add(newInstance);
+                newInstance.Viewer.IsPrimaryViewer = true;
             }
             else
             {
@@ -208,10 +211,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 if (Instances.Count == 0)
                 {
                     Instances.Add(newInstance);
+                    newInstance.Viewer.IsPrimaryViewer = true;
                 }
                 else
                 {
                     Instances.Insert(1, newInstance);
+                    newInstance.Viewer.IsPrimaryViewer = false;
                 }
             }
 
@@ -249,6 +254,27 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             _viewerUnloaded?.Invoke(this, new ViewerEventArgs(instance.Viewer, true));
 
             DisposeViewer(instance.Viewer);
+        }
+
+        private void ApplyStretchToAll(Instance instance)
+        {
+            var image = instance.Viewer.FitsImage;
+            if (image != null)
+            {
+                foreach (var otherInstance in Instances)
+                {
+                    var otherImage = otherInstance.Viewer.FitsImage;
+
+                    if (otherImage != null)
+                    {
+                        otherImage.Shadows = image.Shadows;
+                        otherImage.Midtones = image.Midtones;
+                        otherImage.Highlights = image.Highlights;
+                        otherImage.PreserveColorBalance = image.PreserveColorBalance;
+                        otherInstance.Viewer.KeepStretch = true;
+                    }
+                }
+            }
         }
 
         private async void DisposeViewer(IFitsImageViewerViewModel viewer)

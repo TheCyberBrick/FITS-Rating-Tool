@@ -40,6 +40,7 @@
     <AvaloniaResource Remove="Assets\Styles\Window.axaml" />
     <AvaloniaResource Remove="Assets\Styles\WindowControlButton.axaml" />
     <None Remove=".gitignore" />
+    <None Remove="Assets\Icons\checkmark.png" />
     <None Remove="Assets\Icons\close.png" />
     <None Remove="Assets\Icons\error.png" />
     <None Remove="Assets\Icons\export.png" />

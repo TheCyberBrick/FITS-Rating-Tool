@@ -34,27 +34,70 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <TextBlock Grid.Column="0" Grid.Row="2" Foreground="#FFDEDEDE" Text="Highlights:" VerticalAlignment="Center" Margin="0 0 8 2"/>
     <controls:PrecisionSlider Grid.Column="1" Grid.Row="2" Value="{Binding FitsImage.Highlights}" Minimum="0" Maximum="1" Margin="0 0 0 2"/>
 
-    <CheckBox Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Content="Keep stretch" IsChecked="{Binding KeepStretch, FallbackValue=False}" Margin="0 4 0 6"/>
+    <CheckBox Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
+              IsVisible="{Binding IsPrimaryViewer}"
+              IsChecked="{Binding KeepStretch, FallbackValue=False}"
+              Content="Keep stretch"
+              Margin="0 4 0 6"
+              ToolTip.Tip="When checked the same stretch will be applied to subsequently loaded images."/>
 
-    <CheckBox Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Content="Color Balance" IsChecked="{Binding !FitsImage.PreserveColorBalance, FallbackValue=False}" Margin="0 4 0 6" HorizontalAlignment="Right"/>
+    <Border Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
+            IsVisible="{Binding !IsPrimaryViewer}"
+            Background="Transparent"
+            BorderThickness="0.5"
+            ToolTip.Tip="Keep stretch can only be used on the primary viewer.">
+      <CheckBox IsChecked="False"
+                IsEnabled="False"
+                Content="Keep stretch"
+                Margin="0 4 0 6"/>
+    </Border>
 
-    <Button Grid.Column="0" Grid.ColumnSpan="2"
-            Grid.Row="4"
-            Command="{Binding ResetStretch}"
-            HorizontalAlignment="Stretch">
-      <Grid ColumnDefinitions="Auto,10,*">
-        <TextBlock Grid.Column="0"
-                   Text="Reset"
-                   HorizontalAlignment="Left"
-                   Margin="4 0 0 0"/>
-        <Viewbox Grid.Column="2"
-                 Width="16" Height="16"
-                 HorizontalAlignment="Right"
-                 Margin="-2 -1 -2 -2">
-          <Image Source="/Assets/Icons/undo.png"/>
-        </Viewbox>
-      </Grid>
-    </Button>
+    <CheckBox Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"
+              Content="Color balance"
+              IsChecked="{Binding !FitsImage.PreserveColorBalance, FallbackValue=False}"
+              Margin="0 4 0 6"
+              HorizontalAlignment="Right"
+              ToolTip.Tip="Applied a rudimentary color balancing method to remove excessive tints."/>
+
+    <Grid Grid.Column="0" Grid.ColumnSpan="2"
+          Grid.Row="4"
+          ColumnDefinitions="*,*">
+      <Button Grid.Column="0"
+              Command="{Binding ResetStretch}"
+              HorizontalAlignment="Stretch"
+              Margin="0 0 1 0">
+        <Grid ColumnDefinitions="Auto,10,*">
+          <TextBlock Grid.Column="0"
+                     Text="Reset"
+                     HorizontalAlignment="Left"
+                     Margin="4 0 0 0"/>
+          <Viewbox Grid.Column="2"
+                   Width="16" Height="16"
+                   HorizontalAlignment="Right"
+                   Margin="-2 -1 -2 -2">
+            <Image Source="/Assets/Icons/undo.png"/>
+          </Viewbox>
+        </Grid>
+      </Button>
+      <Button Grid.Column="1"
+              Command="{Binding ApplyStretchToAll}"
+              HorizontalAlignment="Stretch"
+              Margin="1 0 0 0"
+              ToolTip.Tip="Applies this stretch to all other images.">
+        <Grid ColumnDefinitions="Auto,10,*">
+          <TextBlock Grid.Column="0"
+                     Text="Apply"
+                     HorizontalAlignment="Left"
+                     Margin="4 0 0 0"/>
+          <Viewbox Grid.Column="2"
+                   Width="14" Height="14"
+                   HorizontalAlignment="Right"
+                   Margin="-2 -1 -2 -2">
+            <Image Source="/Assets/Icons/checkmark.png"/>
+          </Viewbox>
+        </Grid>
+      </Button>
+    </Grid>
   </Grid>
 
 </UserControl>
