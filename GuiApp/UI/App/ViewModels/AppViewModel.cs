@@ -206,7 +206,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 {
                     try
                     {
-                        var image = fitsImageFactory.Create(file, 805306368, 256, 256);
+                        var image = fitsImageFactory.Create(file, appConfig.MaxImageSize, appConfig.MaxThumbnailWidth, appConfig.MaxThumbnailHeight);
                         image.PreserveColorBalance = false;
                         await image.UpdateOrCreateBitmapAsync();
                         return image;
@@ -633,7 +633,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             {
                 try
                 {
-                    var image = fitsImageFactory.Create(file, 805306368, 256, 256);
+                    var image = fitsImageFactory.Create(file, appConfig.MaxImageSize, appConfig.MaxThumbnailWidth, appConfig.MaxThumbnailHeight);
                     image.PreserveColorBalance = false;
                     await image.UpdateOrCreateBitmapAsync();
                     return image;

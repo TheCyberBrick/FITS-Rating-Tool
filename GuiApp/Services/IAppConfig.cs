@@ -28,6 +28,16 @@ namespace FitsRatingTool.GuiApp.Services
 
         #region Viewer
         public int AutoLoadMaxImageCount { get; set; }
+
+        public long MaxImageSize { get; set; }
+
+        public int MaxImageWidth { get; set; }
+
+        public int MaxImageHeight { get; set; }
+
+        public int MaxThumbnailWidth { get; set; }
+
+        public int MaxThumbnailHeight { get; set; }
         #endregion
 
         #region Evaluation

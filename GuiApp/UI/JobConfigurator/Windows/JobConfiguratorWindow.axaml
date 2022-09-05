@@ -264,7 +264,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                      VerticalAlignment="Center"/>
 
           <NumericUpDown Grid.Row="0" Grid.Column="2"
-                         Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1048576}"
+                         Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1000000}"
                          Minimum="1"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>

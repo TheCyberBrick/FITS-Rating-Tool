@@ -21,6 +21,7 @@ using Avalonia.Visuals.Media.Imaging;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -40,26 +41,29 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private readonly IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory;
             private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
             private readonly IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory;
+            private readonly IAppConfig appConfig;
 
             public Factory(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory,
                 IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-                IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory)
+                IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IAppConfig appConfig)
             {
                 this.imageLoader = imageLoader;
                 this.fitsImageHeaderRecordFactory = fitsImageHeaderRecordFactory;
                 this.fitsImageStatisticsProgressFactory = fitsImageStatisticsProgressFactory;
                 this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
                 this.fitsImagePhotometryFactory = fitsImagePhotometryFactory;
+                this.appConfig = appConfig;
             }
 
             public IFitsImageViewModel Create(string file)
             {
-                return Create(file, 805306368, 8192, 8192);
+                return Create(file, appConfig.MaxImageSize, appConfig.MaxImageWidth, appConfig.MaxImageHeight);
             }
 
-            public IFitsImageViewModel Create(string file, long maxInputSize = 805306368, int maxWidth = 8192, int maxHeight = 8192)
+            public IFitsImageViewModel Create(string file, long maxInputSize = -1, int maxWidth = -1, int maxHeight = -1)
             {
-                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file, maxInputSize, maxWidth, maxHeight);
+                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file,
+                    maxInputSize < 0 ? appConfig.MaxImageSize : maxInputSize, maxWidth < 0 ? appConfig.MaxImageWidth : maxWidth, maxHeight < 0 ? appConfig.MaxImageHeight : maxHeight);
             }
 
             public IFitsImageViewModel Create(IFitsImage image)

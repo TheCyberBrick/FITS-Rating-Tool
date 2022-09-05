@@ -36,17 +36,19 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private readonly IFitsImageManager manager;
             private readonly IFitsImageViewModel.IFactory fitsImageFactory;
             private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
+            private readonly IAppConfig appConfig;
 
-            public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory)
+            public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IAppConfig appConfig)
             {
                 this.manager = manager;
                 this.fitsImageFactory = fitsImageFactory;
                 this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
+                this.appConfig = appConfig;
             }
 
             public IFitsImageAllStatisticsProgressViewModel Create(IEnumerable<string> images, bool useRepository)
             {
-                return new FitsImageAllStatisticsProgressViewModel(manager, fitsImageFactory, fitsImageStatisticsFactory, useRepository, images);
+                return new FitsImageAllStatisticsProgressViewModel(manager, fitsImageFactory, fitsImageStatisticsFactory, appConfig, useRepository, images);
             }
         }
 
@@ -124,13 +126,17 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IFitsImageViewModel.IFactory fitsImageFactory;
         private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
+        private readonly IAppConfig appConfig;
+
         private readonly bool useRepository;
 
-        private FitsImageAllStatisticsProgressViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, bool useRepository, IEnumerable<string> images) : base(null)
+        private FitsImageAllStatisticsProgressViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
+            IAppConfig appConfig, bool useRepository, IEnumerable<string> images) : base(null)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
             this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
+            this.appConfig = appConfig;
             this.useRepository = useRepository;
             this.images.AddRange(images);
         }
@@ -163,7 +169,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         }
                     }
 
-                    var imagevm = await Task.Run(() => fitsImageFactory.Create(image));
+                    var imagevm = await Task.Run(() => fitsImageFactory.Create(image, appConfig.MaxImageSize, appConfig.MaxImageWidth, appConfig.MaxImageHeight));
 
                     try
                     {

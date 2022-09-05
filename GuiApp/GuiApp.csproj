@@ -125,6 +125,12 @@
     <Compile Update="UI\AppConfig\Views\GroupingConfigurationSettingView.axaml.cs">
       <DependentUpon>GroupingConfigurationSettingView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\AppConfig\Views\SettingSeparatorView.axaml.cs">
+      <DependentUpon>SettingSeparatorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\AppConfig\Views\LongSettingView.axaml.cs">
+      <DependentUpon>LongSettingView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\AppConfig\Views\IntegerSettingView.axaml.cs">
       <DependentUpon>IntegerSettingView.axaml</DependentUpon>
     </Compile>

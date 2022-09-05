@@ -46,6 +46,36 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             get => int.TryParse(manager.Get("AutoLoadMaxImageCount"), out int count) ? count : 64;
             set => manager.Set("AutoLoadMaxImageCount", value.ToString());
         }
+
+        public long MaxImageSize
+        {
+            get => long.TryParse(manager.Get("MaxImageSize"), out long value) ? value : 805306368;
+            set => manager.Set("MaxImageSize", value.ToString());
+        }
+
+        public int MaxImageWidth
+        {
+            get => int.TryParse(manager.Get("MaxImageWidth"), out int value) ? value : 8192;
+            set => manager.Set("MaxImageWidth", value.ToString());
+        }
+
+        public int MaxImageHeight
+        {
+            get => int.TryParse(manager.Get("MaxImageHeight"), out int value) ? value : 8192;
+            set => manager.Set("MaxImageHeight", value.ToString());
+        }
+
+        public int MaxThumbnailWidth
+        {
+            get => int.TryParse(manager.Get("MaxThumbnailWidth"), out int value) ? value : 256;
+            set => manager.Set("MaxThumbnailWidth", value.ToString());
+        }
+
+        public int MaxThumbnailHeight
+        {
+            get => int.TryParse(manager.Get("MaxThumbnailHeight"), out int value) ? value : 256;
+            set => manager.Set("MaxThumbnailHeight", value.ToString());
+        }
         #endregion
 
         #region Evaluation

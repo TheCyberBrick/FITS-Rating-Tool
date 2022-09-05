@@ -48,10 +48,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
             private readonly IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory;
             private readonly IStarSampler starSampler;
+            private readonly IAppConfig appConfig;
 
             public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionViewerFactory,
                 IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-                IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler)
+                IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
             {
                 this.manager = manager;
                 this.fitsImageFactory = fitsImageFactory;
@@ -60,11 +61,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
                 this.fitsImageHistogramFactory = fitsImageHistogramFactory;
                 this.starSampler = starSampler;
+                this.appConfig = appConfig;
             }
 
             public IFitsImageViewerViewModel Create()
             {
-                return new FitsImageViewerViewModel(manager, fitsImageFactory, fitsImageSectionViewerFactory, fitsImageCornerViewerFactory, fitsImageStatisticsFactory, fitsImageHistogramFactory, starSampler);
+                return new FitsImageViewerViewModel(manager, fitsImageFactory, fitsImageSectionViewerFactory, fitsImageCornerViewerFactory, fitsImageStatisticsFactory, fitsImageHistogramFactory, starSampler, appConfig);
             }
         }
 
@@ -356,13 +358,17 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private FitsImageViewerViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory,
             IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory,
-            IStarSampler starSampler)
+            IStarSampler starSampler, IAppConfig appConfig)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
             this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
             this.fitsImageHistogramFactory = fitsImageHistogramFactory;
             this.starSampler = starSampler;
+
+            MaxInputSize = appConfig.MaxImageSize;
+            MaxWidth = appConfig.MaxImageWidth;
+            MaxHeight = appConfig.MaxImageHeight;
 
             var OnFitsImageChange = () => this.WhenAnyValue(x => x.FitsImage);
             OnFitsImageChange.Observe(LoadFitsImageAsync).WithExceptionHandler(ex =>
