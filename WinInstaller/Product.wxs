@@ -15,7 +15,7 @@
 <?define Resources = "resources\" ?>
 <?define Version = "1.0.0" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.Version).0" Manufacturer="$(var.Authors)" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
+  <Product Id="*" Name="$(var.ProductName) $(var.Version).0" Language="1033" Version="$(var.Version).0" Manufacturer="$(var.Authors)" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed." />
@@ -127,8 +127,19 @@
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER">
       <Component Id="AppCliBinaries" Guid="d20d68b0-33f4-4840-9b68-37e08b4a365d">
-        <File Id="FitsRatingToolCli.exe" Source="..\ConsoleApp\bin\Release\net6.0\FitsRatingToolCli.exe" KeyPath="yes"/>
-        <File Id="FitsRatingToolCli.dll" Source="..\ConsoleApp\bin\Release\net6.0\FitsRatingToolCli.dll"/>
+        <?if $(var.Platform) = x64 ?>
+        <File Id="FitsRatingToolCli.exe" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x64\FitsRatingToolCli.exe" KeyPath="yes"/>
+        <File Id="FitsRatingToolCli.dll" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x64\FitsRatingToolCli.dll"/>
+        <File Id="FitsRatingToolCli.deps.json" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x64\FitsRatingToolCli.deps.json"/>
+        <File Id="FitsRatingToolCli.pdb" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x64\FitsRatingToolCli.pdb"/>
+        <File Id="FitsRatingToolCli.runtimeconfig.json" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x64\FitsRatingToolCli.runtimeconfig.json"/>
+        <?else ?>
+        <File Id="FitsRatingToolCli.exe" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x86\FitsRatingToolCli.exe" KeyPath="yes"/>
+        <File Id="FitsRatingToolCli.dll" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x86\FitsRatingToolCli.dll"/>
+        <File Id="FitsRatingToolCli.deps.json" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x86\FitsRatingToolCli.deps.json"/>
+        <File Id="FitsRatingToolCli.pdb" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x86\FitsRatingToolCli.pdb"/>
+        <File Id="FitsRatingToolCli.runtimeconfig.json" Source="..\ConsoleApp\bin\Release\net6.0\publish\win-x86\FitsRatingToolCli.runtimeconfig.json"/>
+        <?endif ?>
       </Component>
     </DirectoryRef>
   </Fragment>

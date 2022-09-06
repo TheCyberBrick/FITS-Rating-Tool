@@ -12,12 +12,10 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
 	<DefineConstants>ProductName=$(ProductName);Authors=$(Authors);Copyright=$(Copyright);</DefineConstants>
@@ -43,7 +41,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <MSBuild Projects="..\WinInstaller\WinInstaller.wixproj" Properties="Platform=x86;" RunEachTargetSeparately="true" />
-    <MSBuild Projects="..\WinInstaller\WinInstaller.wixproj" Properties="Platform=x64;" RunEachTargetSeparately="true" />
+    <MSBuild Projects="..\WinInstaller\WinInstaller.wixproj" Properties="Platform=x86;" />
+    <MSBuild Projects="..\WinInstaller\WinInstaller.wixproj" Properties="Platform=x64;" />
   </Target>
 </Project>

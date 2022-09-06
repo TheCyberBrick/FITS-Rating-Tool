@@ -2,7 +2,7 @@
 <?define Resources = "resources\" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
 
-  <Bundle Name="$(var.ProductName)" Version="!(bind.packageVersion.FITSRatingTool64)" Manufacturer="$(var.Authors)" Copyright="$(var.Copyright)" UpgradeCode="3535e416-1d32-40b3-8228-470b5a0f2bce">
+  <Bundle Name="$(var.ProductName) !(bind.packageVersion.FITSRatingTool64)" Version="!(bind.packageVersion.FITSRatingTool64)" Manufacturer="$(var.Authors)" Copyright="$(var.Copyright)" UpgradeCode="3535e416-1d32-40b3-8228-470b5a0f2bce">
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
       <bal:WixStandardBootstrapperApplication LicenseUrl="" SuppressOptionsUI="yes" LogoFile="$(var.Resources)logo.png" />
     </BootstrapperApplicationRef>

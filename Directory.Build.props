@@ -5,12 +5,14 @@
     <Authors>TheCyberBrick</Authors>
     <Copyright>Copyright © 2022 TheCyberBrick</Copyright>
     <AssemblyTitle>This component is part of FITS Rating Tool.</AssemblyTitle>
+    <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup>
     <Product>$(ProductName)</Product>
-    <AssemblyName>FITSRatingTool.$(MSBuildProjectName)</AssemblyName>
+    <AssemblyName>$([System.Text.RegularExpressions.Regex]::Replace($(ProductName), "[^A-Za-z0-9]", "")).$(MSBuildProjectName)</AssemblyName>
     <AssemblyVersionMajor>$(VersionPrefix.Split('.')[0])</AssemblyVersionMajor>
     <AssemblyVersionMinor>$(VersionPrefix.Split('.')[1])</AssemblyVersionMinor>
     <AssemblyVersionPatch>$(VersionPrefix.Split('.')[2])</AssemblyVersionPatch>
+    <BaseIntermediateOutputPath>$(SolutionDir)\obj\$(MSBuildProjectName)\$(Configuration)</BaseIntermediateOutputPath>
   </PropertyGroup>
 </Project>
