@@ -4,7 +4,7 @@
     <ProductName>FITS Rating Tool</ProductName>
     <Authors>TheCyberBrick</Authors>
     <Copyright>Copyright © 2022 TheCyberBrick</Copyright>
-    <AssemblyTitle>This component is part of FITS Rating Tool.</AssemblyTitle>
+    <AssemblyTitle>FITS Rating Tool Component</AssemblyTitle>
     <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup>

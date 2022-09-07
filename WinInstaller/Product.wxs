@@ -13,7 +13,6 @@
 <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
 <?endif ?>
 <?define Resources = "resources\" ?>
-<?define Version = "1.0.0" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="$(var.ProductName) $(var.Version).0" Language="1033" Version="$(var.Version).0" Manufacturer="$(var.Authors)" UpgradeCode="fc49a8b2-3962-42a4-b05b-f6604471a294">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />

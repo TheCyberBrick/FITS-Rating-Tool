@@ -7,9 +7,10 @@
     <Nullable>enable</Nullable>
     <RootNamespace>FitsRatingTool.ConsoleApp</RootNamespace>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <AssemblyTitle>FITS Rating Tool CLI</AssemblyTitle>
     <AssemblyName>FitsRatingToolCli</AssemblyName>
   </PropertyGroup>
 

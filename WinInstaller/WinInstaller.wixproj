@@ -28,7 +28,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <HarvestPath>..\GuiApp\bin\$(Configuration)\net6.0\publish\win-$(Platform)\</HarvestPath>
-	<DefineConstants>HarvestPath=$(HarvestPath);ProductName=$(ProductName);Authors=$(Authors);Copyright=$(Copyright);</DefineConstants>
+	<DefineConstants>HarvestPath=$(HarvestPath);ProductName=$(ProductName);Authors=$(Authors);Copyright=$(Copyright);Version=$(VersionPrefix);</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <WixExtension Include="WixUIExtension">
