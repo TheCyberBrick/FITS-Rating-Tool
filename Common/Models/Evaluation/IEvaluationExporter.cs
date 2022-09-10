@@ -34,7 +34,7 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         ISet<string> ExportVariablesFilter { get; }
 
-        Task WriteAsync(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
+        Task ExportAsync(IEvaluationExporterEventDispatcher events, string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
 
         Task FlushAsync(CancellationToken cancellationToken = default);
 

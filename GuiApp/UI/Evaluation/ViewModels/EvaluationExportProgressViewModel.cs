@@ -54,9 +54,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        private class Context : IEvaluationExporterContext
+        private class Context : EvaluationExporterContext
         {
-            public string ResolvePath(string path)
+            public override string ResolvePath(string path)
             {
                 return Environment.ExpandEnvironmentVariables(path);
             }
@@ -141,7 +141,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                         return CreateCancellation(new ExportResult(0, 0));
                     }
 
-                    var ctx = new Context();
+                    using var ctx = new Context();
 
                     var exporter = exporterConfigurator.CreateExporter(ctx);
 
@@ -244,7 +244,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                                         currentFilePath = file
                                     });
 
-                                    await exporter.WriteAsync(file, groupKey, variableValues, value, ct);
+                                    await exporter.ExportAsync(ctx, file, groupKey, variableValues, value, ct);
                                     await exporter.FlushAsync(ct);
 
                                     Interlocked.Increment(ref numExported);

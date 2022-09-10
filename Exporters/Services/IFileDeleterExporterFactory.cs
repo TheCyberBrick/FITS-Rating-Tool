@@ -16,14 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Evaluation
+using FitsRatingTool.Common.Services;
+
+namespace FitsRatingTool.Exporters.Services
 {
-    public interface IEvaluationExporterContext : IEvaluationExporterEventDispatcher
+    public interface IFileDeleterExporterFactory : IEvaluationExporterFactory
     {
-        string ResolvePath(string path);
+        const string EVENT_DELETING_FILE = "deleting_file";
 
-        event EventHandler<ExporterEventArgs> OnExporterEvent;
+        public class DeletingFileEventParameters
+        {
+            public string File { get; }
 
-        event EventHandler OnExporterCleanup;
+            public DeletingFileEventParameters(string file)
+            {
+                File = file;
+            }
+        }
     }
 }

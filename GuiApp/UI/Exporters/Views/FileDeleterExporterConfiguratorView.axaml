@@ -1,0 +1,110 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.FileDeleterExporterConfiguratorView">
+
+  <Grid RowDefinitions="Auto">
+    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,12,Auto" ColumnDefinitions="Auto,10,*">
+
+      <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+              Classes="themed dark"
+              Padding="4">
+        <WrapPanel>
+          <TextBlock Text="This exporter"/>
+          <TextBlock Text=" permanently deletes  " FontWeight="UltraBold" FontStyle="Italic" Foreground="#fcdb03"/>
+          <TextBlock Text="files if their rating"/>
+          <TextBlock Text="is below 'Min. Rating Threshold' or above 'Max. Rating Threshold'!&#xD;Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points the correct files." TextWrapping="Wrap"/>
+        </WrapPanel>
+      </Border>
+
+      <CheckBox Grid.Row="2" Grid.Column="0"
+                Content="Min. Rating Threshold"
+                IsChecked="{Binding IsMinRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Value="{Binding MinRatingThreshold}"
+                     IsEnabled="{Binding IsMinRatingThresholdEnabled}"
+                     FormatString="0.######"
+                     Minimum="-1000000" Maximum="1000000"/>
+
+      <CheckBox Grid.Row="4" Grid.Column="0"
+                Content="Max. Rating Threshold"
+                IsChecked="{Binding IsMaxRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="4" Grid.Column="2"
+                     Value="{Binding MaxRatingThreshold}"
+                     IsEnabled="{Binding IsMaxRatingThresholdEnabled}"
+                     FormatString="0.######"
+                     Minimum="-1000000" Maximum="1000000"/>
+
+      <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
+            ColumnDefinitions="Auto,*"
+            HorizontalAlignment="Center">
+
+        <TextBlock Grid.Column="0" Text="Rule: ">
+          <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="IsMinRatingThresholdEnabled"/>
+              <Binding Path="IsMaxRatingThresholdEnabled"/>
+            </MultiBinding>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Delete file if rating is less than {0}.">
+              <Binding Path="MinRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsGreaterThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Delete file if rating is greater than {0}.">
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanOrGreaterThanRule, FallbackValue=True}"
+                   Foreground="#fcdb03"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Delete file if rating is less than {0} or greater than {1}.">
+              <Binding Path="MinRatingThreshold"/>
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+      </Grid>
+
+    </Grid>
+  </Grid>
+
+</UserControl>

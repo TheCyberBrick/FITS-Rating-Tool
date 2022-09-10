@@ -39,7 +39,8 @@ namespace FitsRatingTool.ConsoleApp
         private Dictionary<string, IEvaluationExporterFactory> exporterFactories = new();
 
         public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, ICSVEvaluationExporterFactory csvEvaluationExporterFactory,
-            IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory)
+            IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory,
+            IFileDeleterExporterFactory fileDeleterExporterFactory)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.evaluator = evaluator;
@@ -47,6 +48,7 @@ namespace FitsRatingTool.ConsoleApp
             RegisterExporter("csv", csvEvaluationExporterFactory);
             RegisterExporter("fits_header", fitsHeaderEvaluationExporterFactory);
             RegisterExporter("voyager", voyagerEvaluationExporterFactory);
+            RegisterExporter("file_deleter", fileDeleterExporterFactory);
         }
 
         private void RegisterExporter(string id, IEvaluationExporterFactory factory)

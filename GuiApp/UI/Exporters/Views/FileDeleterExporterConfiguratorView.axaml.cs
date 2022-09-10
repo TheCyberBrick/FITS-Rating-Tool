@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,14 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Evaluation
+using Avalonia.Markup.Xaml;
+
+namespace FitsRatingTool.GuiApp.UI.Exporters.Views
 {
-    public interface IEvaluationExporterContext : IEvaluationExporterEventDispatcher
+    public partial class FileDeleterExporterConfiguratorView : BaseExporterConfiguratorView
     {
-        string ResolvePath(string path);
-
-        event EventHandler<ExporterEventArgs> OnExporterEvent;
-
-        event EventHandler OnExporterCleanup;
+        public FileDeleterExporterConfiguratorView()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }

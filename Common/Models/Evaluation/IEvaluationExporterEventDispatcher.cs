@@ -18,12 +18,21 @@
 
 namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IEvaluationExporterContext : IEvaluationExporterEventDispatcher
+    public interface IEvaluationExporterEventDispatcher
     {
-        string ResolvePath(string path);
+        public class ExporterEventArgs : EventArgs
+        {
+            public string Name { get; }
 
-        event EventHandler<ExporterEventArgs> OnExporterEvent;
+            public object? Parameter { get; }
 
-        event EventHandler OnExporterCleanup;
+            public ExporterEventArgs(string name, object? parameter)
+            {
+                Name = name;
+                Parameter = parameter;
+            }
+        }
+
+        void Send(IEvaluationExporter sender, string name, object? parameter);
     }
 }

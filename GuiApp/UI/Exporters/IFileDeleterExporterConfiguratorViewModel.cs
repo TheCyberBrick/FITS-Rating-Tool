@@ -16,14 +16,29 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Evaluation
+using FitsRatingTool.GuiApp.Services;
+
+namespace FitsRatingTool.GuiApp.UI.Exporters
 {
-    public interface IEvaluationExporterContext : IEvaluationExporterEventDispatcher
+    public interface IFileDeleterExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
     {
-        string ResolvePath(string path);
+        public interface IFactory
+        {
+            public IFileDeleterExporterConfiguratorViewModel Create();
+        }
 
-        event EventHandler<ExporterEventArgs> OnExporterEvent;
+        bool IsMinRatingThresholdEnabled { get; set; }
 
-        event EventHandler OnExporterCleanup;
+        float MinRatingThreshold { get; set; }
+
+        bool IsMaxRatingThresholdEnabled { get; set; }
+
+        float MaxRatingThreshold { get; set; }
+
+        bool IsLessThanRule { get; }
+
+        bool IsGreaterThanRule { get; }
+
+        bool IsLessThanOrGreaterThanRule { get; }
     }
 }

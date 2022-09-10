@@ -63,7 +63,7 @@ namespace FitsRatingTool.Exporters.Services.Impl
             }
 
 
-            public async Task WriteAsync(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default)
+            public async Task ExportAsync(IEvaluationExporterEventDispatcher events, string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default)
             {
                 if (ExportValue)
                 {

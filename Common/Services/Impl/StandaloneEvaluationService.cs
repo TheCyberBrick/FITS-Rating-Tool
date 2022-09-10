@@ -23,7 +23,7 @@ namespace FitsRatingTool.Common.Services.Impl
 {
     public partial class StandaloneEvaluationService : IStandaloneEvaluationService
     {
-        private class Context : IEvaluationExporterContext
+        private class Context : EvaluationExporterContext
         {
             private readonly string workingDir;
 
@@ -32,7 +32,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 this.workingDir = workingDir;
             }
 
-            public string ResolvePath(string path)
+            public override string ResolvePath(string path)
             {
                 path = Environment.ExpandEnvironmentVariables(path);
                 return (Path.IsPathRooted(path) ? "" : workingDir) + path;
@@ -290,7 +290,9 @@ namespace FitsRatingTool.Common.Services.Impl
                     }
                 }
 
-                exporters = await LoadExportersAsync(new Context(workingDir), jobConfig, logWriter, cancellationToken);
+                using var ctx = new Context(workingDir);
+
+                exporters = await LoadExportersAsync(ctx, jobConfig, logWriter, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -318,7 +320,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     {
                         try
                         {
-                            await exporter.WriteAsync(file, groupKey, variableValues, value, ct);
+                            await exporter.ExportAsync(ctx, file, groupKey, variableValues, value, ct);
                         }
                         catch (Exception ex)
                         {

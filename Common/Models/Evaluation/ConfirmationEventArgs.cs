@@ -20,7 +20,7 @@ using System.Collections.Concurrent;
 
 namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public class ConfirmationEventArgs
+    public class ConfirmationEventArgs : EventArgs
     {
         public enum Result
         {

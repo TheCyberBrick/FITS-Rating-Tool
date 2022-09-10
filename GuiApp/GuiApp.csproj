@@ -159,6 +159,9 @@
     <Compile Update="UI\Evaluation\Windows\EvaluationExportProgressWindow.axaml.cs">
       <DependentUpon>EvaluationExportProgressWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Exporters\Views\FileDeleterExporterConfiguratorView.axaml.cs">
+      <DependentUpon>FileDeleterExporterConfiguratorView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\Exporters\Views\VoyagerExporterConfiguratorView.axaml.cs">
       <DependentUpon>VoyagerExporterConfiguratorView.axaml</DependentUpon>
     </Compile>

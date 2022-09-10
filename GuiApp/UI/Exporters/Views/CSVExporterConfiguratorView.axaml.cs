@@ -16,9 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia.Markup.Xaml;
+
 namespace FitsRatingTool.GuiApp.UI.Exporters.Views
 {
     public partial class CSVExporterConfiguratorView : BaseExporterConfiguratorView
     {
+        public CSVExporterConfiguratorView()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }
