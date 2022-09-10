@@ -73,12 +73,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             public ReactiveCommand<Unit, Unit> Remove { get; } = ReactiveCommand.Create(() => { });
 
-            public ConstantViewModel(IInstrumentProfileViewModel profile)
+            private readonly InstrumentProfileViewModel profile;
+
+            public ConstantViewModel(InstrumentProfileViewModel profile)
             {
-                Profile = profile;
+                Profile = this.profile = profile;
                 _isNameValid = this.WhenAnyValue(x => x.Name, ValidateName).ToProperty(this, x => x.IsNameValid);
 
-                this.WhenAnyValue(x => x.Name).Subscribe(_ => Profile.IsModified = true);
+                this.WhenAnyValue(x => x.Name).Subscribe(_ =>
+                {
+                    Profile.IsModified = true;
+                    profile.ValidateConstants();
+                });
                 this.WhenAnyValue(x => x.Value).Subscribe(_ => Profile.IsModified = true);
             }
 
@@ -229,6 +235,13 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isValid;
         public bool IsValid => _isValid.Value;
 
+        private bool _isConstantKeywordValue;
+        private bool IsConstantNameValid
+        {
+            get => _isConstantKeywordValue;
+            set => this.RaiseAndSetIfChanged(ref _isConstantKeywordValue, value);
+        }
+
         public ReactiveCommand<Unit, Unit> AddConstant { get; }
 
         public ReactiveCommand<Unit, Unit> Reset { get; }
@@ -260,7 +273,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             var isIdValidated = this.WhenAnyValue(x => x.Id, ValidateId);
             _isIdValid = Observable.CombineLatest(isIdValidated, isIdAvailable, (a, b) => a && b).ToProperty(this, x => x.IsIdValid);
 
-            _isValid = this.WhenAnyValue(x => x.IsIdValid).ToProperty(this, x => x.IsValid);
+            _isValid = Observable.CombineLatest(this.WhenAnyValue(x => x.IsIdValid), this.WhenAnyValue(x => x.IsConstantNameValid), (a, b) => a && b).ToProperty(this, x => x.IsValid);
 
             this.WhenAnyValue(x => x.IsFocalLengthEnabled).Select(x => !x).Subscribe(_ => FocalLength = null);
             this.WhenAnyValue(x => x.IsBitDepthEnabled).Select(x => !x).Subscribe(_ => BitDepth = null);
@@ -372,6 +385,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             Constants.Add(constant);
 
+            ValidateConstants();
+
             return constant;
         }
 
@@ -383,6 +398,20 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 return true;
             }
             return false;
+        }
+
+        private void ValidateConstants()
+        {
+            bool valid = true;
+            foreach (var constant in Constants)
+            {
+                if (!constant.IsNameValid)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+            IsConstantNameValid = valid;
         }
     }
 }

@@ -132,7 +132,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
                         Command="{Binding Remove}"/>
                 <TextBlock Grid.Column="0" Grid.Row="2" Text="Value" VerticalAlignment="Center"/>
-                <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding Value}" IsReadOnly="{Binding Profile.ReadOnly}" ShowButtonSpinner="False"/>
+                <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding Value}" FormatString="0.#########" IsReadOnly="{Binding Profile.ReadOnly}" ShowButtonSpinner="False"/>
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>

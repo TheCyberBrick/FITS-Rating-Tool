@@ -43,17 +43,17 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             }
         }
 
-        private bool _readOnly;
-        public bool ReadOnly
+        private bool _isReadOnly;
+        public bool IsReadOnly
         {
-            get => _readOnly;
+            get => _isReadOnly;
             set
             {
                 foreach (var profile in Profiles)
                 {
                     profile.IsReadOnly = value;
                 }
-                this.RaiseAndSetIfChanged(ref _readOnly, value);
+                this.RaiseAndSetIfChanged(ref _isReadOnly, value);
             }
         }
 
@@ -92,12 +92,13 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             WeakEventHandlerManager.Subscribe<IInstrumentProfileRepository, IInstrumentProfileRepository.InstrumentProfileEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileRepository, nameof(instrumentProfileRepository.ProfileAdded), OnProfileEvent);
             WeakEventHandlerManager.Subscribe<IInstrumentProfileRepository, IInstrumentProfileRepository.InstrumentProfileEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileRepository, nameof(instrumentProfileRepository.ProfileRemoved), OnProfileEvent);
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileRepository, IInstrumentProfileRepository.InstrumentProfileEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileRepository, nameof(instrumentProfileRepository.ProfileChanged), OnProfileEvent);
         }
 
         private IInstrumentProfileViewModel CreateProfileVM(IReadOnlyInstrumentProfile profile)
         {
             var vm = instrumentProfileFactory.Create(profile);
-            vm.IsReadOnly = ReadOnly;
+            vm.IsReadOnly = IsReadOnly;
             return vm;
         }
 
@@ -126,6 +127,16 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                         }
 
                         break;
+                    }
+                }
+            }
+            else if (e.Changed)
+            {
+                foreach (var profile in _profiles)
+                {
+                    if (profile.SourceProfile?.Id == e.ProfileId)
+                    {
+                        profile.ResetToSourceProfile();
                     }
                 }
             }
