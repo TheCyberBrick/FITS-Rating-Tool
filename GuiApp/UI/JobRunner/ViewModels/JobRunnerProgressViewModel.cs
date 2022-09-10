@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Utils;
 using FitsRatingTool.GuiApp.Services;
@@ -26,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,6 +95,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
             set => this.RaiseAndSetIfChanged(ref _speedValue, value);
         }
 
+        public Interaction<ConfirmationEventArgs, ConfirmationEventArgs.Result> ExporterConfirmationDialog { get; } = new();
 
 
         private readonly List<CancellationTokenSource> loadingCts = new();
@@ -195,6 +198,23 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                             tracker = BatchEvaluationProgressTracker.Track(numFiles, out var progressTrackerTask, 250, progressTrackerCt);
                             tracker.ProgressChanged += (s, state) => ReportProgress(state);
 
+                            void onExporterConfirmation(object? sender, ConfirmationEventArgs e)
+                            {
+                                e.RegisterHandler(async ct =>
+                                {
+                                    try
+                                    {
+                                        return await ExporterConfirmationDialog.Handle(e);
+                                    }
+                                    catch (UnhandledInteractionException<ConfirmationEventArgs, ConfirmationEventArgs.Result>)
+                                    {
+                                        return ConfirmationEventArgs.Result.Proceed;
+                                    }
+                                });
+                            }
+
+                            standaloneEvaluationService.OnExporterConfirmation += onExporterConfirmation;
+
                             try
                             {
                                 await standaloneEvaluationService.EvaluateAsync(jobConfigFile, files, (_, _, _, _, _) =>
@@ -211,6 +231,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                             catch (Exception ex)
                             {
                                 return CreateCancellation(new JobResult(ex));
+                            }
+                            finally
+                            {
+                                standaloneEvaluationService.OnExporterConfirmation -= onExporterConfirmation;
                             }
 
                             progressTrackerCts.Cancel();

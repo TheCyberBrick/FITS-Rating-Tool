@@ -33,15 +33,15 @@ namespace FitsRatingTool.ConsoleApp
             public bool done;
         }
 
-        private readonly IJobConfigManager jobConfigManager;
+        private readonly IJobConfigFactory jobConfigFactory;
         private readonly IStandaloneEvaluationService evaluator;
 
         private Dictionary<string, IEvaluationExporterFactory> exporterFactories = new();
 
-        public ConsoleApp(IJobConfigManager jobConfigManager, IStandaloneEvaluationService evaluator, ICSVEvaluationExporterFactory csvEvaluationExporterFactory,
+        public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, ICSVEvaluationExporterFactory csvEvaluationExporterFactory,
             IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory)
         {
-            this.jobConfigManager = jobConfigManager;
+            this.jobConfigFactory = jobConfigFactory;
             this.evaluator = evaluator;
 
             RegisterExporter("csv", csvEvaluationExporterFactory);
@@ -139,7 +139,7 @@ namespace FitsRatingTool.ConsoleApp
                         Console.Error.WriteLine(e);
                     }
                 }
-                else if (e is IJobConfigManager.InvalidJobConfigException || e is IBatchEvaluationService.InvalidConfigException ||
+                else if (e is IJobConfigFactory.InvalidJobConfigException || e is IBatchEvaluationService.InvalidConfigException ||
                     e is IStandaloneEvaluationService.InvalidConfigException || e is FileNotFoundException)
                 {
                     Console.Error.WriteLine(debugFlag ? e : e.Message);
@@ -154,7 +154,7 @@ namespace FitsRatingTool.ConsoleApp
             {
                 if (initFlag && !File.Exists(jobConfigFile))
                 {
-                    var newConfig = jobConfigManager.Create();
+                    var newConfig = jobConfigFactory.Create();
 
                     newConfig.EvaluationFormula = "# Define a custom variable" + Environment.NewLine + "Rating := -FWHMSigma;" + Environment.NewLine + Environment.NewLine + "# Last expression returns the evaluation result" + Environment.NewLine + "Rating";
                     newConfig.ParallelTasks = 4;
@@ -187,7 +187,7 @@ namespace FitsRatingTool.ConsoleApp
 
                     try
                     {
-                        File.WriteAllText(jobConfigFile, jobConfigManager.Save(newConfig));
+                        File.WriteAllText(jobConfigFile, jobConfigFactory.Save(newConfig));
                     }
                     catch (Exception ex)
                     {
@@ -409,6 +409,35 @@ namespace FitsRatingTool.ConsoleApp
                             };
                         }
 
+                        void onExporterConfirmation(object? sender, ConfirmationEventArgs e)
+                        {
+                            if (!yesFlag)
+                            {
+                                e.RegisterHandler(ct =>
+                                {
+                                    while (true)
+                                    {
+                                        Console.WriteLine();
+                                        Console.WriteLine($"The '{e.RequesterName}' exporter requires confirmation: ");
+                                        Console.WriteLine(e.Message);
+                                        Console.WriteLine("If aborted, this exporter will be skipped. Proceed? [y/n] ");
+                                        var input = Console.ReadKey(false).Key;
+                                        if (input != ConsoleKey.Enter) Console.WriteLine();
+                                        if (input == ConsoleKey.Y)
+                                        {
+                                            return Task.FromResult(ConfirmationEventArgs.Result.Proceed);
+                                        }
+                                        else if (input == ConsoleKey.N)
+                                        {
+                                            return Task.FromResult(ConfirmationEventArgs.Result.Abort);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        evaluator.OnExporterConfirmation += onExporterConfirmation;
+
                         var evaluateTask = evaluator.EvaluateAsync(jobConfigFile, files, (file, groupKey, variableValues, value, ct) =>
                         {
                             if (outputFlag)
@@ -466,6 +495,8 @@ namespace FitsRatingTool.ConsoleApp
                         }
                         finally
                         {
+                            evaluator.OnExporterConfirmation -= onExporterConfirmation;
+
                             progressTrackerCts.Cancel();
                         }
 
@@ -534,7 +565,7 @@ namespace FitsRatingTool.ConsoleApp
             writer.WriteLine("  -p,\t--path <path>\t\tpath of the directory containing FITS files");
             writer.WriteLine("  \t--progress\t\tdisplay progress messages");
             writer.WriteLine("  -s,\t--silent\t\tsuppress all standard output except for progress messages and results");
-            writer.WriteLine("  -y,\t--yes\t\t\tsuppress confirmations, e.g. for --clearcache");
+            writer.WriteLine("  -y,\t--yes\t\t\tsuppress confirmations for --clearcache or potentially dangerous exporters");
             writer.WriteLine();
             writer.WriteLine("Use the following command to get started quickly:");
             writer.WriteLine("  " + file + " --job job.json --init --path <path_to_fits_files> --output --progress");

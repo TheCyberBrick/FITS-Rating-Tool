@@ -33,18 +33,18 @@ namespace FitsRatingTool.Common.Services
         }
 
 
-        public delegate IEvaluationExporter ExporterFactory(IEvaluationExporterContext ctx, string config);
+        delegate IEvaluationExporter ExporterFactory(IEvaluationExporterContext ctx, string config);
 
 
-        public IReadOnlyCollection<string> Exporters { get; }
+        IReadOnlyCollection<string> Exporters { get; }
 
-        public bool RegisterExporter(string id, ExporterFactory exporterFactory);
+        bool RegisterExporter(string id, ExporterFactory exporterFactory);
 
-        public bool UnregisterExporter(string id);
+        bool UnregisterExporter(string id);
 
 
-        public delegate Task EvaluationConsumer(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
-        public delegate void EventConsumer(BatchEvaluation.Event e);
+        delegate Task EvaluationConsumer(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
+        delegate void EventConsumer(BatchEvaluation.Event e);
 
 
         Task EvaluateAsync(string jobConfigFile, List<string> files, EvaluationConsumer? evaluationConsumer = null, EventConsumer? eventConsumer = null, Action<string?>? logFileConsumer = null, CancellationToken cancellationToken = default);
@@ -55,5 +55,8 @@ namespace FitsRatingTool.Common.Services
         int DeleteCache(string jobConfigFile, IEnumerable<string> file);
 
         int ClearCache(string jobConfigFile);
+
+
+        event EventHandler<ConfirmationEventArgs> OnExporterConfirmation;
     }
 }

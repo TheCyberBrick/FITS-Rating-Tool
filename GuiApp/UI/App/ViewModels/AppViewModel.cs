@@ -40,6 +40,8 @@ using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using System.Collections.Specialized;
+using System.Text;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -129,6 +131,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public ReactiveCommand<Unit, IJobRunnerViewModel> ShowJobRunner { get; }
 
 
+        public ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
+
+
 
         private bool _isVoyagerIntegrationEnabled = false;
         public bool IsVoyagerIntegrationEnabled
@@ -176,11 +181,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IEvaluationTableViewModel.IFactory evaluationTableFactory, IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory,
             IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageAllStatisticsProgressViewModel.IFactory fitsImageAllStatisticsFactory,
             IVoyagerIntegration voyagerIntegration, IJobConfiguratorViewModel.IFactory jobConfiguratorFactory, IExporterConfiguratorManager exporterConfiguratorManager,
-            IJobConfigManager jobConfigManager, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
+            IJobConfigFactory jobConfigFactory, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory,
             IEvaluationExporterViewModel.IFactory evaluationExporterFactory, IJobRunnerViewModel.IFactory jobRunnerFactory, IFileTableViewModel.IFactory fileTableFactory,
             IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager, IAppConfig appConfig, IAppConfigManager appConfigManager,
-            IAppConfigViewModel.IFactory appConfigFactory)
+            IAppConfigViewModel.IFactory appConfigFactory, IInstrumentProfileConfiguratorViewModel.IFactory instrumentProfileConfiguratorFactory)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
@@ -380,7 +385,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 {
                     try
                     {
-                        var config = jobConfigManager.Load(file);
+                        var config = jobConfigFactory.Load(await File.ReadAllTextAsync(file, Encoding.UTF8));
 
                         var vm = jobConfiguratorFactory.Create();
 
@@ -402,6 +407,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 return new IAppViewModel.JobConfiguratorLoadResult(null, error);
             });
             ShowJobRunner = ReactiveCommand.Create(() => jobRunnerFactory.Create());
+
+            ShowInstrumentProfileConfigurator = ReactiveCommand.Create(() => instrumentProfileConfiguratorFactory.Create());
 
 
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>

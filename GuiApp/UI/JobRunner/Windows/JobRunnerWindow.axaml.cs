@@ -20,6 +20,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.GuiApp.UI.JobRunner.ViewModels;
 using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
 using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
@@ -46,6 +47,13 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.Windows
             {
                 if (ViewModel != null)
                 {
+                    d.Add(ViewModel.WhenAnyValue(x => x.Progress).Subscribe(x =>
+                    {
+                        if (x != null)
+                        {
+                            d.Add(x.ExporterConfirmationDialog.RegisterHandler(ShowExporterConfirmationDialogAsync));
+                        }
+                    }));
                     d.Add(ViewModel.SelectJobConfigOpenFileDialog.RegisterHandler(ShowOpenFileDialogAsync));
                     d.Add(ViewModel.SelectPathOpenFolderDialog.RegisterHandler(ShowOpenFolderDialogAsync));
                     d.Add(ViewModel.RunProgressDialog.RegisterHandler(ShowRunProgressDialogAsync));
@@ -123,6 +131,15 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.Windows
             await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.Ok, "Job Run Completed", "Loaded " + result.LoadedFiles + " files and evaluated/exported " + result.ExportedFiles + " files out of " + result.NumberOfFiles + " files found in total", null, MessageBoxIcon.Info);
 
             ctx.SetOutput(Unit.Default);
+        }
+
+        private async Task ShowExporterConfirmationDialogAsync(InteractionContext<ConfirmationEventArgs, ConfirmationEventArgs.Result> ctx)
+        {
+            var e = ctx.Input;
+
+            var result = await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.YesNo, "Do you want to proceed?", $"The '{e.RequesterName}' exporter requires confirmation: \n\r\n\r{e.Message} \n\r\n\rIf aborted, this exporter will be skipped. \nProceed?", null, MessageBoxIcon.Warning, false);
+
+            ctx.SetOutput(result == MessageBoxResult.Yes ? ConfirmationEventArgs.Result.Proceed : ConfirmationEventArgs.Result.Abort);
         }
     }
 }

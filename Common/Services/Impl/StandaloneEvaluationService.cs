@@ -44,12 +44,12 @@ namespace FitsRatingTool.Common.Services.Impl
         public IReadOnlyCollection<string> Exporters => exporterFactories.Keys;
 
 
-        private readonly IJobConfigManager jobConfigManager;
+        private readonly IJobConfigFactory jobConfigFactory;
         private readonly IBatchEvaluationService batchEvaluationService;
 
-        public StandaloneEvaluationService(IJobConfigManager jobConfigManager, IBatchEvaluationService batchEvaluationService)
+        public StandaloneEvaluationService(IJobConfigFactory jobConfigFactory, IBatchEvaluationService batchEvaluationService)
         {
-            this.jobConfigManager = jobConfigManager;
+            this.jobConfigFactory = jobConfigFactory;
             this.batchEvaluationService = batchEvaluationService;
         }
 
@@ -74,7 +74,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
         private void LoadConfig(string jobConfigFile, out IJobConfig jobConfig, out string workingDir, out Cache? cache)
         {
-            jobConfig = jobConfigManager.Load(jobConfigFile);
+            jobConfig = jobConfigFactory.Load(File.ReadAllText(jobConfigFile, Encoding.UTF8));
 
             try
             {
@@ -107,7 +107,8 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private List<IEvaluationExporter> LoadExporters(IEvaluationExporterContext ctx, IReadOnlyJobConfig jobConfig, StreamWriter? logWriter)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD103:Call async methods when in an async method")]
+        private async Task<List<IEvaluationExporter>> LoadExportersAsync(IEvaluationExporterContext ctx, IReadOnlyJobConfig jobConfig, StreamWriter? logWriter, CancellationToken cancellationToken)
         {
             List<IEvaluationExporter> exporters = new();
 
@@ -167,6 +168,36 @@ namespace FitsRatingTool.Common.Services.Impl
                         throw;
                     }
 
+                    bool success = true;
+
+                    var confirmationMessage = exporter.ConfirmationMessage;
+                    if (confirmationMessage != null)
+                    {
+                        var args = new ConfirmationEventArgs(exporterConfig.Id, exporter, confirmationMessage);
+
+                        _onExporterConfirmation?.Invoke(this, args);
+
+                        success = await args.HandleAsync(cancellationToken) == ConfirmationEventArgs.Result.Proceed;
+                    }
+
+                    if (success)
+                    {
+                        exporters.Add(exporter);
+                    }
+                    else if (logWriter != null)
+                    {
+                        StringBuilder sb = new();
+                        TimestampLog(sb);
+                        sb.Append("LoadExporterAbort");
+                        sb.Append(" Id='");
+                        sb.Append(exporterConfig.Id);
+                        sb.Append('\'');
+                        lock (logWriter)
+                        {
+                            logWriter.WriteLine(sb);
+                        }
+                    }
+
                     if (logWriter != null)
                     {
                         StringBuilder sb = new();
@@ -180,8 +211,6 @@ namespace FitsRatingTool.Common.Services.Impl
                             logWriter.WriteLine(sb);
                         }
                     }
-
-                    exporters.Add(exporter);
                 }
             }
 
@@ -248,7 +277,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     StringBuilder sb = new();
                     TimestampLog(sb);
                     sb.AppendLine("ConfigStart");
-                    foreach (var line in jobConfigManager.Save(jobConfig).Split(Environment.NewLine))
+                    foreach (var line in jobConfigFactory.Save(jobConfig).Split(Environment.NewLine))
                     {
                         TimestampLog(sb);
                         sb.AppendLine(line);
@@ -261,7 +290,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     }
                 }
 
-                exporters = LoadExporters(new Context(workingDir), jobConfig, logWriter);
+                exporters = await LoadExportersAsync(new Context(workingDir), jobConfig, logWriter, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -568,6 +597,13 @@ namespace FitsRatingTool.Common.Services.Impl
                 return cache.Clear();
             }
             return 0;
+        }
+
+        private EventHandler<ConfirmationEventArgs>? _onExporterConfirmation;
+        public event EventHandler<ConfirmationEventArgs> OnExporterConfirmation
+        {
+            add => _onExporterConfirmation += value;
+            remove => _onExporterConfirmation -= value;
         }
     }
 }

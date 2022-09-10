@@ -23,6 +23,10 @@ using ReactiveUI;
 using System;
 using System.ComponentModel;
 using FitsRatingTool.GuiApp.UI.Evaluation.ViewModels;
+using FitsRatingTool.Common.Models.Evaluation;
+using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
+using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
+using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
 {
@@ -41,6 +45,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
             {
                 if (ViewModel != null)
                 {
+                    d.Add(ViewModel.ExporterConfirmationDialog.RegisterHandler(ShowExporterConfirmationDialogAsync));
+
                     d.Add(ViewModel.Run.Execute().Subscribe(args =>
                     {
                         hasFinished = true;
@@ -66,6 +72,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
                 // Cancel closing until the task is fully cancelled
                 e.Cancel = true;
             }
+        }
+
+        private async Task ShowExporterConfirmationDialogAsync(InteractionContext<ConfirmationEventArgs, ConfirmationEventArgs.Result> ctx)
+        {
+            var e = ctx.Input;
+
+            var result = await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.YesNo, "Do you want to proceed?", $"The '{e.RequesterName}' exporter requires confirmation: \n\r\n\r{e.Message} \n\r\n\rProceed?", null, MessageBoxIcon.Warning, false);
+
+            ctx.SetOutput(result == MessageBoxResult.Yes ? ConfirmationEventArgs.Result.Proceed : ConfirmationEventArgs.Result.Abort);
         }
     }
 }

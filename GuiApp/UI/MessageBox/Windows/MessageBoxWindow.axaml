@@ -23,7 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:vm="clr-namespace:FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;assembly=FitsRatingTool"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
-        MinWidth="180" MinHeight="100"
+        MinWidth="344" MinHeight="100"
+        Width="NaN" Height="NaN"
         UseLayoutRounding="True"
         x:Class="FitsRatingTool.GuiApp.UI.MessageBox.Windows.MessageBoxWindow"
         Title="{Binding Title}"
@@ -45,15 +46,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <vm:MessageBoxViewModel Style="{x:Static vm:MessageBoxStyle.Ok}" Title="Title" Message="Message" Header="Header" Icon="{x:Static vm:MessageBoxIcon.Info}"/>
   </Design.DataContext>
 
-  <Grid RowDefinitions="Auto,Auto,Auto">
+  <Grid RowDefinitions="*,Auto,Auto">
 
     <Border Grid.Row="0"
             Classes="themed inner"
             Margin="-6 -6 -6 0"
             Padding="6 6 6 4"
             BorderThickness="0">
-      <Grid RowDefinitions="Auto"
-            ColumnDefinitions="Auto,Auto"
+      <Grid ColumnDefinitions="52,*"
             Margin="8 16">
 
         <Panel Grid.Column="0">
@@ -84,33 +84,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         </Panel>
 
-        <StackPanel Grid.Column="1" Grid.Row="0"
-                    Spacing="16"
-                    VerticalAlignment="Center">
+        <Grid Grid.Column="1" Grid.Row="0"
+              RowDefinitions="Auto,16,*"
+              VerticalAlignment="Center">
 
-          <TextBox IsVisible="{Binding Header, Converter={x:Static ObjectConverters.IsNotNull}}"
+          <TextBox Grid.Row="0"
+                   IsVisible="{Binding Header, Converter={x:Static ObjectConverters.IsNotNull}}"
                    Text="{Binding Header}"
                    TextWrapping="Wrap"
                    MinHeight="0"
-                   MaxWidth="350"
+                   MaxWidth="450"
                    FontWeight="UltraBlack"
                    FontSize="11"
                    Background="Transparent"
                    BorderThickness="0"
                    IsReadOnly="True"/>
 
-          <TextBox Text="{Binding Message}"
+          <TextBox Grid.Row="2"
+                   Text="{Binding Message}"
                    TextWrapping="Wrap"
                    VerticalAlignment="Center"
                    MinHeight="0"
-                   MaxWidth="350"
+                   MaxWidth="450"
                    Background="Transparent"
                    BorderThickness="0"
                    IsReadOnly="True"
                    Margin="0 2 0 0"
-                   Padding="4 0 0 4"/>
+                   Padding="4 0 0 4"
+                   ScrollViewer.VerticalScrollBarVisibility="Visible"/>
 
-        </StackPanel>
+        </Grid>
 
       </Grid>
     </Border>
@@ -118,7 +121,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Separator Grid.Row="1"/>
 
     <Panel Grid.Row="2"
-           Margin="3 9 3 5">
+           Margin="3 9 3 5"
+           HorizontalAlignment="Right">
 
       <Grid IsVisible="{Binding IsOkStyle}"
             ColumnDefinitions="*">

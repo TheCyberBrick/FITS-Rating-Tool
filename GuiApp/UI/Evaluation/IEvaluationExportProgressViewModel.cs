@@ -16,8 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
+using ReactiveUI;
 using System;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation
@@ -66,17 +68,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
     {
         public interface IFactory
         {
-            IEvaluationExportProgressViewModel Create(IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator);
+            IEvaluationExportProgressViewModel Create(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator);
         }
 
-        public int NumberOfFiles { get; }
+        int NumberOfFiles { get; }
 
-        public int CurrentFile { get; }
+        int CurrentFile { get; }
 
-        public string CurrentFilePath { get; }
+        string CurrentFilePath { get; }
 
-        public string CurrentFileName { get; }
+        string CurrentFileName { get; }
 
-        public float ProgressValue { get; }
+        float ProgressValue { get; }
+
+        Interaction<ConfirmationEventArgs, ConfirmationEventArgs.Result> ExporterConfirmationDialog { get; }
     }
 }

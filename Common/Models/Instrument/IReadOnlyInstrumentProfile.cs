@@ -16,27 +16,35 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
+using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.Common.Services
+namespace FitsRatingTool.Common.Models.Instrument
 {
-    public interface IJobConfigManager
+    public interface IReadOnlyInstrumentProfile
     {
-        public class InvalidJobConfigException : Exception
+        public interface IReadOnlyConstant
         {
-            public InvalidJobConfigException(string? message, Exception? innerException) : base(message, innerException) { }
+            string Name { get; }
+
+            double Value { get; }
         }
 
-        public IJobConfig Create();
+        string Id { get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidJobConfigException">Thrown if the config file is invalid</exception>
-        public IJobConfig Load(string file);
+        string Name { get; }
 
-        public string Save(IReadOnlyJobConfig config);
+        string Description { get; }
+
+        string Key { get; }
+
+        float? FocalLength { get; }
+
+        int? BitDepth { get; }
+
+        float? ElectronsPerADU { get; }
+
+        float? PixelSizeInMicrons { get; }
+
+        IReadOnlyList<IReadOnlyConstant> Constants { get; }
     }
 }

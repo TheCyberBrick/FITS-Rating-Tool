@@ -46,6 +46,10 @@ namespace FitsRatingTool.Common.Services.Impl
 
         private class Exporter : IEvaluationExporter
         {
+            public string? ConfirmationMessage => null;
+
+            public bool RequiresConfirmation => true;
+
             public bool ExportValue
             {
                 get => config.ExportValue;

@@ -216,6 +216,18 @@
     <Compile Update="UI\Info\Windows\AboutWindow.axaml.cs">
       <DependentUpon>AboutWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\InstrumentProfile\Views\InstrumentProfileConfiguratorView.axaml.cs">
+      <DependentUpon>InstrumentProfileConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\InstrumentProfile\Views\InstrumentProfileView.axaml.cs">
+      <DependentUpon>InstrumentProfileView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\InstrumentProfile\Views\InstrumentProfileSelectorView.axaml.cs">
+      <DependentUpon>InstrumentProfileSelectorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\InstrumentProfile\Windows\InstrumentProfileConfiguratorWindow.axaml.cs">
+      <DependentUpon>InstrumentProfileConfiguratorWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\JobConfigurator\Views\JobGroupingConfigurationHelpView.axaml.cs">
       <DependentUpon>JobGroupingConfigurationHelpView.axaml</DependentUpon>
     </Compile>

@@ -45,25 +45,25 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             private readonly IEvaluationManager evaluationManager;
             private readonly IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory;
             private readonly IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory;
-            private readonly IJobConfigManager jobConfigManager;
+            private readonly IJobConfigFactory jobConfigFactory;
             private readonly IGroupingManager groupingManager;
             private readonly IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory;
 
             public Factory(IEvaluationManager evaluationManager, IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory,
-                IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigManager jobConfigManager, IGroupingManager groupingManager,
+                IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
                 IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory)
             {
                 this.evaluationManager = evaluationManager;
                 this.groupingConfiguratorFactory = groupingConfiguratorFactory;
                 this.evaluationFormulaFactory = evaluationFormulaFactory;
-                this.jobConfigManager = jobConfigManager;
+                this.jobConfigFactory = jobConfigFactory;
                 this.groupingManager = groupingManager;
                 this.evaluationExporterConfiguratorFactory = evaluationExporterConfiguratorFactory;
             }
 
             public IJobConfiguratorViewModel Create()
             {
-                return new JobConfiguratorViewModel(evaluationManager, groupingConfiguratorFactory, evaluationFormulaFactory, jobConfigManager, groupingManager, evaluationExporterConfiguratorFactory);
+                return new JobConfiguratorViewModel(evaluationManager, groupingConfiguratorFactory, evaluationFormulaFactory, jobConfigFactory, groupingManager, evaluationExporterConfiguratorFactory);
             }
         }
 
@@ -252,15 +252,15 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         public Interaction<SaveResult, Unit> SaveJobConfigResultDialog { get; } = new();
 
 
-        private readonly IJobConfigManager jobConfigManager;
+        private readonly IJobConfigFactory jobConfigFactory;
         private readonly IGroupingManager groupingManager;
 
 
         private JobConfiguratorViewModel(IEvaluationManager evaluationManager, IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory,
-            IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigManager jobConfigManager, IGroupingManager groupingManager,
+            IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
             IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory)
         {
-            this.jobConfigManager = jobConfigManager;
+            this.jobConfigFactory = jobConfigFactory;
             this.groupingManager = groupingManager;
 
             EvaluationExporterConfigurator = evaluationExporterConfiguratorFactory.Create();
@@ -425,7 +425,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         private void UpdateJobConfig()
         {
-            var config = jobConfigManager.Create();
+            var config = jobConfigFactory.Create();
 
             config.EvaluationFormula = EvaluationFormula.RatingFormula ?? "";
 
@@ -463,7 +463,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         private async Task<string> SaveConfigAsync(string file)
         {
-            var config = jobConfigManager.Save(JobConfig);
+            var config = jobConfigFactory.Save(JobConfig);
             await File.WriteAllTextAsync(file, config);
             return config;
         }

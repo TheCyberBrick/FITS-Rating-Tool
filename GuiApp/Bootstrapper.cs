@@ -37,6 +37,8 @@ using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FileTable.ViewModels;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels;
 using FitsRatingTool.GuiApp.UI.JobRunner;
@@ -63,6 +65,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IAnalysisRepository, AnalysisRepository>(Reuse.Singleton);
             container.Register<IFileRepository, FileRepository>(Reuse.Singleton);
             container.Register<IFitsImageMetadataRepository, FitsImageMetadataRepository>(Reuse.Singleton);
+            container.Register<IInstrumentProfileRepository, InstrumentProfileRepository>(Reuse.Singleton);
         }
 
         private static void RegisterServices(Container container)
@@ -71,9 +74,10 @@ namespace FitsRatingTool.GuiApp
             container.Register<IFitsImageLoader, FitsImageLoader>(Reuse.Singleton);
             container.Register<IGroupingManager, GroupingManager>(Reuse.Singleton);
             container.Register<IEvaluationService, EvaluationService>(Reuse.Singleton);
-            container.Register<IJobConfigManager, JobConfigManager>(Reuse.Singleton);
+            container.Register<IJobConfigFactory, JobConfigFactory>(Reuse.Singleton);
             container.Register<IBatchEvaluationService, BatchEvaluationService>(Reuse.Singleton);
             container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Singleton);
+            container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
 
             // App
             container.Register<IWindowManager, WindowManager>(Reuse.Singleton);
@@ -125,6 +129,10 @@ namespace FitsRatingTool.GuiApp
 
             container.Register<IAppConfigViewModel.IFactory, AppConfigViewModel.Factory>(Reuse.Singleton);
             container.Register<IAppConfigCategoryViewModel.IFactory, AppConfigCategoryViewModel.Factory>(Reuse.Singleton);
+
+            container.Register<IInstrumentProfileViewModel.IFactory, InstrumentProfileViewModel.Factory>(Reuse.Singleton);
+            container.Register<IInstrumentProfileSelectorViewModel.IFactory, InstrumentProfileSelectorViewModel.Factory>(Reuse.Singleton);
+            container.Register<IInstrumentProfileConfiguratorViewModel.IFactory, InstrumentProfileConfiguratorViewModel.Factory>(Reuse.Singleton);
         }
 
         private static void RegisterExporters(Container container)

@@ -44,6 +44,7 @@ using Avalonia.Utilities;
 using System.IO;
 using System.Reactive.Concurrency;
 using FitsRatingTool.GuiApp.UI.AppConfig.Windows;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile.Windows;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
@@ -236,6 +237,14 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         {
                             DataContext = vm
                         }, true);
+                    }));
+
+                    d.Add(ViewModel.ShowInstrumentProfileConfigurator.Subscribe(vm =>
+                    {
+                        windowManager.Show(() => new InstrumentProfileConfiguratorWindow()
+                        {
+                            DataContext = vm
+                        }, false);
                     }));
                 }
             });

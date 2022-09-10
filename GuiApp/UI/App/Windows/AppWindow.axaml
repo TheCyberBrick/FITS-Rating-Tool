@@ -185,6 +185,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </MenuItem>
         </MenuItem>
         <MenuItem Header="Help">
+          <MenuItem Header="Profiles" Command="{Binding ShowInstrumentProfileConfigurator}">
+            <MenuItem.Icon>
+              <Image Source="/Assets/Icons/profile.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
           <MenuItem Header="Settings" Command="{Binding ShowSettingsDialog}">
             <MenuItem.Icon>
               <Image Source="/Assets/Icons/wrench.png" Width="16" Height="16"/>

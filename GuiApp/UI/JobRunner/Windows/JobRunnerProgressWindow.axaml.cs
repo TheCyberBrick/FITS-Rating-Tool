@@ -23,6 +23,10 @@ using ReactiveUI;
 using System;
 using System.ComponentModel;
 using FitsRatingTool.GuiApp.UI.JobRunner.ViewModels;
+using FitsRatingTool.Common.Models.Evaluation;
+using System.Threading.Tasks;
+using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
+using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
 
 namespace FitsRatingTool.GuiApp.UI.JobRunner.Windows
 {
@@ -41,6 +45,8 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.Windows
             {
                 if (ViewModel != null)
                 {
+                    d.Add(ViewModel.ExporterConfirmationDialog.RegisterHandler(ShowExporterConfirmationDialogAsync));
+
                     d.Add(ViewModel.Run.Execute().Subscribe(args =>
                     {
                         hasFinished = true;
@@ -66,6 +72,15 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.Windows
                 // Cancel closing until the task is fully cancelled
                 e.Cancel = true;
             }
+        }
+
+        private async Task ShowExporterConfirmationDialogAsync(InteractionContext<ConfirmationEventArgs, ConfirmationEventArgs.Result> ctx)
+        {
+            var e = ctx.Input;
+
+            var result = await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.YesNo, "Do you want to proceed?", $"The '{e.RequesterName}' exporter requires confirmation: \n\r\n\r{e.Message} \n\r\n\rIf aborted, this exporter will be skipped. \nProceed?", null, MessageBoxIcon.Warning, false);
+
+            ctx.SetOutput(result == MessageBoxResult.Yes ? ConfirmationEventArgs.Result.Proceed : ConfirmationEventArgs.Result.Abort);
         }
     }
 }

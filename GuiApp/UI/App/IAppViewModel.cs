@@ -27,6 +27,7 @@ using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.AppConfig;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -130,6 +131,10 @@ namespace FitsRatingTool.GuiApp.UI.App
         Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; }
 
         ReactiveCommand<Unit, IJobRunnerViewModel> ShowJobRunner { get; }
+        #endregion
+
+        #region +++ Instrument Profiles +++
+        ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
         #endregion
 
         #region +++ Voyager Integration +++

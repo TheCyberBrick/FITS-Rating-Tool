@@ -62,7 +62,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <Style Selector="CheckBox[IsChecked=true]">
                 <Setter Property="CheckBox.Flyout">
                   <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="TransientWithDismissOnPointerMoveAway">
-                    <NumericUpDown Minimum="1"
+                    <NumericUpDown Minimum="1" Maximum="10000"
                                    Value="{Binding PeekViewerSize}"
                                    IsEnabled="{Binding IsPeekViewerEnabled, FallbackValue=False}"
                                    UseLayoutRounding="True"/>

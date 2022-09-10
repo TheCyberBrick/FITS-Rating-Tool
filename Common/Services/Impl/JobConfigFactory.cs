@@ -19,13 +19,11 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
 {
-    public class JobConfigManager : IJobConfigManager
+    public class JobConfigFactory : IJobConfigFactory
     {
         private class JobConfig : IJobConfig
         {
@@ -234,13 +232,11 @@ namespace FitsRatingTool.Common.Services.Impl
             return new JobConfig();
         }
 
-        public IJobConfig Load(string file)
+        public IJobConfig Load(string data)
         {
-            string json = File.ReadAllText(file, Encoding.UTF8);
-
             List<string> errors = new();
 
-            var config = JsonConvert.DeserializeObject<JobConfig>(json,
+            var config = JsonConvert.DeserializeObject<JobConfig>(data,
                 new JsonSerializerSettings
                 {
                     Error = delegate (object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
@@ -261,7 +257,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     str.AppendLine(error);
                 }
 
-                throw new IJobConfigManager.InvalidJobConfigException(str.ToString(), null);
+                throw new IJobConfigFactory.InvalidJobConfigException(str.ToString(), null);
             }
 
             return config;
@@ -275,7 +271,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
             else
             {
-                throw new ArgumentException("The specified " + nameof(config) + " was not created by " + nameof(JobConfigManager));
+                throw new ArgumentException("The specified " + nameof(config) + " was not created by " + nameof(JobConfigFactory));
             }
         }
     }

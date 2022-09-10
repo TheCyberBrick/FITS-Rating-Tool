@@ -64,14 +64,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 IsChecked="{Binding IsMinRatingThresholdEnabled}"/>
       <NumericUpDown Grid.Row="6" Grid.Column="2"
                      Value="{Binding MinRatingThreshold}"
-                     IsEnabled="{Binding IsMinRatingThresholdEnabled}"/>
+                     IsEnabled="{Binding IsMinRatingThresholdEnabled}"
+                     Minimum="-1000000" Maximum="1000000"/>
 
       <CheckBox Grid.Row="8" Grid.Column="0"
                 Content="Max. Rating Threshold"
                 IsChecked="{Binding IsMaxRatingThresholdEnabled}"/>
       <NumericUpDown Grid.Row="8" Grid.Column="2"
                      Value="{Binding MaxRatingThreshold}"
-                     IsEnabled="{Binding IsMaxRatingThresholdEnabled}"/>
+                     IsEnabled="{Binding IsMaxRatingThresholdEnabled}"
+                     Minimum="-1000000" Maximum="1000000"/>
 
     </Grid>
   </Grid>

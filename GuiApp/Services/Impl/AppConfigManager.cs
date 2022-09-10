@@ -26,6 +26,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     {
         public bool SaveOnChange { get; set; } = true;
 
+        public string Path { get; private set; } = null!;
+
+
         private Configuration defaultConfig = null!;
         private Configuration userConfig = null!;
 
@@ -44,6 +47,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
             }
+
+            Path = path;
 
             var mapping = new ExeConfigurationFileMap()
             {

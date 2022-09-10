@@ -1,0 +1,145 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.InstrumentProfile.Views.InstrumentProfileView">
+
+  <Grid ColumnDefinitions="Auto,*"
+        RowDefinitions="Auto,Auto,Auto,Auto,14,Auto,Auto,Auto,Auto,14,*">
+
+    <TextBlock Grid.Column="0" Grid.Row="0" Text="ID" VerticalAlignment="Center" Margin="0 0 8 0"/>
+    <Panel Grid.Column="1" Grid.Row="0" Margin="0 0 0 4">
+      <TextBox Text="{Binding Id}"
+               Classes.invalid="{Binding !IsIdValid}"
+               Classes.unavailable="{Binding !IsIdAvailable}">
+        <Classes.readonly>
+          <MultiBinding Converter="{x:Static BoolConverters.Or}">
+            <Binding Path="IsReadOnly"/>
+            <Binding Path="!IsNew"/>
+          </MultiBinding>
+        </Classes.readonly>
+        <TextBox.Styles>
+          <Style Selector="TextBox.readonly">
+            <Setter Property="IsReadOnly" Value="True"/>
+          </Style>
+          <Style Selector="TextBox.invalid">
+            <Setter Property="ToolTip.Tip" Value="The ID must only consist of characters a-Z, 0-9 or _ (underscore) and must be at least one character long."/>
+          </Style>
+          <Style Selector="TextBox.invalid.unavailable">
+            <Setter Property="ToolTip.Tip" Value="This ID is already taken. Please choose another one."/>
+          </Style>
+        </TextBox.Styles>
+      </TextBox>
+      <Border Classes.invalid="{Binding !IsIdValid}">
+        <Border.Styles>
+          <Style Selector="Border.invalid">
+            <Setter Property="BorderBrush" Value="#90FA4A37"/>
+            <Setter Property="BorderThickness" Value="2"/>
+          </Style>
+        </Border.Styles>
+      </Border>
+    </Panel>
+
+    <TextBlock Grid.Column="0" Grid.Row="1" Text="Name" VerticalAlignment="Center" Margin="0 0 8 0"/>
+    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Name}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
+
+    <TextBlock Grid.Column="0" Grid.Row="2" Text="Description" VerticalAlignment="Top" Margin="0 5 8 0"/>
+    <TextBox Grid.Column="1" Grid.Row="2"
+             Text="{Binding Description}"
+             IsReadOnly="{Binding IsReadOnly}"
+             Classes.readonly="{Binding IsReadOnly}"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+             Height="46"
+             Margin="0 0 0 4"/>
+
+    <TextBlock Grid.Column="0" Grid.Row="3" Text="Key" VerticalAlignment="Center" Margin="0 0 8 0"/>
+    <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Key}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
+
+    <Separator Grid.ColumnSpan="2" Grid.Row="4" Margin="0 0 0 3" VerticalAlignment="Center"/>
+
+    <CheckBox Grid.Column="0" Grid.Row="5" Content="Focal Length (mm)" IsChecked="{Binding IsFocalLengthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <NumericUpDown Grid.Column="1" Grid.Row="5" Value="{Binding FocalLength}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsFocalLengthEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+
+    <CheckBox Grid.Column="0" Grid.Row="6" Content="Bit Depth" IsChecked="{Binding IsBitDepthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <NumericUpDown Grid.Column="1" Grid.Row="6" Value="{Binding BitDepth}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsBitDepthEnabled}" Minimum="1" Maximum="256" Margin="0 0 0 4"/>
+
+    <CheckBox Grid.Column="0" Grid.Row="7" Content="e&#8315; per ADU" IsChecked="{Binding IsElectronsPerADUEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <NumericUpDown Grid.Column="1" Grid.Row="7" Value="{Binding ElectronsPerADU}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsElectronsPerADUEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+
+    <CheckBox Grid.Column="0" Grid.Row="8" Content="Pixel Size (&#181;m)" IsChecked="{Binding IsPixelSizeInMicronsEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <NumericUpDown Grid.Column="1" Grid.Row="8" Value="{Binding PixelSizeInMicrons}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsPixelSizeInMicronsEnabled}" Minimum="0" Maximum="1000" Margin="0 0 0 4"/>
+
+    <Separator Grid.ColumnSpan="2" Grid.Row="9" Margin="0 0 0 3" VerticalAlignment="Center"/>
+
+    <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="10" RowDefinitions="Auto,*">
+      <TextBlock Grid.Row="0" Text="Constants" Margin="0 0 0 4"/>
+      <Button Grid.Row="0"
+              Content="+"
+              Width="15" Height="15"
+              CornerRadius="1" Padding="0 -4 0 0"
+              VerticalAlignment="Center" HorizontalAlignment="Right"
+              VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+              Command="{Binding AddConstant}"
+              IsEnabled="{Binding !IsReadOnly}"/>
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+        <ItemsControl Items="{Binding Constants}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="Auto,10,*,4,Auto" RowDefinitions="Auto,2,Auto" Margin="0 1 0 4">
+                <TextBlock Grid.Column="0" Grid.Row="0" Text="Name" VerticalAlignment="Center"/>
+                <Panel Grid.Column="2" Grid.Row="0">
+                  <TextBox Text="{Binding Name}" Classes.invalid="{Binding !IsNameValid}">
+                    <TextBox.Styles>
+                      <Style Selector="TextBox.invalid">
+                        <Setter Property="ToolTip.Tip" Value="The name must only consist of characters a-Z, 0-9, start with a letter and must be at least one character long."/>
+                      </Style>
+                    </TextBox.Styles>
+                  </TextBox>
+                  <Border Classes.invalid="{Binding !IsNameValid}">
+                    <Border.Styles>
+                      <Style Selector="Border.invalid">
+                        <Setter Property="BorderBrush" Value="#90FA4A37"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                      </Style>
+                    </Border.Styles>
+                  </Border>
+                </Panel>
+                <Button Grid.Column="4" Grid.Row="0"
+                        Content="-"
+                        Width="15" Height="15"
+                        CornerRadius="1" Padding="1.5 -4 0 0"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"
+                        VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                        Command="{Binding Remove}"/>
+                <TextBlock Grid.Column="0" Grid.Row="2" Text="Value" VerticalAlignment="Center"/>
+                <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding Value}" IsReadOnly="{Binding Profile.ReadOnly}" ShowButtonSpinner="False"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+
+  </Grid>
+
+</UserControl>

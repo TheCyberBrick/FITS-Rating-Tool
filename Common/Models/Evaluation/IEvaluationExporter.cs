@@ -20,6 +20,8 @@ namespace FitsRatingTool.Common.Models.Evaluation
 {
     public interface IEvaluationExporter : IDisposable
     {
+        string? ConfirmationMessage { get; }
+
         bool ExportValue { get; set; }
 
         bool CanExportGroupKey { get; }

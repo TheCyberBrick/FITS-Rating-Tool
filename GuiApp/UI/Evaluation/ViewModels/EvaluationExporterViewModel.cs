@@ -16,7 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using ReactiveUI;
 using System;
@@ -31,19 +30,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         public class Factory : IEvaluationExporterViewModel.IFactory
         {
             private readonly IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory;
-            private readonly IJobConfigManager jobConfigManager;
+            private readonly IJobConfigFactory jobConfigFactory;
             private readonly IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory;
 
-            public Factory(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigManager jobConfigManager, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
+            public Factory(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigFactory jobConfigFactory, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
             {
                 this.evaluationExporterConfiguratorFactory = evaluationExporterConfiguratorFactory;
-                this.jobConfigManager = jobConfigManager;
+                this.jobConfigFactory = jobConfigFactory;
                 this.evaluationExportProgressFactory = evaluationExportProgressFactory;
             }
 
             public IEvaluationExporterViewModel Create()
             {
-                return new EvaluationExporterViewModel(evaluationExporterConfiguratorFactory, jobConfigManager, evaluationExportProgressFactory);
+                return new EvaluationExporterViewModel(evaluationExporterConfiguratorFactory, jobConfigFactory, evaluationExportProgressFactory);
             }
         }
 
@@ -60,7 +59,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
 
 
-        private EvaluationExporterViewModel(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigManager jobConfigManager, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
+        private EvaluationExporterViewModel(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigFactory jobConfigFactory, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
         {
             var canExport = Observable.CombineLatest(
                 this.WhenAnyValue(x => x.EvaluationExporterConfigurator.ExporterConfigurator),
@@ -71,10 +70,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             ExportWithProgress = ReactiveCommand.Create(() =>
             {
+                var id = EvaluationExporterConfigurator.SelectedExporterConfiguratorFactory?.Id;
                 var configurator = EvaluationExporterConfigurator.ExporterConfigurator;
-                if (configurator != null && configurator.IsValid)
+                if (id != null && configurator != null && configurator.IsValid)
                 {
-                    return evaluationExportProgressFactory.Create(configurator);
+                    return evaluationExportProgressFactory.Create(id, configurator);
                 }
 
                 throw new InvalidOperationException("Configurator is null or invalid");

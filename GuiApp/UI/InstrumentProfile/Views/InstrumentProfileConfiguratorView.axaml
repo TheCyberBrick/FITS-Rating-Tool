@@ -1,0 +1,49 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.InstrumentProfile.Views"
+             mc:Ignorable="d"
+             x:Class="FitsRatingTool.GuiApp.UI.InstrumentProfile.Views.InstrumentProfileConfiguratorView">
+
+  <Grid RowDefinitions="Auto,*">
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto"
+          Margin="0 0 0 4">
+      <TextBlock Grid.Column="0" Text="Profile" Margin="0 0 8 0" VerticalAlignment="Center"/>
+      <views:InstrumentProfileSelectorView Grid.Column="1" DataContext="{Binding Selector}"/>
+      <Button Grid.Column="2"
+              Command="{Binding New}"
+              Padding="2 -1" Margin="2 0 0 0">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Image Source="/Assets/Icons/new_file.png" Width="14" Height="14" Margin="-4 0 0 0"/>
+          <TextBlock Text="New"/>
+        </StackPanel>
+      </Button>
+    </Grid>
+    <Border Classes="themed"
+            Grid.Row="1"
+            Padding="4"
+            IsEnabled="{Binding HasProfile}">
+      <views:InstrumentProfileView DataContext="{Binding Selector.SelectedProfile}"/>
+    </Border>
+  </Grid>
+
+</UserControl>

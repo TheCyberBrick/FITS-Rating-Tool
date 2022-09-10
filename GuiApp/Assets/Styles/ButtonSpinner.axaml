@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <Border>
         <StackPanel Orientation="Vertical" Spacing="10">
           <ButtonSpinner Width="200"/>
+          <ButtonSpinner Width="200" ShowButtonSpinner="False"/>
         </StackPanel>
       </Border>
     </Border>

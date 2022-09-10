@@ -228,7 +228,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Value="{Binding ParallelTasks}"
-                         Minimum="1"
+                         Minimum="1" Maximum="256"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>
 
@@ -238,7 +238,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
           <NumericUpDown Grid.Row="1" Grid.Column="2"
                          Value="{Binding ParallelIO}"
-                         Minimum="1"
+                         Minimum="1" Maximum="256"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>
 
@@ -265,7 +265,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Value="{Binding MaxImageSize, Converter={x:Static converters:MathConverters.LongDivision}, ConverterParameter=1000000}"
-                         Minimum="1"
+                         Minimum="1" Maximum="10000"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>
 
@@ -276,7 +276,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <NumericUpDown Grid.Row="1" Grid.Column="2"
                          Value="{Binding MaxImageWidth}"
                          Increment="128"
-                         Minimum="1"
+                         Minimum="1" Maximum="16777216"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>
 
@@ -287,7 +287,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <NumericUpDown Grid.Row="2" Grid.Column="2"
                          Value="{Binding MaxImageHeight}"
                          Increment="128"
-                         Minimum="1"
+                         Minimum="1" Maximum="16777216"
                          ClipValueToMinMax="True"
                          Margin="0 2"/>
 

@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <Border>
         <StackPanel Orientation="Vertical" Spacing="10">
           <NumericUpDown Value="123"/>
+          <NumericUpDown Value="456" ShowButtonSpinner="False"/>
         </StackPanel>
       </Border>
     </Border>
@@ -52,7 +53,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                        DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                        ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
           <TextBox Name="PART_TextBox"
-                   Margin="0 0 -1 0"
+                   Margin="0 0 -2 0"
                    Padding="{TemplateBinding Padding}"
                    MinWidth="{TemplateBinding MinWidth}"
                    Foreground="{TemplateBinding Foreground}"

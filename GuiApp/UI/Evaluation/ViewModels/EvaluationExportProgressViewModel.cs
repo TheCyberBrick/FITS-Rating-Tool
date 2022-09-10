@@ -29,6 +29,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -47,9 +48,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 this.evaluationService = evaluationService;
             }
 
-            public IEvaluationExportProgressViewModel Create(IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator)
+            public IEvaluationExportProgressViewModel Create(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator)
             {
-                return new EvaluationExportProgressViewModel(exporterConfigurator, fitsImageManager, evaluationManager, evaluationService);
+                return new EvaluationExportProgressViewModel(exporterId, exporterConfigurator, fitsImageManager, evaluationManager, evaluationService);
             }
         }
 
@@ -98,17 +99,22 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _currentProgressValue, value);
         }
 
+        public Interaction<ConfirmationEventArgs, ConfirmationEventArgs.Result> ExporterConfirmationDialog { get; } = new();
+
+
 
         private readonly List<CancellationTokenSource> loadingCts = new();
 
+        private readonly string exporterId;
         private readonly IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator;
 
         private readonly IFitsImageManager fitsImageManager;
         private readonly IEvaluationManager evaluationManager;
         private readonly IEvaluationService evaluationService;
 
-        private EvaluationExportProgressViewModel(IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator, IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService) : base(null)
+        private EvaluationExportProgressViewModel(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator, IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService) : base(null)
         {
+            this.exporterId = exporterId;
             this.exporterConfigurator = exporterConfigurator;
             this.fitsImageManager = fitsImageManager;
             this.evaluationManager = evaluationManager;
@@ -138,6 +144,33 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     var ctx = new Context();
 
                     var exporter = exporterConfigurator.CreateExporter(ctx);
+
+                    var confirmationMessage = exporter.ConfirmationMessage;
+                    if (confirmationMessage != null)
+                    {
+                        var args = new ConfirmationEventArgs(exporterId, exporter, confirmationMessage);
+
+                        ConfirmationEventArgs.Result result = ConfirmationEventArgs.Result.Proceed;
+
+                        try
+                        {
+                            result = await ExporterConfirmationDialog.Handle(args);
+                        }
+                        catch (UnhandledInteractionException<ConfirmationEventArgs, ConfirmationEventArgs.Result>)
+                        {
+                            // OK
+                        }
+
+                        if (result == ConfirmationEventArgs.Result.Proceed)
+                        {
+                            result = await args.HandleAsync(ct);
+                        }
+
+                        if (result != ConfirmationEventArgs.Result.Proceed)
+                        {
+                            return CreateCancellation(new ExportResult("Export was aborted"));
+                        }
+                    }
 
                     try
                     {

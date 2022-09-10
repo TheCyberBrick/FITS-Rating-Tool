@@ -68,6 +68,8 @@ namespace FitsRatingTool.Exporters.Services.Impl
 
         private class Exporter : IEvaluationExporter
         {
+            public string? ConfirmationMessage => null;
+
             public bool ExportValue { get; set; } = true;
 
             public bool CanExportGroupKey => false;

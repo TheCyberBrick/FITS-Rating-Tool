@@ -46,6 +46,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         bool SaveOnChange { get; set; }
 
+        string Path { get; }
+
         void Load();
 
         void Save();

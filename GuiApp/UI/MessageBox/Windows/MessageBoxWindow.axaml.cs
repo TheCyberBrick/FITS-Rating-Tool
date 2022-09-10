@@ -32,8 +32,10 @@ namespace FitsRatingTool.GuiApp.UI.MessageBox.Windows
     {
         private bool hasResult = false;
 
-        public MessageBoxWindow()
+        private MessageBoxWindow(MessageBoxViewModel? vm)
         {
+            DataContext = vm ?? new MessageBoxViewModel();
+
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
@@ -50,8 +52,10 @@ namespace FitsRatingTool.GuiApp.UI.MessageBox.Windows
                     }));
                 }
             });
+        }
 
-            DataContext = new MessageBoxViewModel();
+        public MessageBoxWindow() : this(null)
+        {
         }
 
         public static async void Show(Window owner, MessageBoxStyle style, string title, string message, string? header = null, MessageBoxIcon icon = MessageBoxIcon.None, bool closeable = true)
@@ -61,10 +65,7 @@ namespace FitsRatingTool.GuiApp.UI.MessageBox.Windows
 
         public static Task<MessageBoxResult> ShowAsync(Window owner, MessageBoxStyle style, string title, string message, string? header = null, MessageBoxIcon icon = MessageBoxIcon.None, bool closeable = true)
         {
-            var msg = new MessageBoxWindow
-            {
-                DataContext = new MessageBoxViewModel(style, title, message, header, icon, closeable)
-            };
+            var msg = new MessageBoxWindow(new MessageBoxViewModel(style, title, message, header, icon, closeable));
             return msg.ShowDialog<MessageBoxResult>(owner);
         }
 

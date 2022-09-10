@@ -43,9 +43,10 @@ namespace FitsRatingTool.ConsoleApp
             container.Register<IFitsImageLoader, FitsImageLoader>(Reuse.Singleton);
             container.Register<IGroupingManager, GroupingManager>(Reuse.Singleton);
             container.Register<IEvaluationService, EvaluationService>(Reuse.Singleton);
-            container.Register<IJobConfigManager, JobConfigManager>(Reuse.Singleton);
+            container.Register<IJobConfigFactory, JobConfigFactory>(Reuse.Singleton);
             container.Register<IBatchEvaluationService, BatchEvaluationService>(Reuse.Singleton);
             container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Singleton);
+            container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
         }
 
         private static void RegisterExporters(Container container)

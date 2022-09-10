@@ -17,9 +17,12 @@
 */
 
 
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Utils;
 using FitsRatingTool.GuiApp.UI.Progress;
+using ReactiveUI;
 using System;
+using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.JobRunner
 {
@@ -80,5 +83,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner
         float ProgressValue { get; }
 
         float SpeedValue { get; }
+
+        Interaction<ConfirmationEventArgs, ConfirmationEventArgs.Result> ExporterConfirmationDialog { get; }
     }
 }
