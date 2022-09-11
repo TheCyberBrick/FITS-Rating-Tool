@@ -32,5 +32,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
         ReadOnlyObservableCollection<IInstrumentProfileViewModel> Profiles { get; }
 
         IInstrumentProfileViewModel? SelectedProfile { get; set; }
+
+        IInstrumentProfileViewModel? FindById(string profileId);
+
+        IInstrumentProfileViewModel? SelectById(string profileId);
     }
 }

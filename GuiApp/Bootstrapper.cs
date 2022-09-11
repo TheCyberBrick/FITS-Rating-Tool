@@ -90,6 +90,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IOpenFileEventManager, OpenFileEventManager>(Reuse.Singleton);
             container.Register<IAppConfigManager, AppConfigManager>(Reuse.Singleton);
             container.Register<IAppConfig, AppConfig>(Reuse.Singleton);
+            container.Register<IInstrumentProfileManager, InstrumentProfileManager>(Reuse.Singleton);
         }
 
         private static void RegisterViewModels(Container container)

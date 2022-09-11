@@ -18,9 +18,15 @@
 
 namespace FitsRatingTool.Common.Services
 {
-    public interface IConfigFactory<M, R>
+    public interface IConfigBuilder<M>
     {
-        M Create();
+        M Build();
+    }
+
+    public interface IConfigFactory<M, R, B>
+        where B : IConfigBuilder<M>
+    {
+        B Builder();
 
         M Load(string data);
 

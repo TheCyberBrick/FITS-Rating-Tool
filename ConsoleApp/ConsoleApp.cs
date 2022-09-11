@@ -156,7 +156,7 @@ namespace FitsRatingTool.ConsoleApp
             {
                 if (initFlag && !File.Exists(jobConfigFile))
                 {
-                    var newConfig = jobConfigFactory.Create();
+                    var newConfig = jobConfigFactory.Builder().Build();
 
                     newConfig.EvaluationFormula = "# Define a custom variable" + Environment.NewLine + "Rating := -FWHMSigma;" + Environment.NewLine + Environment.NewLine + "# Last expression returns the evaluation result" + Environment.NewLine + "Rating";
                     newConfig.ParallelTasks = 4;

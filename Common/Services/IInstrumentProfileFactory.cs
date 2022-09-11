@@ -17,11 +17,17 @@
 */
 
 using FitsRatingTool.Common.Models.Instrument;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FitsRatingTool.Common.Services
 {
-    public interface IInstrumentProfileFactory : IConfigFactory<IInstrumentProfile, IReadOnlyInstrumentProfile>
+    public interface IInstrumentProfileFactory : IConfigFactory<IInstrumentProfile, IReadOnlyInstrumentProfile, IInstrumentProfileFactory.IBuilder>
     {
+        public interface IBuilder : IConfigBuilder<IInstrumentProfile>
+        {
+            IBuilder Id(string profileId);
+        }
+
         public class InvalidInstrumentProfileException : Exception
         {
             public InvalidInstrumentProfileException(string? message, Exception? innerException) : base(message, innerException) { }

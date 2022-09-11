@@ -27,7 +27,7 @@ namespace FitsRatingTool.GuiApp.Services
     {
         public interface IRecord
         {
-            public string File { get; }
+            string File { get; }
 
             IFitsImageStatisticsViewModel? Statistics { get; set; }
 

@@ -18,6 +18,7 @@
 
 using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
@@ -36,10 +37,10 @@ namespace FitsRatingTool.Common.Services.Impl
             }
 
             [JsonProperty(PropertyName = "id", Required = Required.Always)]
-            public string Id { get; set; } = null!;
+            public string Id { get; set; }
 
             [JsonProperty(PropertyName = "name", Required = Required.Always)]
-            public string Name { get; set; } = null!;
+            public string Name { get; set; } = "";
 
             [JsonProperty(PropertyName = "description", NullValueHandling = NullValueHandling.Ignore)]
             public string Description { get; set; } = "";
@@ -111,11 +112,36 @@ namespace FitsRatingTool.Common.Services.Impl
 
             [JsonIgnore]
             IReadOnlyList<IReadOnlyInstrumentProfile.IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
+
+            public InstrumentProfile(string profileId)
+            {
+                Id = profileId;
+            }
         }
 
-        public IInstrumentProfile Create()
+        private class InstrumentProfileBuilder : IInstrumentProfileFactory.IBuilder
         {
-            return new InstrumentProfile();
+            private string? profileId;
+
+            public IInstrumentProfileFactory.IBuilder Id(string profileId)
+            {
+                this.profileId = profileId;
+                return this;
+            }
+
+            public IInstrumentProfile Build()
+            {
+                if (profileId == null)
+                {
+                    throw new InvalidOperationException("Profile ID must not be null");
+                }
+                return new InstrumentProfile(profileId);
+            }
+        }
+
+        public IInstrumentProfileFactory.IBuilder Builder()
+        {
+            return new InstrumentProfileBuilder();
         }
 
         public IInstrumentProfile Load(string data)

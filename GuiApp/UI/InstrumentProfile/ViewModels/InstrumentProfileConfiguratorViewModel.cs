@@ -17,8 +17,6 @@
 */
 
 using FitsRatingTool.Common.Models.Instrument;
-using FitsRatingTool.Common.Services;
-using FitsRatingTool.GuiApp.Repositories;
 using ReactiveUI;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -26,7 +24,7 @@ using System;
 using static FitsRatingTool.GuiApp.UI.InstrumentProfile.IInstrumentProfileConfiguratorViewModel;
 using System.IO;
 using System.Text;
-using System.Collections.Generic;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
@@ -35,22 +33,19 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         public class Factory : IInstrumentProfileConfiguratorViewModel.IFactory
         {
             private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
-            private readonly IInstrumentProfileViewModel.IFactory instrumentProfileVMFactory;
-            private readonly IInstrumentProfileRepository instrumentProfileRepository;
-            private readonly IInstrumentProfileFactory instrumentProfileFactory;
+            private readonly IInstrumentProfileViewModel.IFactory instrumentProfileFactory;
+            private readonly IInstrumentProfileManager instrumentProfileManager;
 
-            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileVMFactory, IInstrumentProfileRepository instrumentProfileRepository,
-                IInstrumentProfileFactory instrumentProfileFactory)
+            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileFactory, IInstrumentProfileManager instrumentProfileManager)
             {
                 this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
-                this.instrumentProfileVMFactory = instrumentProfileVMFactory;
-                this.instrumentProfileRepository = instrumentProfileRepository;
                 this.instrumentProfileFactory = instrumentProfileFactory;
+                this.instrumentProfileManager = instrumentProfileManager;
             }
 
             public IInstrumentProfileConfiguratorViewModel Create()
             {
-                return new InstrumentProfileConfiguratorViewModel(instrumentProfileSelectorFactory, instrumentProfileVMFactory, instrumentProfileRepository, instrumentProfileFactory);
+                return new InstrumentProfileConfiguratorViewModel(instrumentProfileSelectorFactory, instrumentProfileFactory, instrumentProfileManager);
             }
         }
 
@@ -87,13 +82,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
 
 
-        private readonly IInstrumentProfileFactory instrumentProfileFactory;
-
-        private InstrumentProfileConfiguratorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileVMFactory, IInstrumentProfileRepository instrumentProfileRepository,
-            IInstrumentProfileFactory instrumentProfileFactory)
+        private InstrumentProfileConfiguratorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileFactory, IInstrumentProfileManager instrumentProfileManager)
         {
-            this.instrumentProfileFactory = instrumentProfileFactory;
-
             Selector = instrumentProfileSelectorFactory.Create();
 
             var hasProfile = this.WhenAnyValue(x => x.Selector.SelectedProfile, (IInstrumentProfileViewModel? x) => x != null);
@@ -133,7 +123,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 if (discard)
                 {
                     Selector.SelectedProfile = null;
-                    Selector.SelectedProfile = instrumentProfileVMFactory.Create();
+                    Selector.SelectedProfile = instrumentProfileFactory.Create();
                 }
             });
 
@@ -142,21 +132,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 var profile = Selector.SelectedProfile;
                 if (profile != null)
                 {
-                    instrumentProfileRepository.AddOrUpdateProfile(CreateProfileFromVM(profile));
-                    instrumentProfileRepository.Save(profile.Id);
+                    instrumentProfileManager.GetOrAdd(profile.Id).Profile = profile;
 
                     profile.ResetToSourceProfile();
 
                     // If a new profile was added then select it
                     // to replace the current temporary one with
                     // the new one
-                    foreach (var p in Selector.Profiles)
-                    {
-                        if (p.Id == profile.Id)
-                        {
-                            Selector.SelectedProfile = p;
-                        }
-                    }
+                    Selector.SelectById(profile.Id);
                 }
             }, isSelectedProfileValid);
 
@@ -182,7 +165,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                         var profile = Selector.SelectedProfile;
                         if (profile != null)
                         {
-                            instrumentProfileRepository.RemoveProfile(profile.Id);
+                            instrumentProfileManager.Remove(profile.Id);
                             Selector.SelectedProfile = null;
                         }
                     }
@@ -219,31 +202,19 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 {
                     try
                     {
-                        var profile = instrumentProfileFactory.Load(File.ReadAllText(file, Encoding.UTF8));
+                        var profile = instrumentProfileManager.Load(File.ReadAllText(file, Encoding.UTF8));
 
                         if (profile != null)
                         {
-                            if (instrumentProfileRepository.GetProfile(profile.Id) != null)
+                            if (instrumentProfileManager.Contains(profile.Id))
                             {
                                 result = new ImportResult($"A profile with ID '{profile.Id}' already exists");
                             }
                             else
                             {
-                                instrumentProfileRepository.AddOrUpdateProfile(profile);
-                                instrumentProfileRepository.Save(profile.Id);
+                                instrumentProfileManager.GetOrAdd(profile.Id).Profile = profile;
 
-                                IInstrumentProfileViewModel? vm = null;
-
-                                foreach (var p in Selector.Profiles)
-                                {
-                                    if (p.Id == profile.Id)
-                                    {
-                                        vm = p;
-                                        break;
-                                    }
-                                }
-
-                                result = new ImportResult(vm);
+                                result = new ImportResult(Selector.FindById(profile.Id));
                             }
                         }
                     }
@@ -271,20 +242,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             {
                 ExportResult? result = null;
 
-                var profileVm = Selector.SelectedProfile;
+                var profile = Selector.SelectedProfile;
 
                 Exception? error = null;
 
-                if (profileVm != null)
+                if (profile != null)
                 {
                     var file = await ExportSaveFileDialog.Handle(Unit.Default);
                     if (file.Length > 0)
                     {
                         try
                         {
-                            var profile = CreateProfileFromVM(profileVm);
-
-                            var data = instrumentProfileFactory.Save(profile);
+                            var data = instrumentProfileManager.Save(profile);
 
                             await File.WriteAllTextAsync(file, data);
 
@@ -310,37 +279,6 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
                 return result;
             }, hasProfile);
-        }
-
-        private IInstrumentProfile CreateProfileFromVM(IInstrumentProfileViewModel vm)
-        {
-            var profile = instrumentProfileFactory.Create();
-
-            profile.Id = vm.Id;
-            profile.Name = vm.Name;
-            profile.Description = vm.Description;
-            profile.Key = vm.Key;
-            profile.FocalLength = vm.FocalLength;
-            profile.BitDepth = vm.BitDepth;
-            profile.ElectronsPerADU = vm.ElectronsPerADU;
-            profile.PixelSizeInMicrons = vm.PixelSizeInMicrons;
-
-            var constants = new List<IInstrumentProfile.IConstant>();
-
-            foreach (var constant in vm.Constants)
-            {
-                var pconstant = new IInstrumentProfile.Constant()
-                {
-                    Name = constant.Name,
-                    Value = constant.Value
-                };
-
-                constants.Add(pconstant);
-            }
-
-            profile.Constants = constants;
-
-            return profile;
         }
     }
 }

@@ -20,7 +20,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 
 namespace FitsRatingTool.Common.Services
 {
-    public interface IJobConfigFactory : IConfigFactory<IJobConfig, IReadOnlyJobConfig>
+    public interface IJobConfigFactory : IConfigFactory<IJobConfig, IReadOnlyJobConfig, IConfigBuilder<IJobConfig>>
     {
         public class InvalidJobConfigException : Exception
         {

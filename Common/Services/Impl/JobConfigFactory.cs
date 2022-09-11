@@ -227,9 +227,17 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        public IJobConfig Create()
+        private class JobConfigBuilder : IConfigBuilder<IJobConfig>
         {
-            return new JobConfig();
+            public IJobConfig Build()
+            {
+                return new JobConfig();
+            }
+        }
+
+        public IConfigBuilder<IJobConfig> Builder()
+        {
+            return new JobConfigBuilder();
         }
 
         public IJobConfig Load(string data)

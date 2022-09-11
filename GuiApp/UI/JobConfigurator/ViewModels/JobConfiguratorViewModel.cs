@@ -425,7 +425,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         private void UpdateJobConfig()
         {
-            var config = jobConfigFactory.Create();
+            var config = jobConfigFactory.Builder().Build();
 
             config.EvaluationFormula = EvaluationFormula.RatingFormula ?? "";
 

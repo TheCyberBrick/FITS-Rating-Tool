@@ -311,7 +311,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             get => _currentGroupingConfiguration;
             set
             {
-                if (!string.Equals(_currentGroupingConfiguration, value))
+                if (!EqualityComparer<GroupingConfiguration?>.Default.Equals(_currentGroupingConfiguration, value))
                 {
                     var old = _currentGroupingConfiguration;
                     _currentGroupingConfiguration = value;
@@ -326,7 +326,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             get => _currentFilterGroupingConfiguration;
             set
             {
-                if (!string.Equals(_currentFilterGroupingConfiguration, value))
+                if (!EqualityComparer<GroupingConfiguration?>.Default.Equals(_currentFilterGroupingConfiguration, value))
                 {
                     var old = _currentFilterGroupingConfiguration;
                     _currentFilterGroupingConfiguration = value;

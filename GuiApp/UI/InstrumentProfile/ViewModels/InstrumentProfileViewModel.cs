@@ -18,7 +18,7 @@
 
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Instrument;
-using FitsRatingTool.GuiApp.Repositories;
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -32,21 +32,21 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
     {
         public class Factory : IInstrumentProfileViewModel.IFactory
         {
-            private readonly IInstrumentProfileRepository instrumentProfileRepository;
+            private readonly IInstrumentProfileManager instrumentProfileManager;
 
-            public Factory(IInstrumentProfileRepository instrumentProfileRepository)
+            public Factory(IInstrumentProfileManager instrumentProfileManager)
             {
-                this.instrumentProfileRepository = instrumentProfileRepository;
+                this.instrumentProfileManager = instrumentProfileManager;
             }
 
             public IInstrumentProfileViewModel Create()
             {
-                return new InstrumentProfileViewModel(instrumentProfileRepository, null);
+                return new InstrumentProfileViewModel(instrumentProfileManager, null);
             }
 
             public IInstrumentProfileViewModel Create(IReadOnlyInstrumentProfile profile)
             {
-                return new InstrumentProfileViewModel(instrumentProfileRepository, profile);
+                return new InstrumentProfileViewModel(instrumentProfileManager, profile);
             }
         }
 
@@ -73,18 +73,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             public ReactiveCommand<Unit, Unit> Remove { get; } = ReactiveCommand.Create(() => { });
 
-            private readonly InstrumentProfileViewModel profile;
-
             public ConstantViewModel(InstrumentProfileViewModel profile)
             {
-                Profile = this.profile = profile;
+                Profile = profile;
                 _isNameValid = this.WhenAnyValue(x => x.Name, ValidateName).ToProperty(this, x => x.IsNameValid);
 
-                this.WhenAnyValue(x => x.Name).Subscribe(_ =>
-                {
-                    Profile.IsModified = true;
-                    profile.ValidateConstants();
-                });
+                this.WhenAnyValue(x => x.IsNameValid).Subscribe(_ => profile.ValidateConstants());
+
+                this.WhenAnyValue(x => x.Name).Subscribe(_ => Profile.IsModified = true);
                 this.WhenAnyValue(x => x.Value).Subscribe(_ => Profile.IsModified = true);
             }
 
@@ -235,11 +231,11 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isValid;
         public bool IsValid => _isValid.Value;
 
-        private bool _isConstantKeywordValue;
+        private bool _isConstantNameValid;
         private bool IsConstantNameValid
         {
-            get => _isConstantKeywordValue;
-            set => this.RaiseAndSetIfChanged(ref _isConstantKeywordValue, value);
+            get => _isConstantNameValid;
+            set => this.RaiseAndSetIfChanged(ref _isConstantNameValid, value);
         }
 
         public ReactiveCommand<Unit, Unit> AddConstant { get; }
@@ -247,11 +243,11 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         public ReactiveCommand<Unit, Unit> Reset { get; }
 
 
-        private readonly IInstrumentProfileRepository instrumentProfileRepository;
+        private readonly IInstrumentProfileManager instrumentProfileManager;
 
-        private InstrumentProfileViewModel(IInstrumentProfileRepository instrumentProfileRepository, IReadOnlyInstrumentProfile? profile)
+        private InstrumentProfileViewModel(IInstrumentProfileManager instrumentProfileManager, IReadOnlyInstrumentProfile? profile)
         {
-            this.instrumentProfileRepository = instrumentProfileRepository;
+            this.instrumentProfileManager = instrumentProfileManager;
 
             IsNew = profile == null;
 
@@ -267,7 +263,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 ResetToSourceProfile();
             }, Observable.CombineLatest(Observable.Return(!IsNew), this.WhenAnyValue(x => x.IsModified), (a, b) => a && b));
 
-            var isIdAvailable = this.WhenAnyValue(x => x.Id, x => (!IsNew && x == profile?.Id) || instrumentProfileRepository.GetProfile(x) == null);
+            var isIdAvailable = this.WhenAnyValue(x => x.Id, x => (!IsNew && x == profile?.Id) || !instrumentProfileManager.Contains(x));
             _isIdAvailable = isIdAvailable.ToProperty(this, x => x.IsIdAvailable);
 
             var isIdValidated = this.WhenAnyValue(x => x.Id, ValidateId);
@@ -293,12 +289,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             this.WhenAnyValue(x => x.IsPixelSizeInMicronsEnabled).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.PixelSizeInMicrons).Subscribe(_ => IsModified = true);
 
-            Constants.CollectionChanged += (sender, e) => IsModified = true;
+            Constants.CollectionChanged += (sender, e) =>
+            {
+                IsModified = true;
+                ValidateConstants();
+            };
 
             if (profile != null)
             {
                 LoadFromProfile(profile);
             }
+
+            ValidateConstants();
         }
 
         private bool ValidateId(string id)
@@ -309,7 +311,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private void LoadFromProfile(IReadOnlyInstrumentProfile profile)
         {
             // Fetch new profile values if available
-            var newProfile = instrumentProfileRepository.GetProfile(profile.Id);
+            var newProfile = instrumentProfileManager.Get(profile.Id)?.Profile;
             if (newProfile != null)
             {
                 SourceProfile = profile = newProfile;
@@ -384,8 +386,6 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             });
 
             Constants.Add(constant);
-
-            ValidateConstants();
 
             return constant;
         }
