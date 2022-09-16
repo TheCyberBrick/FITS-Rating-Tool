@@ -135,6 +135,8 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         #region +++ Instrument Profiles +++
         ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
+
+        IAppProfileSelectorViewModel AppProfileSelector { get; }
         #endregion
 
         #region +++ Voyager Integration +++

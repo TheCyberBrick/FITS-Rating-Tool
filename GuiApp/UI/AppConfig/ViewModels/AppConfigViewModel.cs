@@ -19,6 +19,7 @@
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Reactive;
@@ -32,17 +33,20 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             private readonly IAppConfig appConfig;
             private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
             private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
+            private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
 
-            public Factory(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory)
+            public Factory(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory,
+                IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory)
             {
                 this.appConfig = appConfig;
                 this.appConfigCategoryFactory = appConfigCategoryFactory;
                 this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
+                this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
             }
 
             public IAppConfigViewModel Create()
             {
-                return new AppConfigViewModel(appConfig, appConfigCategoryFactory, jobGroupingConfiguratorFactory);
+                return new AppConfigViewModel(appConfig, appConfigCategoryFactory, jobGroupingConfiguratorFactory, instrumentProfileSelectorFactory);
             }
         }
 
@@ -59,6 +63,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         private readonly IAppConfig appConfig;
         private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
         private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
+        private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
 
         // Designer only
 #pragma warning disable CS8618
@@ -79,13 +84,16 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         }
 #pragma warning restore CS8618
 
-        public AppConfigViewModel(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory)
+        public AppConfigViewModel(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory,
+            IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory)
         {
             this.appConfig = appConfig;
             this.appConfigCategoryFactory = appConfigCategoryFactory;
             this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
+            this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
 
             Categories.Add(CreateGeneralCategory());
+            Categories.Add(CreateImagesCategory());
             Categories.Add(CreateEvaluationCategory());
             Categories.Add(CreateVoyagerCategory());
 
@@ -110,10 +118,23 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         {
             var category = appConfigCategoryFactory.Create("General");
 
+            category.Settings.Add(new InstrumentProfileSettingViewModel("Default Profile", () => appConfig.DefaultInstrumentProfileId, v => appConfig.DefaultInstrumentProfileId = v, instrumentProfileSelectorFactory)
+            {
+                Description = "Profile that should be used by default."
+            });
             category.Settings.Add(new BoolSettingViewModel("Open Files In New Window", () => appConfig.OpenFileInNewWindow, v => appConfig.OpenFileInNewWindow = v)
             {
                 Description = "Whether files opened through the explorer should be opened in a new window. Changing this setting may require restarting the currently open instance(s) to take effect."
             });
+
+
+            return category;
+        }
+
+        private IAppConfigCategoryViewModel CreateImagesCategory()
+        {
+            var category = appConfigCategoryFactory.Create("Images");
+
             category.Settings.Add(new IntegerSettingViewModel("Max. Auto Load Count", () => appConfig.AutoLoadMaxImageCount, v => appConfig.AutoLoadMaxImageCount = v, 1, 512, 1)
             {
                 Description = "Maximum number of automatically loaded images. This includes images opened through the explorer, voyager integration or via program launch argument."

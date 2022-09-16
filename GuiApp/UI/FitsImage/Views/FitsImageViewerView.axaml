@@ -49,6 +49,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <Viewbox Stretch="Uniform">
             <Panel>
               <ContentControl Name="ImageView" Content="{Binding FitsImage}"/>
+
+              <ContentControl Name="InnerOverlay" Content="{Binding InnerOverlay}"/>
+
+              <!-- TODO Move all below to inner overlay -->
               <ItemsControl Items="{Binding Photometry}" IsVisible="{Binding ShowPhotometry}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
@@ -111,6 +115,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </MultiBinding>
       </controls:ProgressRing.IsVisible>
     </controls:ProgressRing>
+
+    <ContentControl Name="OuterOverlay" Content="{Binding OuterOverlay}"/>
 
   </Panel>
 

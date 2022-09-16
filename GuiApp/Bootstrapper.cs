@@ -27,6 +27,7 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.Services.Impl;
 using FitsRatingTool.GuiApp.UI.App;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
+using FitsRatingTool.GuiApp.UI.App.Views;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using FitsRatingTool.GuiApp.UI.AppConfig.ViewModels;
 using FitsRatingTool.GuiApp.UI.Evaluation;
@@ -55,6 +56,7 @@ namespace FitsRatingTool.GuiApp
             RegisterRepositories(container);
             RegisterServices(container);
             RegisterViewModels(container);
+            RegisterViews(container);
             RegisterExporters(container);
 
             return container;
@@ -96,6 +98,8 @@ namespace FitsRatingTool.GuiApp
         private static void RegisterViewModels(Container container)
         {
             container.Register<IAppViewModel, AppViewModel>(Reuse.Singleton, made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IAppProfileSelectorViewModel.IFactory, AppProfileSelectorViewModel.Factory>(Reuse.Singleton);
+            container.Register<IAppViewerOverlayViewModel.IFactory, AppViewerOverlayViewModel.Factory>(Reuse.Singleton);
 
             container.Register<IFitsImageAllStatisticsProgressViewModel.IFactory, FitsImageAllStatisticsProgressViewModel.Factory>(Reuse.Singleton);
             container.Register<IFitsImageHeaderRecordViewModel.IFactory, FitsImageHeaderRecordViewModel.Factory>(Reuse.Singleton);
@@ -135,6 +139,11 @@ namespace FitsRatingTool.GuiApp
             container.Register<IInstrumentProfileViewModel.IFactory, InstrumentProfileViewModel.Factory>(Reuse.Singleton);
             container.Register<IInstrumentProfileSelectorViewModel.IFactory, InstrumentProfileSelectorViewModel.Factory>(Reuse.Singleton);
             container.Register<IInstrumentProfileConfiguratorViewModel.IFactory, InstrumentProfileConfiguratorViewModel.Factory>(Reuse.Singleton);
+        }
+
+        private static void RegisterViews(Container container)
+        {
+            container.Register<AppViewerOverlayView, AppViewerOverlayView>(Reuse.Transient, made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
         }
 
         private static void RegisterExporters(Container container)

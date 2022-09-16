@@ -16,25 +16,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Services;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 
-namespace FitsRatingTool.Exporters.Services
+namespace FitsRatingTool.GuiApp.UI.App
 {
-    public interface IVoyagerEvaluationExporterFactory : IEvaluationExporterFactory
+    public interface IAppProfileSelectorViewModel
     {
-        public interface IVoyagerCredentials
+        public interface IFactory
         {
-            string? ApplicationServerUsername { get; set; }
-
-            string? ApplicationServerPassword { get; set; }
-
-            string? RoboTargetSecret { get; set; }
+            IAppProfileSelectorViewModel Create();
         }
 
-        IVoyagerCredentials CreateCredentials();
-
-        IVoyagerCredentials LoadCredentials(string data);
-
-        string SaveCredentials(IVoyagerCredentials credentials);
+        IInstrumentProfileSelectorViewModel Selector { get; }
     }
 }

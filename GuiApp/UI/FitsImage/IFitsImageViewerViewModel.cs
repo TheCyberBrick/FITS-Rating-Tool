@@ -32,6 +32,18 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             public IFitsImageViewerViewModel Create();
         }
 
+        public interface IOverlayFactory
+        {
+            public IOverlay Create(IFitsImageViewerViewModel viewer);
+        }
+
+        public interface IOverlay
+        {
+            IFitsImageViewerViewModel Viewer { get; }
+
+            void TransferPropertiesFrom(IOverlay overlay);
+        }
+
         string? File { get; set; }
 
         string? FileName { get; }
@@ -41,7 +53,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         bool HasImage { get; }
 
-        public bool IsLoadingFromFile { get; }
+        bool IsLoadingFromFile { get; }
         #endregion
 
         #region +++ Viewer settings +++
@@ -69,21 +81,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         bool AutoSetInterpolationMode { get; set; }
 
-        bool IsExternalViewerEnabled { get; set; }
-
         bool IsPeekViewerEnabled { get; set; }
 
         int PeekViewerSize { get; set; }
 
         IFitsImageSectionViewerViewModel? PeekViewer { get; }
-
-        bool IsExternalCornerViewerEnabled { get; set; }
-
-        bool IsCornerViewerEnabled { get; set; }
-
-        double CornerViewerPercentage { get; set; }
-
-        IFitsImageCornerViewerViewModel? CornerViewer { get; }
         #endregion
 
         #region +++ Statistics +++
@@ -112,12 +114,20 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
         Interaction<IFitsImageStatisticsProgressViewModel, Unit> CalculateStatisticsProgressDialog { get; }
 
         ReactiveCommand<string?, IFitsImageViewModel?> LoadImage { get; }
+        #endregion
 
-        ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
+        #region +++ Overlays +++
+        IOverlayFactory? InnerOverlayFactory { get; set; }
 
-        ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+        IOverlay? InnerOverlay { get; }
+
+        IOverlayFactory? OuterOverlayFactory { get; set; }
+
+        IOverlay? OuterOverlay { get; }
         #endregion
 
         Task UnloadAsync();
+
+        void TransferPropertiesFrom(IFitsImageViewerViewModel viewer);
     }
 }

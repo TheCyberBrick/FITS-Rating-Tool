@@ -272,52 +272,6 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
 
             d.Add(viewer.CalculateStatisticsProgressDialog.RegisterHandler(ShowStatisticsProgressDialogAsync));
 
-            viewer.IsExternalViewerEnabled = true;
-            d.Add(viewer.ShowExternalViewer.Subscribe(vm =>
-            {
-                windowManager.Show(() =>
-                {
-                    viewer.IsExternalViewerEnabled = false;
-
-                    var window = new FitsImageViewerWindow()
-                    {
-                        DataContext = vm
-                    };
-
-                    void onClosing(object? sender, EventArgs e)
-                    {
-                        viewer.IsExternalViewerEnabled = true;
-                        window.Closing -= onClosing;
-                    };
-                    window.Closing += onClosing;
-
-                    return window;
-                }, true);
-            }));
-
-            viewer.IsExternalCornerViewerEnabled = true;
-            d.Add(viewer.ShowExternalCornerViewer.Subscribe(vm =>
-            {
-                windowManager.Show(() =>
-                {
-                    viewer.IsExternalCornerViewerEnabled = false;
-
-                    var window = new FitsImageCornerViewerWindow()
-                    {
-                        DataContext = vm
-                    };
-
-                    void onClosing(object? sender, EventArgs e)
-                    {
-                        viewer.IsExternalCornerViewerEnabled = true;
-                        window.Closing -= onClosing;
-                    };
-                    window.Closing += onClosing;
-
-                    return window;
-                }, true);
-            }));
-
             void onViewerUnloaded(object? sender, IFitsImageMultiViewerViewModel.ViewerEventArgs e)
             {
                 if (e.Viewer == viewer)

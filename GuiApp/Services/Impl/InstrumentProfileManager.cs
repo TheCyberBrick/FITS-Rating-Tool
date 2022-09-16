@@ -84,7 +84,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
 
 
-        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory)
+        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory, IAppConfig appConfig)
         {
             this.instrumentProfileRepository = instrumentProfileRepository;
             this.instrumentProfileFactory = instrumentProfileFactory;
@@ -93,6 +93,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             foreach (var profileId in instrumentProfileRepository.ProfileIds)
             {
                 records.TryAdd(profileId, new Record(profileId, this));
+            }
+
+            var defaultProfile = appConfig.DefaultInstrumentProfileId.Length > 0 ? instrumentProfileRepository.GetProfile(appConfig.DefaultInstrumentProfileId) : null;
+            if (defaultProfile != null)
+            {
+                CurrentProfile = defaultProfile;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,25 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Services;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-namespace FitsRatingTool.Exporters.Services
+namespace FitsRatingTool.GuiApp.UI.App.Views
 {
-    public interface IVoyagerEvaluationExporterFactory : IEvaluationExporterFactory
+    public partial class AppMainView : UserControl
     {
-        public interface IVoyagerCredentials
+        public AppMainView()
         {
-            string? ApplicationServerUsername { get; set; }
-
-            string? ApplicationServerPassword { get; set; }
-
-            string? RoboTargetSecret { get; set; }
+            InitializeComponent();
         }
 
-        IVoyagerCredentials CreateCredentials();
-
-        IVoyagerCredentials LoadCredentials(string data);
-
-        string SaveCredentials(IVoyagerCredentials credentials);
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }

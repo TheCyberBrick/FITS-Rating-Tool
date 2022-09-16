@@ -123,6 +123,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="UI\AppConfig\Views\InstrumentProfileSettingView.axaml.cs">
+      <DependentUpon>InstrumentProfileSettingView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\AppConfig\Views\GroupingConfigurationSettingView.axaml.cs">
       <DependentUpon>GroupingConfigurationSettingView.axaml</DependentUpon>
     </Compile>
@@ -146,6 +149,15 @@
     </Compile>
     <Compile Update="UI\AppConfig\Windows\AppConfigWindow.axaml.cs">
       <DependentUpon>AppConfigWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\App\Views\AppViewerOverlayView.axaml.cs">
+      <DependentUpon>AppViewerOverlayView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\App\Views\AppProfileSelectorView.axaml.cs">
+      <DependentUpon>AppProfileSelectorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\App\Views\AppMainView.axaml.cs">
+      <DependentUpon>AppMainView.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\App\Windows\AppWindow.axaml.cs">
       <DependentUpon>AppWindow.axaml</DependentUpon>
@@ -272,7 +284,6 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="UI\App\Views\" />
     <Folder Include="UI\FileTable\Views\" />
     <Folder Include="UI\Info\Views\" />
     <Folder Include="UI\Info\ViewModels\" />

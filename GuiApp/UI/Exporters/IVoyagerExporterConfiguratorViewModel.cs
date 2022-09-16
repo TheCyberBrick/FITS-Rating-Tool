@@ -37,7 +37,11 @@ namespace FitsRatingTool.GuiApp.UI.Exporters
 
         ReactiveCommand<Unit, Unit> SelectCredentialsFileWithOpenFileDialog { get; }
 
-        Interaction<Unit, string> SelectCredentialsFileOpenFileDialog { get; }
+        ReactiveCommand<Unit, Unit> CreateCredentialsFileWithSaveFileDialog { get; }
+
+        Interaction<string, string> SelectCredentialsFileOpenFileDialog { get; }
+
+        Interaction<string, string> CreateCredentialsFileSaveFileDialog { get; }
 
         bool IsMinRatingThresholdEnabled { get; set; }
 

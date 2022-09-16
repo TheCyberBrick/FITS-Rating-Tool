@@ -66,6 +66,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             }
         }
 
+        IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory { get; set; }
+
+        IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory { get; set; }
+
         int MaxViewers { get; set; }
 
         ObservableCollection<Instance> Instances { get; }

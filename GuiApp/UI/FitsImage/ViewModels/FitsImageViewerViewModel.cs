@@ -44,20 +44,17 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private readonly IFitsImageManager manager;
             private readonly IFitsImageViewModel.IFactory fitsImageFactory;
             private readonly IFitsImageSectionViewerViewModel.IFactory fitsImageSectionViewerFactory;
-            private readonly IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory;
             private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
             private readonly IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory;
             private readonly IStarSampler starSampler;
             private readonly IAppConfig appConfig;
 
             public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionViewerFactory,
-                IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-                IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
+                IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
             {
                 this.manager = manager;
                 this.fitsImageFactory = fitsImageFactory;
                 this.fitsImageSectionViewerFactory = fitsImageSectionViewerFactory;
-                this.fitsImageCornerViewerFactory = fitsImageCornerViewerFactory;
                 this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
                 this.fitsImageHistogramFactory = fitsImageHistogramFactory;
                 this.starSampler = starSampler;
@@ -66,7 +63,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             public IFitsImageViewerViewModel Create()
             {
-                return new FitsImageViewerViewModel(manager, fitsImageFactory, fitsImageSectionViewerFactory, fitsImageCornerViewerFactory, fitsImageStatisticsFactory, fitsImageHistogramFactory, starSampler, appConfig);
+                return new FitsImageViewerViewModel(manager, fitsImageFactory, fitsImageSectionViewerFactory, fitsImageStatisticsFactory, fitsImageHistogramFactory, starSampler, appConfig);
             }
         }
 
@@ -206,13 +203,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             set => this.RaiseAndSetIfChanged(ref _autoSetInterpolationModel, value);
         }
 
-        private bool _isExternalViewerEnabled;
-        public bool IsExternalViewerEnabled
-        {
-            get => _isExternalViewerEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isExternalViewerEnabled, value);
-        }
-
         private bool _isPeekViewerEnabled = true;
         public bool IsPeekViewerEnabled
         {
@@ -232,34 +222,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         {
             get => _peekViewer;
             private set => this.RaiseAndSetIfChanged(ref _peekViewer, value);
-        }
-
-        private bool _isExternalCornerViewerEnabled;
-        public bool IsExternalCornerViewerEnabled
-        {
-            get => _isExternalCornerViewerEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isExternalCornerViewerEnabled, value);
-        }
-
-        private bool _isCornerViewerEnabled;
-        public bool IsCornerViewerEnabled
-        {
-            get => _isCornerViewerEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isCornerViewerEnabled, value);
-        }
-
-        private double _cornerViewerPercentage = 0.125;
-        public double CornerViewerPercentage
-        {
-            get => _cornerViewerPercentage;
-            set => this.RaiseAndSetIfChanged(ref _cornerViewerPercentage, value);
-        }
-
-        private IFitsImageCornerViewerViewModel? _cornerViewer;
-        public IFitsImageCornerViewerViewModel? CornerViewer
-        {
-            get => _cornerViewer;
-            private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
 
@@ -312,9 +274,60 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<string?, IFitsImageViewModel?> LoadImage { get; }
 
-        public ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
 
-        public ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+
+        private IFitsImageViewerViewModel.IOverlayFactory? _innerOverlayFactory;
+        public IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory
+        {
+            get => _innerOverlayFactory;
+            set
+            {
+                var oldValue = _innerOverlayFactory;
+                this.RaiseAndSetIfChanged(ref _innerOverlayFactory, value);
+                if (value != null && value != oldValue)
+                {
+                    InnerOverlay = value.Create(this);
+                }
+                else if (value == null)
+                {
+                    InnerOverlay = null;
+                }
+            }
+        }
+
+        private IFitsImageViewerViewModel.IOverlay? _innerOverlay;
+        public IFitsImageViewerViewModel.IOverlay? InnerOverlay
+        {
+            get => _innerOverlay;
+            private set => this.RaiseAndSetIfChanged(ref _innerOverlay, value);
+        }
+
+        private IFitsImageViewerViewModel.IOverlayFactory? _outerOverlayFactory;
+        public IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory
+        {
+            get => _outerOverlayFactory;
+            set
+            {
+                var oldValue = _outerOverlayFactory;
+                this.RaiseAndSetIfChanged(ref _outerOverlayFactory, value);
+                if (value != null && value != oldValue)
+                {
+                    OuterOverlay = value.Create(this);
+                }
+                else if (value == null)
+                {
+                    OuterOverlay = null;
+                }
+            }
+        }
+
+        private IFitsImageViewerViewModel.IOverlay? _outerOverlay;
+        public IFitsImageViewerViewModel.IOverlay? OuterOverlay
+        {
+            get => _outerOverlay;
+            private set => this.RaiseAndSetIfChanged(ref _outerOverlay, value);
+        }
+
 
 
         public long MaxInputSize { get; set; } = 805306368;
@@ -357,8 +370,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
 
         private FitsImageViewerViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory,
-            IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory,
-            IStarSampler starSampler, IAppConfig appConfig)
+            IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
@@ -422,28 +434,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                     PeekViewer = null;
                 }
             });
-
-            this.WhenAnyValue(x => x.IsCornerViewerEnabled).Subscribe(x =>
-            {
-                if (x)
-                {
-                    CornerViewer = fitsImageCornerViewerFactory.Create(this);
-                    CornerViewer.Percentage = CornerViewerPercentage;
-                }
-                else
-                {
-                    CornerViewer = null;
-                }
-            });
-
-            this.WhenAnyValue(x => x.CornerViewerPercentage)
-                .Subscribe(x =>
-                {
-                    if (CornerViewer != null)
-                    {
-                        CornerViewer.Percentage = CornerViewerPercentage;
-                    }
-                });
 
             SetInterpolationMode = ReactiveCommand.Create<BitmapInterpolationMode>(mode =>
             {
@@ -703,15 +693,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                     // Don't care, image no longer used
                 }
                 return null;
-            });
-
-            ShowExternalViewer = ReactiveCommand.Create<IFitsImageViewerViewModel>(() => this);
-
-            ShowExternalCornerViewer = ReactiveCommand.Create(() =>
-            {
-                var vm = fitsImageCornerViewerFactory.Create(this);
-                vm.Percentage = CornerViewerPercentage;
-                return vm;
             });
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FitsImageViewerViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
@@ -1285,6 +1266,19 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             CancelLoadingTasks();
 
             await QueueOldImagesDisposalAsync();
+        }
+
+        public void TransferPropertiesFrom(IFitsImageViewerViewModel viewer)
+        {
+            AutoCalculateStatistics = viewer.AutoCalculateStatistics;
+            AutoSetInterpolationMode = viewer.AutoSetInterpolationMode;
+            IsPeekViewerEnabled = viewer.IsPeekViewerEnabled;
+            //KeepStretch = viewer.KeepStretch;
+            KeepStretch = true;
+            MaxShownPhotometry = viewer.MaxShownPhotometry;
+            ShowPhotometry = viewer.ShowPhotometry;
+            ShowPhotometryMeasurements = viewer.ShowPhotometryMeasurements;
+            PeekViewerSize = viewer.PeekViewerSize;
         }
     }
 }

@@ -133,6 +133,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
 
+        public IAppProfileSelectorViewModel AppProfileSelector { get; }
+
 
 
         private bool _isVoyagerIntegrationEnabled = false;
@@ -186,7 +188,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IEvaluationExporterViewModel.IFactory evaluationExporterFactory, IJobRunnerViewModel.IFactory jobRunnerFactory, IFileTableViewModel.IFactory fileTableFactory,
             IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager, IAppConfig appConfig, IAppConfigManager appConfigManager,
             IAppConfigViewModel.IFactory appConfigFactory, IInstrumentProfileConfiguratorViewModel.IFactory instrumentProfileConfiguratorFactory,
-            IFileDeleterExporterConfiguratorViewModel.IFactory fileDeleterExporterConfiguratorFactory)
+            IFileDeleterExporterConfiguratorViewModel.IFactory fileDeleterExporterConfiguratorFactory, IAppProfileSelectorViewModel.IFactory appProfileSelectorFactory,
+            IAppViewerOverlayViewModel.IFactory appViewerOverlayFactory)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
@@ -196,6 +199,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             RegisterExporterConfigurators(exporterConfiguratorManager, csvExporterConfiguratorFactory, fitsHeaderExporterConfiguratorFactory, voyagerExporterConfiguratorFactory, fileDeleterExporterConfiguratorFactory);
 
             MultiViewer = multiImageViewerFactory.Create();
+            MultiViewer.OuterOverlayFactory = appViewerOverlayFactory;
+
+            AppProfileSelector = appProfileSelectorFactory.Create();
 
             ShowFileTable = ReactiveCommand.Create(() => fileTableFactory.Create());
             HideFileTable = ReactiveCommand.Create(() => { });

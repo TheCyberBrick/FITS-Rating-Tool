@@ -36,7 +36,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         IEnumerable<Window> Windows { get; }
 
-        bool Show<T>(Func<T> factory, bool showMultiple) where T : Window;
+        bool Show<T>(Func<T> factory, bool showMultiple, Func<T, bool>? filter = null) where T : Window;
 
         IEnumerable<T> Get<T>() where T : Window;
 

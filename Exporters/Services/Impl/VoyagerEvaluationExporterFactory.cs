@@ -49,7 +49,7 @@ namespace FitsRatingTool.Exporters.Services.Impl
             public bool ResetRatingsAndRestore { get; set; }
         }
 
-        public class Credentials
+        public class Credentials : IVoyagerEvaluationExporterFactory.IVoyagerCredentials
         {
             [JsonProperty(PropertyName = "application_server_username", NullValueHandling = NullValueHandling.Ignore)]
             public string? ApplicationServerUsername { get; set; }
@@ -429,12 +429,12 @@ namespace FitsRatingTool.Exporters.Services.Impl
                 MinRatingThreshold = 6
             }, Formatting.Indented) + Environment.NewLine + Environment.NewLine +
             "...and example credentials %userprofile%/voyager_credentials.json:" + Environment.NewLine +
-            JsonConvert.SerializeObject(new Credentials()
+            SaveCredentials(new Credentials()
             {
                 ApplicationServerUsername = "username",
                 ApplicationServerPassword = "password",
                 RoboTargetSecret = "secret"
-            }, Formatting.Indented);
+            });
 
         public IEvaluationExporter Create(IEvaluationExporterContext ctx, string config)
         {
@@ -444,12 +444,39 @@ namespace FitsRatingTool.Exporters.Services.Impl
                 throw new ArgumentException("Invalid config");
             }
             var credsFile = ctx.ResolvePath(cfg.CredentialsFile);
-            var creds = JsonConvert.DeserializeObject<Credentials>(File.ReadAllText(credsFile));
+            Credentials? creds = null;
+            try
+            {
+                creds = LoadCredentials(File.ReadAllText(credsFile)) as Credentials;
+            }
+            catch (Exception)
+            {
+            }
             if (creds == null)
             {
                 throw new ArgumentException("Invalid credentials file '" + credsFile + "'");
             }
             return new Exporter(cfg, creds);
+        }
+
+        public IVoyagerEvaluationExporterFactory.IVoyagerCredentials CreateCredentials()
+        {
+            return new Credentials();
+        }
+
+        public IVoyagerEvaluationExporterFactory.IVoyagerCredentials LoadCredentials(string data)
+        {
+            var creds = JsonConvert.DeserializeObject<Credentials>(data);
+            if (creds == null)
+            {
+                throw new ArgumentException("Invalid credentials file");
+            }
+            return creds;
+        }
+
+        public string SaveCredentials(IVoyagerEvaluationExporterFactory.IVoyagerCredentials credentials)
+        {
+            return JsonConvert.SerializeObject(credentials, Formatting.Indented);
         }
     }
 }

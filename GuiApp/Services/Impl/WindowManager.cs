@@ -29,7 +29,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public IEnumerable<Window> Windows => windows.SelectMany(pair => pair.Value);
 
-        public bool Show<T>(Func<T> factory, bool showMultiple) where T : Window
+        public bool Show<T>(Func<T> factory, bool showMultiple, Func<T, bool>? filter = null) where T : Window
         {
             var type = typeof(T);
 
@@ -40,6 +40,24 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             if (showMultiple || list == null || list.Count == 0)
             {
                 window = factory();
+            }
+            else if (list != null && filter != null)
+            {
+                bool hasMatchingWindow = false;
+
+                foreach (var w in list)
+                {
+                    if (filter((T)w))
+                    {
+                        hasMatchingWindow = true;
+                        break;
+                    }
+                }
+
+                if (!hasMatchingWindow)
+                {
+                    window = factory();
+                }
             }
 
             if (window != null)

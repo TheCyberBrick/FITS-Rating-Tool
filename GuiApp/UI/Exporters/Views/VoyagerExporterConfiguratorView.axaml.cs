@@ -24,6 +24,8 @@ using ReactiveUI;
 using System.Reactive;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Exporters.ViewModels;
+using System;
+using System.IO;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.Views
 {
@@ -40,6 +42,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.Views
                 if (ViewModel != null)
                 {
                     d.Add(ViewModel.SelectCredentialsFileOpenFileDialog.RegisterHandler(ShowOpenFileDialogAsync));
+                    d.Add(ViewModel.CreateCredentialsFileSaveFileDialog.RegisterHandler(ShowSaveFileDialogAsync));
                 }
             });
         }
@@ -55,18 +58,65 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.Views
             base.OnAttachedToLogicalTree(e);
         }
 
-        private async Task ShowOpenFileDialogAsync(InteractionContext<Unit, string> ctx)
+        private async Task ShowOpenFileDialogAsync(InteractionContext<string, string> ctx)
         {
             if (window != null)
             {
+                DirectoryInfo? dir = null;
+                string? fileName = null;
+                try
+                {
+                    string path = Environment.ExpandEnvironmentVariables(ctx.Input);
+                    dir = Directory.GetParent(path);
+                    fileName = Path.GetFileName(path);
+                }
+                catch (Exception)
+                {
+                }
+
                 OpenFileDialog dialog = new()
                 {
+                    Directory = dir?.FullName,
+                    InitialFileName = fileName,
                     Filters = { new() { Name = "Credentials File", Extensions = { "json" } } }
                 };
 
                 var files = await dialog.ShowAsync(window);
 
                 ctx.SetOutput(files != null && files.Length == 1 ? files[0] : "");
+            }
+            else
+            {
+                ctx.SetOutput("");
+            }
+        }
+
+        private async Task ShowSaveFileDialogAsync(InteractionContext<string, string> ctx)
+        {
+            if (window != null)
+            {
+                DirectoryInfo? dir = null;
+                string? fileName = null;
+                try
+                {
+                    string path = Environment.ExpandEnvironmentVariables(ctx.Input);
+                    dir = Directory.GetParent(path);
+                    fileName = Path.GetFileName(path);
+                }
+                catch (Exception)
+                {
+                }
+
+                SaveFileDialog dialog = new()
+                {
+                    Directory = dir?.FullName,
+                    InitialFileName = fileName,
+                    Filters = { new() { Name = "Credentials File", Extensions = { "json" } } }
+                };
+
+                var file = await dialog.ShowAsync(window);
+
+                ctx.SetOutput(file != null ? file : "");
             }
             else
             {

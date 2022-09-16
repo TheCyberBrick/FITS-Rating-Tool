@@ -51,15 +51,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </CheckBox.Styles>
       </CheckBox>
       <CheckBox Content="Corner overlay"
-                IsChecked="{Binding IsCornerViewerEnabled, FallbackValue=False}"
+                IsChecked="{Binding OuterOverlay.IsCornerViewerEnabled, FallbackValue=False}"
                 ToolTip.Tip="Zoom can be changed by (re-)enabling corner viewer.">
         <CheckBox.Styles>
           <Style Selector="CheckBox[IsChecked=true]">
             <Setter Property="CheckBox.Flyout">
               <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="TransientWithDismissOnPointerMoveAway">
                 <Slider Minimum="0" Maximum="1.0"
-                        Value="{Binding CornerViewerPercentage, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=2}"
-                        IsEnabled="{Binding IsCornerViewerEnabled, FallbackValue=False}"
+                        Value="{Binding OuterOverlay.CornerViewerPercentage, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=2}"
+                        IsEnabled="{Binding OuterOverlay.IsCornerViewerEnabled, FallbackValue=False}"
                         UseLayoutRounding="True"
                         Width="120"/>
               </Flyout>

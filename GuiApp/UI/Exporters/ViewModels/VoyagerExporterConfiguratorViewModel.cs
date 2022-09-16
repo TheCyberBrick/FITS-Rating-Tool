@@ -19,9 +19,11 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
+using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -32,15 +34,17 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         public class Factory : IVoyagerExporterConfiguratorViewModel.IFactory
         {
             private IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory;
+            private IAppConfig appConfig;
 
-            public Factory(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory)
+            public Factory(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IAppConfig appConfig)
             {
                 this.voyagerEvaluationExporterFactory = voyagerEvaluationExporterFactory;
+                this.appConfig = appConfig;
             }
 
             public IVoyagerExporterConfiguratorViewModel Create()
             {
-                return new VoyagerExporterConfiguratorViewModel(voyagerEvaluationExporterFactory);
+                return new VoyagerExporterConfiguratorViewModel(voyagerEvaluationExporterFactory, appConfig);
             }
         }
 
@@ -76,7 +80,11 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         public ReactiveCommand<Unit, Unit> SelectCredentialsFileWithOpenFileDialog { get; }
 
-        public Interaction<Unit, string> SelectCredentialsFileOpenFileDialog { get; } = new();
+        public ReactiveCommand<Unit, Unit> CreateCredentialsFileWithSaveFileDialog { get; }
+
+        public Interaction<string, string> SelectCredentialsFileOpenFileDialog { get; } = new();
+
+        public Interaction<string, string> CreateCredentialsFileSaveFileDialog { get; } = new();
 
         private bool _isMinRatingThresholdEnabled;
         public bool IsMinRatingThresholdEnabled
@@ -109,7 +117,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         private readonly IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory;
 
-        public VoyagerExporterConfiguratorViewModel(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory)
+        public VoyagerExporterConfiguratorViewModel(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IAppConfig appConfig)
         {
             this.voyagerEvaluationExporterFactory = voyagerEvaluationExporterFactory;
 
@@ -123,7 +131,21 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
             SelectCredentialsFileWithOpenFileDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                CredentialsFile = await SelectCredentialsFileOpenFileDialog.Handle(Unit.Default);
+                CredentialsFile = await SelectCredentialsFileOpenFileDialog.Handle(CredentialsFile);
+            });
+
+            CreateCredentialsFileWithSaveFileDialog = ReactiveCommand.CreateFromTask(async () =>
+            {
+                CredentialsFile = await CreateCredentialsFileSaveFileDialog.Handle(CredentialsFile);
+
+                if (CredentialsFile.Length > 0)
+                {
+                    IVoyagerEvaluationExporterFactory.IVoyagerCredentials credentials = voyagerEvaluationExporterFactory.CreateCredentials();
+                    credentials.ApplicationServerUsername = appConfig.VoyagerUsername;
+                    credentials.ApplicationServerPassword = appConfig.VoyagerPassword;
+                    credentials.RoboTargetSecret = appConfig.RoboTargetSecret;
+                    File.WriteAllText(CredentialsFile, voyagerEvaluationExporterFactory.SaveCredentials(credentials));
+                }
             });
         }
 

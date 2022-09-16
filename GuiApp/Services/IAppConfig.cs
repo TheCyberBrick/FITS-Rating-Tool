@@ -23,27 +23,29 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IAppConfig
     {
         #region Misc
-        public bool OpenFileInNewWindow { get; set; }
+        bool OpenFileInNewWindow { get; set; }
+
+        string DefaultInstrumentProfileId { get; set; }
         #endregion
 
         #region Viewer
-        public int AutoLoadMaxImageCount { get; set; }
+        int AutoLoadMaxImageCount { get; set; }
 
-        public long MaxImageSize { get; set; }
+        long MaxImageSize { get; set; }
 
-        public int MaxImageWidth { get; set; }
+        int MaxImageWidth { get; set; }
 
-        public int MaxImageHeight { get; set; }
+        int MaxImageHeight { get; set; }
 
-        public int MaxThumbnailWidth { get; set; }
+        int MaxThumbnailWidth { get; set; }
 
-        public int MaxThumbnailHeight { get; set; }
+        int MaxThumbnailHeight { get; set; }
         #endregion
 
         #region Evaluation
-        public string DefaultEvaluationFormulaPath { get; set; }
+        string DefaultEvaluationFormulaPath { get; set; }
 
-        public GroupingConfiguration DefaultEvaluationGrouping { get; set; }
+        GroupingConfiguration DefaultEvaluationGrouping { get; set; }
         #endregion
 
         #region Voyager Integration

@@ -39,9 +39,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             public IFitsImageViewModel Create(IFitsImage image);
         }
 
-        public IFitsImageViewerViewModel? Owner { get; set; }
+        IFitsImageViewerViewModel? Owner { get; set; }
 
-        public bool IsAutoLoaded { get; set; }
+        bool IsAutoLoaded { get; set; }
 
         #region +++ Stretch +++
         bool PreserveColorBalance { get; set; }

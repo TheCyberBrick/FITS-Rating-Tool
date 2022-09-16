@@ -40,7 +40,7 @@ namespace FitsRatingTool.Exporters.Services.Impl
 
         private class Exporter : IEvaluationExporter
         {
-            public string? ConfirmationMessage => "This exporter permanently deletes files if their rating is below or above a certain threshold! Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points the correct files.";
+            public string? ConfirmationMessage => "This exporter permanently deletes files if their rating is below or above a certain threshold! Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points to the correct files.";
 
             public bool ExportValue { get => false; set { } }
 

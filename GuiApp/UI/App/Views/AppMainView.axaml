@@ -1,0 +1,132 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:imaging="using:Avalonia.Visuals.Media.Imaging"
+             xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+             xmlns:appviews="clr-namespace:FitsRatingTool.GuiApp.UI.App.Views"
+             xmlns:vm="using:FitsRatingTool.GuiApp.UI.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="650"
+             x:Class="FitsRatingTool.GuiApp.UI.App.Views.AppMainView">
+
+  <Design.DataContext>
+    <vm:AppViewModel/>
+  </Design.DataContext>
+
+  <Grid RowDefinitions="*,4,Auto">
+
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="9"/>
+      <ColumnDefinition Width="200" MinWidth="180"/>
+    </Grid.ColumnDefinitions>
+
+    <HeaderedContentControl Grid.Column="0" Grid.Row="2"
+                            Padding="4" Margin="0 5 0 0">
+      <HeaderedContentControl.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="16" Height="16">
+            <Image Source="/Assets/Icons/wrench.png"/>
+          </Viewbox>
+          <TextBlock Text="Settings" VerticalAlignment="Center"/>
+        </StackPanel>
+      </HeaderedContentControl.Header>
+
+      <views:FitsImageViewerSettingsView DataContext="{Binding MultiViewer.SelectedInstance.Viewer}"/>
+
+    </HeaderedContentControl>
+
+    <views:FitsImageMultiViewerView Grid.Column="0" Grid.Row="0" Padding="2" DataContext="{Binding MultiViewer}"/>
+
+    <GridSplitter Grid.Column="1" Grid.RowSpan="3"
+                  ResizeDirection="Columns"
+                  Background="Transparent"/>
+
+    <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+          RowDefinitions="Auto,4,Auto,4,Auto,4,*">
+
+      <appviews:AppProfileSelectorView Grid.Row="0" DataContext="{Binding AppProfileSelector}"/>
+
+      <HeaderedContentControl Grid.Row="2"
+                              Padding="4"
+                              VerticalAlignment="Top">
+        <HeaderedContentControl.Header>
+          <Panel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Width="18" Height="18">
+                <Image Source="/Assets/Icons/monitor.png"/>
+              </Viewbox>
+              <TextBlock Text="Stretch" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Image Source="/Assets/Icons/info.png"
+                   Width="22"
+                   Height="22"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Margin="-4 -4 -2 -4"
+                   ToolTip.ShowDelay="100">
+              <ToolTip.Tip>
+                <TextBlock Text="Tip: right-click the sliders for precise adjustments"/>
+              </ToolTip.Tip>
+            </Image>
+          </Panel>
+        </HeaderedContentControl.Header>
+
+        <views:FitsImageViewerStretchView DataContext="{Binding MultiViewer.SelectedInstance.Viewer}"/>
+
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Row="4"
+                              Padding="4"
+                              VerticalAlignment="Top">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="18" Height="18">
+              <Image Source="/Assets/Icons/statistics.png"/>
+            </Viewbox>
+            <TextBlock Text="Statistics" VerticalAlignment="Center"/>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+
+        <views:FitsImageViewerStatisticsView DataContext="{Binding MultiViewer.SelectedInstance.Viewer}"/>
+
+      </HeaderedContentControl>
+
+      <HeaderedContentControl Grid.Row="6"
+                              Padding="4"
+                              VerticalAlignment="Stretch"
+                              MinHeight="80">
+        <HeaderedContentControl.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="16" Height="16">
+              <Image Source="/Assets/Icons/list.png"/>
+            </Viewbox>
+            <TextBlock Text="Header"/>
+          </StackPanel>
+        </HeaderedContentControl.Header>
+        <views:FitsImageViewerHeaderView DataContext="{Binding MultiViewer.SelectedInstance.Viewer}"/>
+      </HeaderedContentControl>
+    </Grid>
+
+  </Grid>
+
+</UserControl>

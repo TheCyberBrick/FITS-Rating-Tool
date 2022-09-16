@@ -38,6 +38,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             get => bool.TryParse(manager.Get("OpenFileInNewWindow"), out bool value) ? value : false;
             set => manager.Set("OpenFileInNewWindow", value.ToString());
         }
+
+        public string DefaultInstrumentProfileId
+        {
+            get => manager.Get("DefaultInstrumentProfileId") ?? "";
+            set => manager.Set("DefaultInstrumentProfileId", value);
+        }
         #endregion
 
         #region Viewer

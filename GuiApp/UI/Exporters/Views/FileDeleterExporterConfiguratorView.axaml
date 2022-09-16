@@ -29,12 +29,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
               Classes="themed dark"
               Padding="4">
-        <WrapPanel>
-          <TextBlock Text="This exporter"/>
-          <TextBlock Text=" permanently deletes  " FontWeight="UltraBold" FontStyle="Italic" Foreground="#fcdb03"/>
-          <TextBlock Text="files if their rating"/>
-          <TextBlock Text="is below 'Min. Rating Threshold' or above 'Max. Rating Threshold'!&#xD;Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points the correct files." TextWrapping="Wrap"/>
-        </WrapPanel>
+        <StackPanel Orientation="Vertical">
+          <WrapPanel>
+            <TextBlock Text="This "/>
+            <TextBlock Text="exporter "/>
+            <TextBlock Text="permanently " FontWeight="UltraBold" FontStyle="Italic" Foreground="#fcdb03"/>
+            <TextBlock Text="deletes  " FontWeight="UltraBold" FontStyle="Italic" Foreground="#fcdb03"/>
+            <TextBlock Text="files "/>
+            <TextBlock Text="if "/>
+            <TextBlock Text="their "/>
+            <TextBlock Text="rating "/>
+            <TextBlock Text="is "/>
+            <TextBlock Text="below "/>
+            <TextBlock Text="'Min. "/>
+            <TextBlock Text="Rating "/>
+            <TextBlock Text="Threshold' "/>
+            <TextBlock Text="or "/>
+            <TextBlock Text="above "/>
+            <TextBlock Text="'Max. "/>
+            <TextBlock Text="Rating "/>
+            <TextBlock Text="Threshold'!"/>
+          </WrapPanel>
+          <TextBlock Text="Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points to the correct files." TextWrapping="Wrap"/>
+        </StackPanel>
       </Border>
 
       <CheckBox Grid.Row="2" Grid.Column="0"
@@ -70,7 +87,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <TextBlock Grid.Column="1"
                    IsVisible="{Binding IsLessThanRule, FallbackValue=False}"
-                   Foreground="#fcdb03"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
                    TextWrapping="Wrap">
           <TextBlock.Text>
             <MultiBinding StringFormat="Delete file if rating is less than {0}.">
@@ -81,7 +98,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <TextBlock Grid.Column="1"
                    IsVisible="{Binding IsGreaterThanRule, FallbackValue=False}"
-                   Foreground="#fcdb03"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
                    TextWrapping="Wrap">
           <TextBlock.Text>
             <MultiBinding StringFormat="Delete file if rating is greater than {0}.">
@@ -92,7 +109,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         <TextBlock Grid.Column="1"
                    IsVisible="{Binding IsLessThanOrGreaterThanRule, FallbackValue=True}"
-                   Foreground="#fcdb03"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
                    TextWrapping="Wrap">
           <TextBlock.Text>
             <MultiBinding StringFormat="Delete file if rating is less than {0} or greater than {1}.">

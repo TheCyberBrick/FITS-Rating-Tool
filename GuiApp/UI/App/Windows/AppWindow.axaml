@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="using:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        xmlns:appviews="clr-namespace:FitsRatingTool.GuiApp.UI.App.Views"
         xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
         xmlns:vm="clr-namespace:FitsRatingTool.GuiApp.UI.App.ViewModels"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
@@ -256,8 +257,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
       <!--
       <views:FitsImageViewerControlsView Grid.Column="2" DataContext="{Binding Viewer}"/>
-      -->
       <views:FitsImageMultiViewerView Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" DataContext="{Binding MultiViewer}"/>
+      -->
+      <appviews:AppMainView Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" DataContext="{Binding .}"/>
     </Grid>
   </DockPanel>
 

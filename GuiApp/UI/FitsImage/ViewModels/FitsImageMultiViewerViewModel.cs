@@ -20,14 +20,13 @@ using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageMultiViewerViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageMultiViewerViewModel : ViewModelBase, IFitsImageMultiViewerViewModel
     {
-        public class Factory : IFitsImageMultiViewerViewModel.IFactory
+        public class Factory : IFactory
         {
             private readonly IFitsImageViewerViewModel.IFactory fitsImageViewerFactory;
 
@@ -85,6 +84,49 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         {
             add => _viewerUnloaded += value;
             remove => _viewerUnloaded -= value;
+        }
+
+
+        private IFitsImageViewerViewModel.IOverlayFactory? _innerOverlayFactory;
+        public IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory
+        {
+            get => _innerOverlayFactory;
+            set
+            {
+                var oldValue = _innerOverlayFactory;
+                this.RaiseAndSetIfChanged(ref _innerOverlayFactory, value);
+                if (oldValue != value)
+                {
+                    foreach (var instance in Instances)
+                    {
+                        if (instance.Viewer.InnerOverlayFactory == oldValue)
+                        {
+                            instance.Viewer.InnerOverlayFactory = value;
+                        }
+                    }
+                }
+            }
+        }
+
+        private IFitsImageViewerViewModel.IOverlayFactory? _outerOverlayFactory;
+        public IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory
+        {
+            get => _outerOverlayFactory;
+            set
+            {
+                var oldValue = _outerOverlayFactory;
+                this.RaiseAndSetIfChanged(ref _outerOverlayFactory, value);
+                if (oldValue != value)
+                {
+                    foreach (var instance in Instances)
+                    {
+                        if (instance.Viewer.OuterOverlayFactory == oldValue)
+                        {
+                            instance.Viewer.OuterOverlayFactory = value;
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -170,6 +212,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         {
             var newViewer = fitsImageViewerFactory.Create();
 
+            newViewer.InnerOverlayFactory = InnerOverlayFactory;
+            newViewer.OuterOverlayFactory = OuterOverlayFactory;
+
             if (Instances.Count > 0)
             {
                 CopyViewerSettings(Instances.First().Viewer, newViewer);
@@ -227,19 +272,17 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private void CopyViewerSettings(IFitsImageViewerViewModel from, IFitsImageViewerViewModel to)
         {
-            to.AutoCalculateStatistics = from.AutoCalculateStatistics;
-            to.AutoSetInterpolationMode = from.AutoSetInterpolationMode;
-            to.CornerViewerPercentage = from.CornerViewerPercentage;
-            to.IsCornerViewerEnabled = from.IsCornerViewerEnabled;
-            to.IsExternalCornerViewerEnabled = from.IsExternalCornerViewerEnabled;
-            to.IsExternalViewerEnabled = from.IsExternalViewerEnabled;
-            to.IsPeekViewerEnabled = from.IsPeekViewerEnabled;
-            //to.KeepStretch = from.KeepStretch;
-            to.KeepStretch = true;
-            to.MaxShownPhotometry = from.MaxShownPhotometry;
-            to.ShowPhotometry = from.ShowPhotometry;
-            to.ShowPhotometryMeasurements = from.ShowPhotometryMeasurements;
-            to.PeekViewerSize = from.PeekViewerSize;
+            to.TransferPropertiesFrom(from);
+
+            if (from.InnerOverlay != null && to.InnerOverlay != null)
+            {
+                to.InnerOverlay.TransferPropertiesFrom(from.InnerOverlay);
+            }
+
+            if (from.OuterOverlay != null && to.OuterOverlay != null)
+            {
+                to.OuterOverlay.TransferPropertiesFrom(from.OuterOverlay);
+            }
         }
 
         private void RemoveInstance(Instance instance)
