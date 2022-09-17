@@ -19,10 +19,6 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using nom.tam.fits;
-using System.Net.Sockets;
-using VoyagerAPI.Runner;
 
 namespace FitsRatingTool.Exporters.Services.Impl
 {
@@ -54,6 +50,8 @@ namespace FitsRatingTool.Exporters.Services.Impl
 
             public ISet<string> ExportVariablesFilter => throw new NotImplementedException();
 
+
+            private readonly AsyncSemaphore deleteSemaphore = new AsyncSemaphore(8);
 
             private readonly Config config;
 
@@ -99,16 +97,21 @@ namespace FitsRatingTool.Exporters.Services.Impl
 
                         if (fi.Exists)
                         {
-                            await Task.Run(async () =>
+                            using (await deleteSemaphore.EnterAsync(cancellationToken))
                             {
-                                const int attempts = 10;
-                                for (int i = 0; i < attempts && fi.Exists; ++i)
+                                await Task.Run(async () =>
                                 {
-                                    attemptDelete();
+                                    const int attempts = 10;
+                                    for (int i = 0; i < attempts && fi.Exists; ++i)
+                                    {
+                                        cancellationToken.ThrowIfCancellationRequested();
 
-                                    await Task.Delay(1000);
-                                }
-                            });
+                                        attemptDelete();
+
+                                        await Task.Delay(1000, cancellationToken);
+                                    }
+                                });
+                            }
                         }
 
                         if (fi.Exists)
@@ -130,10 +133,11 @@ namespace FitsRatingTool.Exporters.Services.Impl
 
             public void Dispose()
             {
+                deleteSemaphore.Dispose();
             }
         }
 
-        public string Description => "Permanently (!) deletes files if their rating is below the MinRatingThreshold or above the MaxRatingThreshold";
+        public string Description => "Permanently (!) deletes files if their rating is below a minimum" + Environment.NewLine + "rating threshold or above a maximum rating threshold";
 
         public string ExampleConfig =>
             JsonConvert.SerializeObject(new Config()

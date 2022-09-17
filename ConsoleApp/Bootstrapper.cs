@@ -55,6 +55,7 @@ namespace FitsRatingTool.ConsoleApp
             container.Register<IFitsHeaderEvaluationExporterFactory, FitsHeaderEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IVoyagerEvaluationExporterFactory, VoyagerEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IFileDeleterExporterFactory, FileDeleterExporterFactory>(Reuse.Singleton);
+            container.Register<IFileMoverExporterFactory, FileMoverExporterFactory>(Reuse.Singleton);
         }
     }
 }

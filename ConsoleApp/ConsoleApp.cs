@@ -40,7 +40,7 @@ namespace FitsRatingTool.ConsoleApp
 
         public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, ICSVEvaluationExporterFactory csvEvaluationExporterFactory,
             IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory,
-            IFileDeleterExporterFactory fileDeleterExporterFactory)
+            IFileDeleterExporterFactory fileDeleterExporterFactory, IFileMoverExporterFactory fileMoverExporterFactory)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.evaluator = evaluator;
@@ -49,6 +49,7 @@ namespace FitsRatingTool.ConsoleApp
             RegisterExporter("fits_header", fitsHeaderEvaluationExporterFactory);
             RegisterExporter("voyager", voyagerEvaluationExporterFactory);
             RegisterExporter("file_deleter", fileDeleterExporterFactory);
+            RegisterExporter("file_mover", fileMoverExporterFactory);
         }
 
         private void RegisterExporter(string id, IEvaluationExporterFactory factory)

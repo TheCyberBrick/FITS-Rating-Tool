@@ -189,14 +189,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFileSystemService fileSystemService, IOpenFileEventManager openFileEventManager, IAppConfig appConfig, IAppConfigManager appConfigManager,
             IAppConfigViewModel.IFactory appConfigFactory, IInstrumentProfileConfiguratorViewModel.IFactory instrumentProfileConfiguratorFactory,
             IFileDeleterExporterConfiguratorViewModel.IFactory fileDeleterExporterConfiguratorFactory, IAppProfileSelectorViewModel.IFactory appProfileSelectorFactory,
-            IAppViewerOverlayViewModel.IFactory appViewerOverlayFactory)
+            IAppViewerOverlayViewModel.IFactory appViewerOverlayFactory, IFileMoverExporterConfiguratorViewModel.IFactory fileMoverExporterConfiguratorFactory)
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
             this.voyagerIntegration = voyagerIntegration;
             this.appConfig = appConfig;
 
-            RegisterExporterConfigurators(exporterConfiguratorManager, csvExporterConfiguratorFactory, fitsHeaderExporterConfiguratorFactory, voyagerExporterConfiguratorFactory, fileDeleterExporterConfiguratorFactory);
+            RegisterExporterConfigurators(exporterConfiguratorManager, csvExporterConfiguratorFactory, fitsHeaderExporterConfiguratorFactory, voyagerExporterConfiguratorFactory, fileDeleterExporterConfiguratorFactory, fileMoverExporterConfiguratorFactory);
 
             MultiViewer = multiImageViewerFactory.Create();
             MultiViewer.OuterOverlayFactory = appViewerOverlayFactory;
@@ -736,12 +736,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private void RegisterExporterConfigurators(IExporterConfiguratorManager exporterConfiguratorManager, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory,
-            IFileDeleterExporterConfiguratorViewModel.IFactory fileDeleterExporterConfiguratorFactory)
+            IFileDeleterExporterConfiguratorViewModel.IFactory fileDeleterExporterConfiguratorFactory, IFileMoverExporterConfiguratorViewModel.IFactory fileMoverExporterConfiguratorFactory)
         {
             exporterConfiguratorManager.Register("csv", new IExporterConfiguratorManager.Factory("CSV", csvExporterConfiguratorFactory.Create));
             exporterConfiguratorManager.Register("fits_header", new IExporterConfiguratorManager.Factory("FITS Header", fitsHeaderExporterConfiguratorFactory.Create));
             exporterConfiguratorManager.Register("voyager", new IExporterConfiguratorManager.Factory("Voyager RoboTarget", voyagerExporterConfiguratorFactory.Create));
             exporterConfiguratorManager.Register("file_deleter", new IExporterConfiguratorManager.Factory("File Deleter", fileDeleterExporterConfiguratorFactory.Create));
+            exporterConfiguratorManager.Register("file_mover", new IExporterConfiguratorManager.Factory("File Mover", fileMoverExporterConfiguratorFactory.Create));
         }
     }
 }

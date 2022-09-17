@@ -23,33 +23,34 @@ using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
-    public class FileDeleterExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel
+    public class FileMoverExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel
     {
-        public class Factory : IFileDeleterExporterConfiguratorViewModel.IFactory
+        public class Factory : IFileMoverExporterConfiguratorViewModel.IFactory
         {
-            private IFileDeleterExporterFactory fileDeleterExporterFactory;
+            private IFileMoverExporterFactory fileMoverExporterFactory;
             private readonly IFitsImageManager fitsImageManager;
 
-            public Factory(IFileDeleterExporterFactory fileDeleterExporterFactory, IFitsImageManager fitsImageManager)
+            public Factory(IFileMoverExporterFactory fileMoverExporterFactory, IFitsImageManager fitsImageManager)
             {
-                this.fileDeleterExporterFactory = fileDeleterExporterFactory;
+                this.fileMoverExporterFactory = fileMoverExporterFactory;
                 this.fitsImageManager = fitsImageManager;
             }
 
-            public IFileDeleterExporterConfiguratorViewModel Create()
+            public IFileMoverExporterConfiguratorViewModel Create()
             {
-                return new FileDeleterExporterConfiguratorViewModel(fileDeleterExporterFactory, fitsImageManager);
+                return new FileMoverExporterConfiguratorViewModel(fileMoverExporterFactory, fitsImageManager);
             }
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension? FileExtension => null;
 
-        public override bool UsesPath => false;
+        public override bool UsesPath => true;
         public override bool UsesExportValue => false;
         public override bool UsesExportGroupKey => false;
         public override bool UsesExportVariables => false;
@@ -92,13 +93,31 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         private ObservableAsPropertyHelper<bool> _isLessThanOrGreaterThanRule;
         public bool IsLessThanOrGreaterThanRule => _isLessThanOrGreaterThanRule.Value;
 
+        private bool _isRelativePath = true;
+        public bool IsRelativePath
+        {
+            get => _isRelativePath;
+            set => this.RaiseAndSetIfChanged(ref _isRelativePath, value);
+        }
 
-        private readonly IFileDeleterExporterFactory fileDeleterExporterFactory;
+        private int _parentDirs = 0;
+        public int ParentDirs
+        {
+            get => _parentDirs;
+            set => this.RaiseAndSetIfChanged(ref _parentDirs, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> SelectPathWithOpenFolderDialog { get; }
+
+        public Interaction<Unit, string> SelectPathOpenFolderDialog { get; } = new();
+
+
+        private readonly IFileMoverExporterFactory fileMoverExporterFactory;
         private readonly IFitsImageManager fitsImageManager;
 
-        public FileDeleterExporterConfiguratorViewModel(IFileDeleterExporterFactory fileDeleterExporterFactory, IFitsImageManager fitsImageManager)
+        public FileMoverExporterConfiguratorViewModel(IFileMoverExporterFactory fileMoverExporterFactory, IFitsImageManager fitsImageManager)
         {
-            this.fileDeleterExporterFactory = fileDeleterExporterFactory;
+            this.fileMoverExporterFactory = fileMoverExporterFactory;
             this.fitsImageManager = fitsImageManager;
 
             var hasMin = this.WhenAnyValue(x => x.IsMinRatingThresholdEnabled);
@@ -112,19 +131,27 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
             _isLessThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => a && !b).ToProperty(this, x => x.IsLessThanRule);
             _isGreaterThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => !a && b).ToProperty(this, x => x.IsGreaterThanRule);
             _isLessThanOrGreaterThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => a && b).ToProperty(this, x => x.IsLessThanOrGreaterThanRule);
+
+            SelectPathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
+            {
+                Path = await SelectPathOpenFolderDialog.Handle(Unit.Default);
+            });
         }
 
         protected override void Validate()
         {
-            IsValid = IsMinRatingThresholdEnabled || IsMaxRatingThresholdEnabled;
+            IsValid = Path.Length > 0 && (IsMinRatingThresholdEnabled || IsMaxRatingThresholdEnabled) && ParentDirs >= 0;
         }
 
         public override string CreateConfig()
         {
-            var config = new FileDeleterExporterFactory.Config
+            var config = new FileMoverExporterFactory.Config
             {
                 MinRatingThreshold = IsMinRatingThresholdEnabled ? MinRatingThreshold : null,
-                MaxRatingThreshold = IsMaxRatingThresholdEnabled ? MaxRatingThreshold : null
+                MaxRatingThreshold = IsMaxRatingThresholdEnabled ? MaxRatingThreshold : null,
+                Path = Path,
+                IsRelativePath = IsRelativePath,
+                ParentDirs = ParentDirs
             };
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
@@ -133,7 +160,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         {
             try
             {
-                var cfg = JsonConvert.DeserializeObject<FileDeleterExporterFactory.Config>(config);
+                var cfg = JsonConvert.DeserializeObject<FileMoverExporterFactory.Config>(config);
 
                 if (cfg != null)
                 {
@@ -141,6 +168,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
                     MinRatingThreshold = cfg.MinRatingThreshold ?? 0;
                     IsMaxRatingThresholdEnabled = cfg.MaxRatingThreshold.HasValue;
                     MaxRatingThreshold = cfg.MaxRatingThreshold ?? 0;
+                    Path = cfg.Path;
+                    IsRelativePath = cfg.IsRelativePath;
+                    ParentDirs = cfg.ParentDirs;
 
                     return true;
                 }
@@ -155,11 +185,11 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         {
             void onEvent(object? sender, IEvaluationExporterEventDispatcher.ExporterEventArgs e)
             {
-                if (e.Parameter is IFileDeleterExporterFactory.DeletingFileEventParameters parameters)
+                if (e.Name == IFileMoverExporterFactory.EVENT_MOVING_FILE && e.Parameter is IFileMoverExporterFactory.MovingFileEventParameters parameters)
                 {
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
-                        fitsImageManager.Remove(parameters.File);
+                        fitsImageManager.Remove(parameters.OldFile);
                     });
                 }
             }
@@ -173,7 +203,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
             ctx.OnExporterEvent += onEvent;
             ctx.OnExporterCleanup += onCleanup;
 
-            return fileDeleterExporterFactory.Create(ctx, CreateConfig());
+            return fileMoverExporterFactory.Create(ctx, CreateConfig());
         }
     }
 }

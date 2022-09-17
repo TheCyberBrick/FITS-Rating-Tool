@@ -130,6 +130,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IFitsHeaderExporterConfiguratorViewModel.IFactory, FitsHeaderExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
             container.Register<IVoyagerExporterConfiguratorViewModel.IFactory, VoyagerExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
             container.Register<IFileDeleterExporterConfiguratorViewModel.IFactory, FileDeleterExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
+            container.Register<IFileMoverExporterConfiguratorViewModel.IFactory, FileMoverExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
 
             container.Register<IFileTableViewModel.IFactory, FileTableViewModel.Factory>(Reuse.Singleton);
 
@@ -152,6 +153,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IFitsHeaderEvaluationExporterFactory, FitsHeaderEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IVoyagerEvaluationExporterFactory, VoyagerEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IFileDeleterExporterFactory, FileDeleterExporterFactory>(Reuse.Singleton);
+            container.Register<IFileMoverExporterFactory, FileMoverExporterFactory>(Reuse.Singleton);
         }
     }
 }

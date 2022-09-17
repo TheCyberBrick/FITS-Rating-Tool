@@ -1,0 +1,144 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.FileMoverExporterConfiguratorView">
+
+  <Grid RowDefinitions="Auto">
+    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,8,Auto,4,Auto,4,Auto,4,Auto,8,Auto,4,Auto" ColumnDefinitions="Auto,10,*">
+
+      <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+              Classes="themed dark"
+              Padding="4">
+        <StackPanel Orientation="Vertical">
+          <TextBlock Text="This exporter moves files if their rating is below 'Min. Rating Threshold' or above 'Max. Rating Threshold'. File name conflicts are resolved by appending a number to the conflicting file name." TextWrapping="Wrap"/>
+          <TextBlock Text="Please make sure that this exporter is configured correctly and before running it, double check that the correct files are loaded and/or that the job file using this exporter points to the correct files." TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+
+      <CheckBox Grid.Row="2" Grid.Column="0"
+                Content="Min. Rating Threshold"
+                IsChecked="{Binding IsMinRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Value="{Binding MinRatingThreshold}"
+                     IsEnabled="{Binding IsMinRatingThresholdEnabled}"
+                     FormatString="0.######"
+                     Minimum="-1000000" Maximum="1000000"/>
+
+      <CheckBox Grid.Row="4" Grid.Column="0"
+                Content="Max. Rating Threshold"
+                IsChecked="{Binding IsMaxRatingThresholdEnabled}"/>
+      <NumericUpDown Grid.Row="4" Grid.Column="2"
+                     Value="{Binding MaxRatingThreshold}"
+                     IsEnabled="{Binding IsMaxRatingThresholdEnabled}"
+                     FormatString="0.######"
+                     Minimum="-1000000" Maximum="1000000"/>
+
+      <Separator Grid.Row="6" Grid.ColumnSpan="3"/>
+
+      <CheckBox Grid.Row="8"
+                Content="Relative Path"
+                IsChecked="{Binding IsRelativePath}"
+                ToolTip.Tip="Whether the path below should be relative to the file being moved."/>
+
+      <TextBlock Grid.Row="10" Grid.Column="0" Text="Path"
+                 VerticalAlignment="Center"
+                 ToolTip.Tip="Path where the file should be moved to."/>
+      <Grid Grid.Row="10" Grid.Column="2" ColumnDefinitions="*,Auto"
+            ToolTip.Tip="Path where the file should be moved to.">
+        <TextBox Grid.Column="0"
+                 Text="{Binding Path}"/>
+        <Button Grid.Column="1"
+                Height="20"
+                Width="22"
+                Content="..."
+                Padding="1 -2"
+                HorizontalContentAlignment="Center"
+                Margin="2 0 0 0"
+                Command="{Binding SelectPathWithOpenFolderDialog}"
+                IsVisible="{Binding !IsRelativePath}"/>
+      </Grid>
+
+      <TextBlock Grid.Row="12" Grid.Column="0"
+                 Text="Include Parent Directories"
+                 VerticalAlignment="Center"
+                 ToolTip.Tip="How many parent directories of the file to move should be appended to the path. This is mostly useful when using an absolute path."/>
+      <NumericUpDown Grid.Row="12" Grid.Column="2"
+                     Value="{Binding ParentDirs}"
+                     Minimum="0" Maximum="100"
+                     ToolTip.Tip="How many parent directories of the file to move should be appended to the path. This is mostly useful when using an absolute path."/>
+
+      <Separator Grid.Row="14" Grid.ColumnSpan="3" Margin="0 0 0 4"/>
+
+      <Grid Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="3"
+            ColumnDefinitions="Auto,*"
+            HorizontalAlignment="Center">
+
+        <TextBlock Grid.Column="0" Text="Rule: ">
+          <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="IsMinRatingThresholdEnabled"/>
+              <Binding Path="IsMaxRatingThresholdEnabled"/>
+            </MultiBinding>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Move file if rating is less than {0}.">
+              <Binding Path="MinRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsGreaterThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Move file if rating is greater than {0}.">
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanOrGreaterThanRule, FallbackValue=True}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Move file if rating is less than {0} or greater than {1}.">
+              <Binding Path="MinRatingThreshold"/>
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+      </Grid>
+
+    </Grid>
+  </Grid>
+
+</UserControl>
