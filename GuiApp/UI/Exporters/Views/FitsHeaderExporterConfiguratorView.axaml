@@ -23,8 +23,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.FitsHeaderExporterConfiguratorView">
 
-  <Grid RowDefinitions="Auto">
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,10,*">
+  <Grid RowDefinitions="Auto,4,Auto">
+    <Border Grid.Row="0"
+            Classes="themed dark"
+            Padding="4">
+      <TextBlock Text="This exporter writes the rating into the specified FITS header record." TextWrapping="Wrap"/>
+    </Border>
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,10,*">
       <TextBlock Grid.Column="0" Text="Keyword" VerticalAlignment="Center"/>
       <TextBox Grid.Column="2" Text="{Binding Keyword}" MaxLength="8"/>
     </Grid>

@@ -24,30 +24,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.VoyagerExporterConfiguratorView">
 
   <Grid RowDefinitions="Auto">
-    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,4,Auto,4,Auto" ColumnDefinitions="Auto,10,*">
+    <Grid Grid.Row="0"
+          RowDefinitions="Auto,4,Auto,4,Auto,4,Auto,8,Auto,4,Auto,4,Auto,8,Auto,4,Auto"
+          ColumnDefinitions="Auto,10,*">
 
-      <TextBlock Grid.Row="0" Grid.Column="0"
-                 Text="Hostname"
-                 VerticalAlignment="Center"/>
-      <TextBox Grid.Row="0" Grid.Column="2"
-               Text="{Binding ApplicationServerHostname}"/>
+      <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+              Classes="themed dark"
+              Padding="4">
+        <TextBlock Text="This exporter sends the ratings to Voyager RoboTarget. If a file's rating is below 'Min. Rating Threshold' or above 'Max. Rating Threshold' (only if these options are checked), then it is set to deleted in RoboTarget. Conversely, if a file's rating is within the thresholds and it is already set as deleted in RoboTarget, then it is set as no longer deleted. Note that the files/data are never deleted." TextWrapping="Wrap"/>
+      </Border>
 
       <TextBlock Grid.Row="2" Grid.Column="0"
+                 Text="Hostname"
+                 VerticalAlignment="Center"/>
+      <TextBox Grid.Row="2" Grid.Column="2"
+               Text="{Binding ApplicationServerHostname}"/>
+
+      <TextBlock Grid.Row="4" Grid.Column="0"
                  Text="Port"
                  VerticalAlignment="Center"/>
-      <NumericUpDown Grid.Row="2" Grid.Column="2"
+      <NumericUpDown Grid.Row="4" Grid.Column="2"
                      Value="{Binding ApplicationServerPort}"
                      Minimum="0"
                      Maximum="65535"
                      ClipValueToMinMax="True"/>
 
-      <TextBlock Grid.Row="4" Grid.Column="0"
+      <TextBlock Grid.Row="6" Grid.Column="0"
                  Text="Credentials File"
                  VerticalAlignment="Center"/>
-      <Grid Grid.Row="4" Grid.Column="2"
+      <Grid Grid.Row="6" Grid.Column="2"
             ColumnDefinitions="*,Auto,Auto" Grid.ColumnSpan="3">
         <TextBox Grid.Column="0"
-                
                  Text="{Binding CredentialsFile}"/>
         <Button Grid.Column="1"
                 Height="20"
@@ -65,21 +72,74 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </Button>
       </Grid>
 
-      <CheckBox Grid.Row="6" Grid.Column="0"
+      <Separator Grid.Row="8" Grid.ColumnSpan="3" Margin="0 0 0 4"/>
+
+      <CheckBox Grid.Row="10" Grid.Column="0"
                 Content="Min. Rating Threshold"
                 IsChecked="{Binding IsMinRatingThresholdEnabled}"/>
-      <NumericUpDown Grid.Row="6" Grid.Column="2"
+      <NumericUpDown Grid.Row="10" Grid.Column="2"
                      Value="{Binding MinRatingThreshold}"
                      IsEnabled="{Binding IsMinRatingThresholdEnabled}"
                      Minimum="-1000000" Maximum="1000000"/>
 
-      <CheckBox Grid.Row="8" Grid.Column="0"
+      <CheckBox Grid.Row="12" Grid.Column="0"
                 Content="Max. Rating Threshold"
                 IsChecked="{Binding IsMaxRatingThresholdEnabled}"/>
-      <NumericUpDown Grid.Row="8" Grid.Column="2"
+      <NumericUpDown Grid.Row="12" Grid.Column="2"
                      Value="{Binding MaxRatingThreshold}"
                      IsEnabled="{Binding IsMaxRatingThresholdEnabled}"
                      Minimum="-1000000" Maximum="1000000"/>
+
+      <Separator Grid.Row="14" Grid.ColumnSpan="3" Margin="0 0 0 4"/>
+
+      <Grid Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="3"
+            ColumnDefinitions="Auto,*"
+            HorizontalAlignment="Center">
+
+        <TextBlock Grid.Column="0" Text="Rule: ">
+          <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="IsMinRatingThresholdEnabled"/>
+              <Binding Path="IsMaxRatingThresholdEnabled"/>
+            </MultiBinding>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Set file to deleted if rating is less than {0}.">
+              <Binding Path="MinRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsGreaterThanRule, FallbackValue=False}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Set file to deleted if rating is greater than {0}.">
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1"
+                   IsVisible="{Binding IsLessThanOrGreaterThanRule, FallbackValue=True}"
+                   Foreground="#fcdb03" FontWeight="UltraBold" FontStyle="Italic"
+                   TextWrapping="Wrap">
+          <TextBlock.Text>
+            <MultiBinding StringFormat="Set file to deleted if rating is less than {0} or greater than {1}.">
+              <Binding Path="MinRatingThreshold"/>
+              <Binding Path="MaxRatingThreshold"/>
+            </MultiBinding>
+          </TextBlock.Text>
+        </TextBlock>
+
+      </Grid>
 
     </Grid>
   </Grid>

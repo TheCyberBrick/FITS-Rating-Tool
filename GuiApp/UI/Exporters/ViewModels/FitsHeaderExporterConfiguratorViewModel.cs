@@ -22,6 +22,7 @@ using FitsRatingTool.Exporters.Services.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
@@ -69,7 +70,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         protected override void Validate()
         {
-            IsValid = Keyword.Length > 0 && Keyword.Length <= 8;
+            IsValid = Keyword.Length > 0 && Keyword.Length <= 8 && char.IsLetter(Keyword[0]) && Keyword.All(c => char.IsLetter(c) || char.IsDigit(c));
         }
 
         public override string CreateConfig()

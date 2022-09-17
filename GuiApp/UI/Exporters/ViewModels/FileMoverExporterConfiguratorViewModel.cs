@@ -29,7 +29,7 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
-    public class FileMoverExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel
+    public class FileMoverExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileMoverExporterConfiguratorViewModel
     {
         public class Factory : IFileMoverExporterConfiguratorViewModel.IFactory
         {
@@ -55,43 +55,6 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         public override bool UsesExportGroupKey => false;
         public override bool UsesExportVariables => false;
 
-
-        private bool _isMinRatingThresholdEnabled;
-        public bool IsMinRatingThresholdEnabled
-        {
-            get => _isMinRatingThresholdEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isMinRatingThresholdEnabled, value);
-        }
-
-        private float _minRatingThreshold;
-        public float MinRatingThreshold
-        {
-            get => _minRatingThreshold;
-            set => this.RaiseAndSetIfChanged(ref _minRatingThreshold, value);
-        }
-
-        private bool _isMaxRatingThresholdEnabled;
-        public bool IsMaxRatingThresholdEnabled
-        {
-            get => _isMaxRatingThresholdEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isMaxRatingThresholdEnabled, value);
-        }
-
-        private float _maxRatingThreshold;
-        public float MaxRatingThreshold
-        {
-            get => _maxRatingThreshold;
-            set => this.RaiseAndSetIfChanged(ref _maxRatingThreshold, value);
-        }
-
-        private ObservableAsPropertyHelper<bool> _isLessThanRule;
-        public bool IsLessThanRule => _isLessThanRule.Value;
-
-        private ObservableAsPropertyHelper<bool> _isGreaterThanRule;
-        public bool IsGreaterThanRule => _isGreaterThanRule.Value;
-
-        private ObservableAsPropertyHelper<bool> _isLessThanOrGreaterThanRule;
-        public bool IsLessThanOrGreaterThanRule => _isLessThanOrGreaterThanRule.Value;
 
         private bool _isRelativePath = true;
         public bool IsRelativePath
@@ -120,18 +83,6 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
             this.fileMoverExporterFactory = fileMoverExporterFactory;
             this.fitsImageManager = fitsImageManager;
 
-            var hasMin = this.WhenAnyValue(x => x.IsMinRatingThresholdEnabled);
-            var hasMax = this.WhenAnyValue(x => x.IsMaxRatingThresholdEnabled);
-
-            hasMin.Subscribe(x => NotifyConfigurationChange());
-            hasMax.Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.MaxRatingThreshold).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.MinRatingThreshold).Subscribe(x => NotifyConfigurationChange());
-
-            _isLessThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => a && !b).ToProperty(this, x => x.IsLessThanRule);
-            _isGreaterThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => !a && b).ToProperty(this, x => x.IsGreaterThanRule);
-            _isLessThanOrGreaterThanRule = Observable.CombineLatest(hasMin, hasMax, (a, b) => a && b).ToProperty(this, x => x.IsLessThanOrGreaterThanRule);
-
             SelectPathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
             {
                 Path = await SelectPathOpenFolderDialog.Handle(Unit.Default);
@@ -140,7 +91,8 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         protected override void Validate()
         {
-            IsValid = Path.Length > 0 && (IsMinRatingThresholdEnabled || IsMaxRatingThresholdEnabled) && ParentDirs >= 0;
+            base.Validate();
+            IsValid &= ParentDirs >= 0;
         }
 
         public override string CreateConfig()

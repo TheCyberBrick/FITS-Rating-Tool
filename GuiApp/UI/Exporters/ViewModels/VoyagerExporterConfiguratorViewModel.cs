@@ -29,7 +29,7 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
-    public class VoyagerExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel
+    public class VoyagerExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<int>, IVoyagerExporterConfiguratorViewModel
     {
         public class Factory : IVoyagerExporterConfiguratorViewModel.IFactory
         {
@@ -86,34 +86,6 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         public Interaction<string, string> CreateCredentialsFileSaveFileDialog { get; } = new();
 
-        private bool _isMinRatingThresholdEnabled;
-        public bool IsMinRatingThresholdEnabled
-        {
-            get => _isMinRatingThresholdEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isMinRatingThresholdEnabled, value);
-        }
-
-        private int _minRatingThreshold;
-        public int MinRatingThreshold
-        {
-            get => _minRatingThreshold;
-            set => this.RaiseAndSetIfChanged(ref _minRatingThreshold, value);
-        }
-
-        private bool _isMaxRatingThresholdEnabled;
-        public bool IsMaxRatingThresholdEnabled
-        {
-            get => _isMaxRatingThresholdEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isMaxRatingThresholdEnabled, value);
-        }
-
-        private int _maxRatingThreshold;
-        public int MaxRatingThreshold
-        {
-            get => _maxRatingThreshold;
-            set => this.RaiseAndSetIfChanged(ref _maxRatingThreshold, value);
-        }
-
 
         private readonly IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory;
 
@@ -124,10 +96,6 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
             this.WhenAnyValue(x => x.ApplicationServerHostname).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.ApplicationServerPort).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.CredentialsFile).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.IsMinRatingThresholdEnabled).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.IsMaxRatingThresholdEnabled).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.MaxRatingThreshold).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.MinRatingThreshold).Subscribe(x => NotifyConfigurationChange());
 
             SelectCredentialsFileWithOpenFileDialog = ReactiveCommand.CreateFromTask(async () =>
             {

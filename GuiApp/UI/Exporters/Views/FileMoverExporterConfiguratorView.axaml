@@ -24,7 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.FileMoverExporterConfiguratorView">
 
   <Grid RowDefinitions="Auto">
-    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,8,Auto,4,Auto,4,Auto,4,Auto,8,Auto,4,Auto" ColumnDefinitions="Auto,10,*">
+    <Grid Grid.Row="0"
+          RowDefinitions="Auto,4,Auto,4,Auto,8,Auto,4,Auto,4,Auto,4,Auto,8,Auto,4,Auto"
+          ColumnDefinitions="Auto,10,*">
 
       <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
               Classes="themed dark"

@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.FileDeleterExporterConfiguratorView">
 
   <Grid RowDefinitions="Auto">
-    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,12,Auto" ColumnDefinitions="Auto,10,*">
+    <Grid Grid.Row="0" RowDefinitions="Auto,4,Auto,4,Auto,8,Auto,4,Auto" ColumnDefinitions="Auto,10,*">
 
       <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
               Classes="themed dark"
@@ -72,7 +72,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                      FormatString="0.######"
                      Minimum="-1000000" Maximum="1000000"/>
 
-      <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
+      <Separator Grid.Row="6" Grid.ColumnSpan="3" Margin="0 0 0 4"/>
+
+      <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3"
             ColumnDefinitions="Auto,*"
             HorizontalAlignment="Center">
 

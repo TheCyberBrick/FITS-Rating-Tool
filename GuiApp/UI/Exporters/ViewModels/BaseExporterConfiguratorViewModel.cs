@@ -193,6 +193,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         protected void NotifyConfigurationChange()
         {
+            IsValid = true;
             Validate();
             _configurationChanged?.Invoke(this, new EventArgs());
         }

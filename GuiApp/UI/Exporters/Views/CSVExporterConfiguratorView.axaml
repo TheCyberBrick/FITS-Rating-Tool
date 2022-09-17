@@ -16,10 +16,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<views:BaseExporterConfiguratorView xmlns="https://github.com/avaloniaui"
+
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="using:FitsRatingTool.GuiApp.UI.Exporters.Views"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
-             x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.CSVExporterConfiguratorView"/>
+             x:Class="FitsRatingTool.GuiApp.UI.Exporters.Views.CSVExporterConfiguratorView">
+  <Grid RowDefinitions="Auto,4,Auto">
+    <Border Grid.Row="0"
+            Classes="themed dark"
+            Padding="4">
+      <TextBlock Text="This exporter writes the all the ratings into the specified comma separated CSV file. Additionally, the file's group key and some or all evaluation formula variables can be written to the CSV file as well." TextWrapping="Wrap"/>
+    </Border>
+    <views:BaseExporterConfiguratorView Grid.Row="2" DataContext="{Binding .}"/>
+  </Grid>
+</UserControl>
