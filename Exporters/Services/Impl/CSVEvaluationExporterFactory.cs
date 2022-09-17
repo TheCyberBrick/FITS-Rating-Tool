@@ -22,7 +22,7 @@ using Newtonsoft.Json;
 using System.Globalization;
 using System.Text;
 
-namespace FitsRatingTool.Common.Services.Impl
+namespace FitsRatingTool.Exporters.Services.Impl
 {
     public class CSVEvaluationExporterFactory : ICSVEvaluationExporterFactory
     {

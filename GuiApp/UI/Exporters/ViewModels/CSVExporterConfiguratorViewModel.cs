@@ -17,8 +17,8 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Common.Services;
-using FitsRatingTool.Common.Services.Impl;
+using FitsRatingTool.Exporters.Services;
+using FitsRatingTool.Exporters.Services.Impl;
 using Newtonsoft.Json;
 using System;
 using System.Linq;

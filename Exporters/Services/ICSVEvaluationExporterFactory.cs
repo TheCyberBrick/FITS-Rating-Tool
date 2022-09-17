@@ -16,7 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Services
+using FitsRatingTool.Common.Services;
+
+namespace FitsRatingTool.Exporters.Services
 {
     public interface ICSVEvaluationExporterFactory : IEvaluationExporterFactory
     {
