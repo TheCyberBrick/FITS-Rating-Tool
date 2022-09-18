@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
               Classes="themed dark"
               Padding="4">
-        <TextBlock Text="This exporter sends the ratings to Voyager RoboTarget. If a file's rating is below 'Min. Rating Threshold' or above 'Max. Rating Threshold' (only if these options are checked), then it is set to deleted in RoboTarget. Conversely, if a file's rating is within the thresholds and it is already set as deleted in RoboTarget, then it is set as no longer deleted. Note that the files/data are never deleted." TextWrapping="Wrap"/>
+        <TextBlock Text="This exporter sends the ratings to Voyager RoboTarget. If a file's rating is below 'Min. Rating Threshold' or above 'Max. Rating Threshold' (only if these options are checked), then it is set to deleted in RoboTarget. Conversely, if a file's rating is within the thresholds and it is already set to deleted in RoboTarget, then it is set to no longer deleted. Note that the files/data are never deleted." TextWrapping="Wrap"/>
       </Border>
 
       <TextBlock Grid.Row="2" Grid.Column="0"

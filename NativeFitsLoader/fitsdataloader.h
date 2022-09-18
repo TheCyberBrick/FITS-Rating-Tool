@@ -78,15 +78,16 @@ namespace Loader
 		// for the kernel processing
 		std::unique_ptr<T_IN[]> buffer_ptr = nullptr;
 
-		// buffer begin index
+		// buffer index where processing will start taking place
 		int buffer_processing_index = 0;
 
 		// buffer write cursor
 		int buffer_index = 0;
-		int buffer_row_index = 0;
+		int buffer_row_start_index = 0;
 
-		// y coordinate counter for kernel stride
-		int stride_y_counter = 0;
+		// counters for current image row and plane
+		int input_row_counter = 0;
+		int input_plane_counter = 0;
 
 		// current output y coordinate
 		int out_data_y = 0;
@@ -128,8 +129,9 @@ namespace Loader
 				m_state.buffer_ptr = std::make_unique<T_IN[]>(m_state.buffer_size);
 				m_state.buffer_processing_index = 0;
 				m_state.buffer_index = 0;
-				m_state.buffer_row_index = 0;
-				m_state.stride_y_counter = 0;
+				m_state.buffer_row_start_index = 0;
+				m_state.input_row_counter = 0;
+				m_state.input_plane_counter = 0;
 				m_state.out_data_y = 0;
 			}
 
@@ -142,12 +144,16 @@ namespace Loader
 			bool finished = false;
 			bool negative = false;
 
+			int const num_planes = (m_kernel.rgb && !m_kernel.cfa) ? 3 : 1;
+
+			int const pixel_stride = m_kernel.stride * (m_kernel.cfa ? 2 : 1);
+
 			// copy data into buffer row by row
 			int remaining = nvalues;
 			while (remaining > 0)
 			{
 				// calculate number of values to be copied into buffer until none remain or buffer row becomes full
-				int const count = std::min(m_state.buffer_index + remaining, m_state.buffer_row_index + m_state.input_width) - m_state.buffer_index;
+				int const count = std::min(m_state.buffer_index + remaining, m_state.buffer_row_start_index + m_state.input_width) - m_state.buffer_index;
 
 				// copy data into buffer and advance cursors
 				memcpy(buffer + m_state.buffer_index, m_state.in_data_ptr + in_data_index, count * sizeof(T_IN));
@@ -156,96 +162,103 @@ namespace Loader
 				remaining -= count;
 
 				// check if buffer row full
-				if (m_state.buffer_index == m_state.buffer_row_index + m_state.input_width)
+				if (m_state.buffer_index == m_state.buffer_row_start_index + m_state.input_width)
 				{
-					m_state.buffer_index = m_state.buffer_row_index = m_state.buffer_index % m_state.buffer_size;
+					m_state.buffer_index = m_state.buffer_row_start_index = m_state.buffer_index % m_state.buffer_size;
 
 					// check if buffer is full enough to begin processing
-					if (m_state.stride_y_counter >= m_state.processing_start)
+					// and whether values need to be output (Y axis kernel stride)
+					if (m_state.input_row_counter >= m_state.processing_start && (m_state.input_row_counter - m_state.processing_start) % pixel_stride == 0)
 					{
-						// check whether values need to be output (Y axis kernel stride)
-						if ((m_state.stride_y_counter - m_state.processing_start) % (m_kernel.stride * (m_kernel.cfa ? 2 : 1)) == 0)
+						float cfa[12];
+						if (m_kernel.cfa)
 						{
-							float cfa[12];
-							if (m_kernel.cfa)
-							{
-								memcpy(cfa, m_kernel.cfa, sizeof(cfa));
-							}
+							memcpy(cfa, m_kernel.cfa, sizeof(cfa));
+						}
 
+						if (!m_kernel.cfa)
+						{
 							for (int out_x = 0; out_x < m_state.output_width; out_x++)
 							{
 								int const kernel_start = out_x * m_kernel.stride;
 
-								if (!m_kernel.cfa)
+								// no cfa, can apply kernel directly
+								float vsum = 0;
+								for (int kernel_y = 0; kernel_y < m_state.kernel_dim; kernel_y++)
 								{
-									// no cfa, can apply kernel directly
-									float vsum = 0;
-									for (int kernel_y = 0; kernel_y < m_state.kernel_dim; kernel_y++)
+									for (int kernel_x = kernel_start; kernel_x < kernel_start + m_state.kernel_dim; kernel_x++)
 									{
-										for (int kernel_x = kernel_start; kernel_x < kernel_start + m_state.kernel_dim; kernel_x++)
-										{
-											T_IN v = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x)) % m_state.buffer_size];
-											negative |= v < 0;
-											vsum += m_kernel.weights[kernel_y * m_state.kernel_dim + kernel_x - kernel_start] * v;
-										}
+										T_IN v = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x)) % m_state.buffer_size];
+										negative |= v < 0;
+										vsum += m_kernel.weights[kernel_y * m_state.kernel_dim + kernel_x - kernel_start] * v;
 									}
-									out_data_ptr[m_state.out_data_y * m_state.output_width + out_x] = static_cast<T_OUT>(vsum + m_kernel.offset);
 								}
-								else
-								{
-									// need to calculate r, g and b through
-									// cfa matrix and then apply kernel
-									float rsum = 0;
-									float gsum = 0;
-									float bsum = 0;
-									for (int kernel_y = 0; kernel_y < m_state.kernel_dim; kernel_y++)
-									{
-										for (int kernel_x = kernel_start; kernel_x < kernel_start + m_state.kernel_dim; kernel_x++)
-										{
-											float w = m_kernel.weights[kernel_y * m_state.kernel_dim + kernel_x - kernel_start];
-											T_IN tl = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 0 + 0 * m_state.input_width) % m_state.buffer_size];
-											T_IN tr = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 1 + 0 * m_state.input_width) % m_state.buffer_size];
-											T_IN bl = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 0 + 1 * m_state.input_width) % m_state.buffer_size];
-											T_IN br = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 1 + 1 * m_state.input_width) % m_state.buffer_size];
-											negative |= tl < 0 || tr < 0 || bl < 0 || br < 0;
-											float tlw = w * tl;
-											float trw = w * tr;
-											float blw = w * bl;
-											float brw = w * br;
-											rsum += tlw * cfa[0] + trw * cfa[1] + blw * cfa[2] + brw * cfa[3];
-											gsum += tlw * cfa[4] + trw * cfa[5] + blw * cfa[6] + brw * cfa[7];
-											bsum += tlw * cfa[8] + trw * cfa[9] + blw * cfa[10] + brw * cfa[11];
-										}
-									}
-									int const pixels_per_channel = m_state.output_width * m_state.output_height;
-									out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 0 * pixels_per_channel] = static_cast<T_OUT>(rsum + m_kernel.offset);
-									out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 1 * pixels_per_channel] = static_cast<T_OUT>(gsum + m_kernel.offset);
-									out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 2 * pixels_per_channel] = static_cast<T_OUT>(bsum + m_kernel.offset);
-								}
+								out_data_ptr[m_state.out_data_y * m_state.output_width + out_x] = static_cast<T_OUT>(vsum + m_kernel.offset);
 							}
-
-							m_state.buffer_processing_index = m_state.buffer_index;
-
-							m_state.out_data_y++;
-
-							if (m_state.out_data_y >= m_state.output_height * ((m_kernel.rgb && !m_kernel.cfa) ? 3 : 1))
+						}
+						else
+						{
+							for (int out_x = 0; out_x < m_state.output_width; out_x++)
 							{
-								finished = true;
-								break;
+								int const kernel_start = out_x * m_kernel.stride;
+
+								// need to calculate r, g and b through
+								// cfa matrix and then apply kernel
+								float rsum = 0;
+								float gsum = 0;
+								float bsum = 0;
+								for (int kernel_y = 0; kernel_y < m_state.kernel_dim; kernel_y++)
+								{
+									for (int kernel_x = kernel_start; kernel_x < kernel_start + m_state.kernel_dim; kernel_x++)
+									{
+										float w = m_kernel.weights[kernel_y * m_state.kernel_dim + kernel_x - kernel_start];
+										T_IN tl = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 0 + 0 * m_state.input_width) % m_state.buffer_size];
+										T_IN tr = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 1 + 0 * m_state.input_width) % m_state.buffer_size];
+										T_IN bl = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 0 + 1 * m_state.input_width) % m_state.buffer_size];
+										T_IN br = buffer[(m_state.buffer_processing_index + (kernel_y * m_state.input_width + kernel_x) * 2 + 1 + 1 * m_state.input_width) % m_state.buffer_size];
+										negative |= tl < 0 || tr < 0 || bl < 0 || br < 0;
+										float tlw = w * tl;
+										float trw = w * tr;
+										float blw = w * bl;
+										float brw = w * br;
+										rsum += tlw * cfa[0] + trw * cfa[1] + blw * cfa[2] + brw * cfa[3];
+										gsum += tlw * cfa[4] + trw * cfa[5] + blw * cfa[6] + brw * cfa[7];
+										bsum += tlw * cfa[8] + trw * cfa[9] + blw * cfa[10] + brw * cfa[11];
+									}
+								}
+								int const pixels_per_channel = m_state.output_width * m_state.output_height;
+								out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 0 * pixels_per_channel] = static_cast<T_OUT>(rsum + m_kernel.offset);
+								out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 1 * pixels_per_channel] = static_cast<T_OUT>(gsum + m_kernel.offset);
+								out_data_ptr[m_state.out_data_y * m_state.output_width + out_x + 2 * pixels_per_channel] = static_cast<T_OUT>(bsum + m_kernel.offset);
 							}
+						}
+
+						// increment buffer processing index by kernel stride along y axis
+						m_state.buffer_processing_index = (m_state.buffer_processing_index + m_state.input_width * pixel_stride) % m_state.buffer_size;
+
+						// new row in output image
+						m_state.out_data_y++;
+
+						// check if the output image is already finished
+						if (m_state.out_data_y >= m_state.output_height * num_planes)
+						{
+							finished = true;
+							break;
 						}
 					}
 
-					m_state.stride_y_counter++;
+					// new row in input image
+					m_state.input_row_counter++;
 
-					// reset stride Y counter when next image plane is reached
-					if (m_state.stride_y_counter >= m_state.input_height)
+					// reset when next image plane is reached
+					if (m_state.input_row_counter >= m_state.input_height)
 					{
-						m_state.stride_y_counter = 0;
-						if (m_kernel.size > 1)
-						{
-							m_state.out_data_y--;
-						}
+						++m_state.input_plane_counter;
+						m_state.input_row_counter = 0;
+						m_state.buffer_index = 0;
+						m_state.buffer_row_start_index = 0;
+						m_state.buffer_processing_index = 0;
+						m_state.out_data_y = m_state.input_plane_counter * m_state.output_height;
 					}
 				}
 			}

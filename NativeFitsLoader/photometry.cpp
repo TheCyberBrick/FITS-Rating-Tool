@@ -393,6 +393,7 @@ namespace Photometry
 			if (catalog->sep_background != nullptr)
 			{
 				sep_bkg_free(catalog->sep_background);
+				catalog->sep_background = nullptr;
 			}
 			return false;
 		}
@@ -403,6 +404,7 @@ namespace Photometry
 			if (catalog->sep_background != nullptr)
 			{
 				sep_bkg_free(catalog->sep_background);
+				catalog->sep_background = nullptr;
 			}
 			return false;
 		}
@@ -466,9 +468,11 @@ namespace Photometry
 		if (*status = sep_extract(&simage, m_parameters.extract_threshold, SEP_THRESH_REL, m_parameters.extract_min_obj_pixels, filter, filter_width, filter_height, SEP_FILTER_MATCHED, m_parameters.extract_deblend_nthresh, m_parameters.extract_deblend_contrast, 1, m_parameters.extract_cleaning_aggressiveness, &catalog->sep_catalog))
 		{
 			sep_bkg_free(catalog->sep_background);
+			catalog->sep_background = nullptr;
 			if (catalog->sep_catalog != nullptr)
 			{
 				sep_catalog_free(catalog->sep_catalog);
+				catalog->sep_catalog = nullptr;
 			}
 			return false;
 		}

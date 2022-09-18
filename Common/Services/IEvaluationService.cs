@@ -33,7 +33,7 @@ namespace FitsRatingTool.Common.Services
 
 
             public delegate Task EvaluationConsumer(IFitsImageStatistics statistics, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
-            public delegate void EventConsumer(Evaluation.Event progress);
+            public delegate void EventConsumer(Evaluation.Event e);
 
 
             Task EvaluateAsync(IEnumerable<IFitsImageStatistics> statistics, int parallelTasks, EvaluationConsumer evaluationConsumer, EventConsumer? eventConsumer = default, CancellationToken cancellationToken = default);

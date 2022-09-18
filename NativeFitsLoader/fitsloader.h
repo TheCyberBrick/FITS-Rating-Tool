@@ -74,8 +74,9 @@ namespace Loader
 
 		FITSStandardAttributes m_attributes;
 
+		bool m_debayer;
 		float m_kernel_size;
-		int m_kernelStride;
+		int m_kernel_stride;
 
 		int ReadStringKeyword(const char* key, std::string* str, int* status);
 		int ReadIntKeyword(const char* key, int* value, int* status);

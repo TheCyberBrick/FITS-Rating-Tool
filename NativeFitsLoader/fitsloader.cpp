@@ -33,7 +33,7 @@ namespace Loader
 
 	FITSInfo::FITSInfo(const char* file, size_t max_input_size, int max_input_width, int max_input_height) :
 		m_file(file), m_fits_file(nullptr), max_input_size(max_input_size), max_input_width(max_input_width), max_input_height(max_input_height),
-		m_attributes(), m_kernel_size(0), m_kernelStride(0), m_valid(false)
+		m_attributes(), m_debayer(false), m_kernel_size(0), m_kernel_stride(0), m_valid(false)
 	{
 		filter_map["l"] = FITSFilterType::L;
 		filter_map["lum"] = FITSFilterType::L;
@@ -227,6 +227,7 @@ namespace Loader
 					// bayered data, output will be half size
 					width /= 2;
 					height /= 2;
+					m_debayer = true;
 				}
 
 				float downsample_x = static_cast<float>(width) / static_cast<float>(max_input_width);
@@ -254,21 +255,21 @@ namespace Loader
 
 				// determine smallest kernel stride s.t. the output
 				// image fits within the min and max height
-				m_kernelStride = 1 + 2 * static_cast<int>(ceil(m_kernel_size));
+				m_kernel_stride = 1 + 2 * static_cast<int>(ceil(m_kernel_size));
 				if (m_kernel_size > 0)
 				{
 					if (constrained_dim == 0)
 					{
-						m_kernelStride = static_cast<int>(ceil((width - 2 * ceil(m_kernel_size)) / static_cast<float>(max_input_width)));
+						m_kernel_stride = static_cast<int>(ceil((width - 2 * ceil(m_kernel_size)) / static_cast<float>(max_input_width)));
 					}
 					else if (constrained_dim == 1)
 					{
-						m_kernelStride = static_cast<int>(ceil((height - 2 * ceil(m_kernel_size)) / static_cast<float>(max_input_height)));
+						m_kernel_stride = static_cast<int>(ceil((height - 2 * ceil(m_kernel_size)) / static_cast<float>(max_input_height)));
 					}
 				}
 
-				int out_width = (width - 2 * static_cast<int>(ceil(m_kernel_size))) / m_kernelStride;
-				int out_height = (height - 2 * static_cast<int>(ceil(m_kernel_size))) / m_kernelStride;
+				int out_width = (width - 2 * static_cast<int>(ceil(m_kernel_size))) / m_kernel_stride;
+				int out_height = (height - 2 * static_cast<int>(ceil(m_kernel_size))) / m_kernel_stride;
 
 				m_attributes.data.out_dim.nx = out_width;
 				m_attributes.data.out_dim.ny = out_height;
@@ -605,7 +606,7 @@ namespace Loader
 		else
 		{
 			// gaussian kernel stddev
-			float sigma = (m_kernelStride - 1) / 6.0f;
+			float sigma = (m_kernel_stride - 1) / 6.0f;
 
 			float s = 2.0f * sigma * sigma;
 			float sum = 0.0f;
@@ -623,11 +624,7 @@ namespace Loader
 			}
 
 			// normalize kernel
-			for (int i = 0; i < kernel_dim; ++i) {
-				for (int j = 0; j < kernel_dim; ++j) {
-					weights[i + kernel_dim * j] /= sum;
-				}
-			}
+			weights /= sum;
 		}
 
 		std::array<float, 12> cfa;
@@ -663,10 +660,10 @@ namespace Loader
 		Loader::DataKernel<T_IN, T_OUT> kernel;
 
 		kernel.size = full_kernel_size;
-		kernel.stride = m_kernelStride;
+		kernel.stride = m_kernel_stride;
 		kernel.weights = &weights[0];
 		kernel.offset = issigned ? static_cast<T_OUT>(GetSignedToUnsignedConversionOffset<T_IN>()) : 0;
-		kernel.cfa = !m_attributes.instrument.cfa.identity() ? cfa.data() : nullptr;
+		kernel.cfa = m_debayer ? cfa.data() : nullptr;
 		kernel.rgb = m_attributes.data.out_dim.nc == 3;
 
 		int status = 0;
@@ -718,7 +715,7 @@ namespace Loader
 	}
 
 	template<typename T>
-	void FITSInfo::StoreImageBGRA32(std::valarray<T>& inData, unsigned char* outData, FITSImageLoaderParameters props)
+	void FITSInfo::StoreImageBGRA32(std::valarray<T>& in_data, unsigned char* out_data, FITSImageLoaderParameters props)
 	{
 		auto& size = m_attributes.data.out_dim;
 		if (size.nc == 1)
@@ -736,20 +733,20 @@ namespace Loader
 						{
 							int i = (y * size.nx + x);
 
-							unsigned char v = static_cast<unsigned char>(inData[i]);
+							unsigned char v = static_cast<unsigned char>(in_data[i]);
 							if (x <= border || x >= size.nx - 1 - border || y <= border || y >= size.ny - 1 - border)
 							{
-								outData[i * 4 + 0] = 200;
-								outData[i * 4 + 1] = 200;
-								outData[i * 4 + 2] = 200;
+								out_data[i * 4 + 0] = 200;
+								out_data[i * 4 + 1] = 200;
+								out_data[i * 4 + 2] = 200;
 							}
 							else
 							{
-								outData[i * 4 + 0] = v;
-								outData[i * 4 + 1] = v;
-								outData[i * 4 + 2] = v;
+								out_data[i * 4 + 0] = v;
+								out_data[i * 4 + 1] = v;
+								out_data[i * 4 + 2] = v;
 							}
-							outData[i * 4 + 3] = 255;
+							out_data[i * 4 + 3] = 255;
 						}
 					}
 					break;
@@ -760,20 +757,20 @@ namespace Loader
 						{
 							int i = (y * size.nx + x);
 
-							unsigned char v = static_cast<unsigned char>(inData[i]);
+							unsigned char v = static_cast<unsigned char>(in_data[i]);
 							if (x <= border || x >= size.nx - 1 - border || y <= border || y >= size.ny - 1 - border)
 							{
-								outData[i * 4 + 0] = static_cast<unsigned char>(v * 0.2f);
-								outData[i * 4 + 1] = static_cast<unsigned char>(v * 0.2f);
-								outData[i * 4 + 2] = 200;
+								out_data[i * 4 + 0] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 1] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 2] = 200;
 							}
 							else
 							{
-								outData[i * 4 + 0] = v;
-								outData[i * 4 + 1] = v;
-								outData[i * 4 + 2] = v;
+								out_data[i * 4 + 0] = v;
+								out_data[i * 4 + 1] = v;
+								out_data[i * 4 + 2] = v;
 							}
-							outData[i * 4 + 3] = 255;
+							out_data[i * 4 + 3] = 255;
 						}
 					}
 					break;
@@ -784,20 +781,20 @@ namespace Loader
 						{
 							int i = (y * size.nx + x);
 
-							unsigned char v = static_cast<unsigned char>(inData[i]);
+							unsigned char v = static_cast<unsigned char>(in_data[i]);
 							if (x <= border || x >= size.nx - 1 - border || y <= border || y >= size.ny - 1 - border)
 							{
-								outData[i * 4 + 0] = static_cast<unsigned char>(v * 0.2f);
-								outData[i * 4 + 1] = 200;
-								outData[i * 4 + 2] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 0] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 1] = 200;
+								out_data[i * 4 + 2] = static_cast<unsigned char>(v * 0.2f);
 							}
 							else
 							{
-								outData[i * 4 + 0] = v;
-								outData[i * 4 + 1] = v;
-								outData[i * 4 + 2] = v;
+								out_data[i * 4 + 0] = v;
+								out_data[i * 4 + 1] = v;
+								out_data[i * 4 + 2] = v;
 							}
-							outData[i * 4 + 3] = 255;
+							out_data[i * 4 + 3] = 255;
 						}
 					}
 					break;
@@ -808,20 +805,20 @@ namespace Loader
 						{
 							int i = (y * size.nx + x);
 
-							unsigned char v = static_cast<unsigned char>(inData[i]);
+							unsigned char v = static_cast<unsigned char>(in_data[i]);
 							if (x <= border || x >= size.nx - border || y <= border || y >= size.ny - border)
 							{
-								outData[i * 4 + 0] = 200;
-								outData[i * 4 + 1] = static_cast<unsigned char>(v * 0.2f);
-								outData[i * 4 + 2] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 0] = 200;
+								out_data[i * 4 + 1] = static_cast<unsigned char>(v * 0.2f);
+								out_data[i * 4 + 2] = static_cast<unsigned char>(v * 0.2f);
 							}
 							else
 							{
-								outData[i * 4 + 0] = v;
-								outData[i * 4 + 1] = v;
-								outData[i * 4 + 2] = v;
+								out_data[i * 4 + 0] = v;
+								out_data[i * 4 + 1] = v;
+								out_data[i * 4 + 2] = v;
 							}
-							outData[i * 4 + 3] = 255;
+							out_data[i * 4 + 3] = 255;
 						}
 					}
 					break;
@@ -831,11 +828,11 @@ namespace Loader
 			{
 				for (int i = 0; i < size.ny * size.nx; i++)
 				{
-					unsigned char v = static_cast<unsigned char>(inData[i]);
-					outData[i * 4 + 0] = v;
-					outData[i * 4 + 1] = v;
-					outData[i * 4 + 2] = v;
-					outData[i * 4 + 3] = 255;
+					unsigned char v = static_cast<unsigned char>(in_data[i]);
+					out_data[i * 4 + 0] = v;
+					out_data[i * 4 + 1] = v;
+					out_data[i * 4 + 2] = v;
+					out_data[i * 4 + 3] = 255;
 				}
 			}
 		}
@@ -851,21 +848,21 @@ namespace Loader
 					int out_index = in_index * 4;
 
 					Processing::RgbColor rgb{
-						static_cast<unsigned char>(inData[in_index]),
-						static_cast<unsigned char>(inData[in_index + stride]),
-						static_cast<unsigned char>(inData[in_index + stride * 2])
+						static_cast<unsigned char>(in_data[in_index]),
+						static_cast<unsigned char>(in_data[in_index + stride]),
+						static_cast<unsigned char>(in_data[in_index + stride * 2])
 					};
 
 					Processing::HsvColor hsv = Processing::RgbToHsv(rgb);
 
-					hsv.s = std::min(static_cast<unsigned char>(props.saturation * hsv.s), static_cast <unsigned char>(255));
+					hsv.s = std::min(static_cast<unsigned char>(props.saturation * hsv.s), static_cast<unsigned char>(255));
 
 					rgb = Processing::HsvToRgb(hsv);
 
-					outData[out_index + 2] = rgb.r;
-					outData[out_index + 1] = rgb.g;
-					outData[out_index + 0] = rgb.b;
-					outData[out_index + 3] = 255;
+					out_data[out_index + 2] = rgb.r;
+					out_data[out_index + 1] = rgb.g;
+					out_data[out_index + 0] = rgb.b;
+					out_data[out_index + 3] = 255;
 				}
 			}
 		}

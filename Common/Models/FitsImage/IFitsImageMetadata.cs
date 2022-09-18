@@ -22,8 +22,8 @@ namespace FitsRatingTool.Common.Models.FitsImage
 {
     public interface IFitsImageMetadata
     {
-        public string File { get; }
+        string File { get; }
 
-        public IEnumerable<IFitsImageHeaderRecord> Header { get; }
+        IEnumerable<IFitsImageHeaderRecord> Header { get; }
     }
 }
