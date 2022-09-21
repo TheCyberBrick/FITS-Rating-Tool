@@ -16,12 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.FitsLoader.Models;
+
 namespace FitsRatingTool.FitsLoader.Native
 {
     public readonly struct FitsImageDataHandle
     {
         public readonly byte valid;
-        public readonly IntPtr image;
-        public readonly IntPtr data;
+        public readonly IntPtr image_ptr;
+        public readonly FitsImageLoaderParameters parameters;
     }
 }

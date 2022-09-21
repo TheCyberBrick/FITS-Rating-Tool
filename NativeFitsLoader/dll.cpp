@@ -38,8 +38,8 @@ struct FITSHandle
 struct FITSImageDataHandle
 {
 	bool valid;
-	float* data_ptr;
-	std::valarray<float>* image;
+	std::valarray<float>** image_ptr;
+	Loader::FITSImageLoaderParameters parameters;
 };
 
 struct FITSImageHandle
@@ -121,36 +121,77 @@ extern "C"
 		return handle.info->ReadImage(data, props);
 	}
 
-
-	__declspec(dllexport) FITSImageDataHandle LoadImageData(FITSHandle handle, Loader::FITSImageLoaderParameters props, uint32_t* histogram, size_t histogram_size)
+	bool LoadImageDataForHandle(FITSHandle fits_handle, FITSImageDataHandle* data_handle, uint32_t* histogram, size_t histogram_size)
 	{
-		FITSImageDataHandle image_data_handle{ false, nullptr };
-		if (handle.info != nullptr)
+		if (fits_handle.info && data_handle->image_ptr)
 		{
-			image_data_handle.data_ptr = nullptr;
-			image_data_handle.image = new std::valarray<float>(handle.info->attributes().data.out_dim.n);
-
-			image_data_handle.valid = handle.info->ReadImageUnprocessed<float>(*image_data_handle.image, props, histogram, histogram_size);
-
-			if (!image_data_handle.valid || image_data_handle.image->size() == 0)
+			if (*data_handle->image_ptr)
 			{
-				delete image_data_handle.image;
-				image_data_handle.image = nullptr;
+				delete* data_handle->image_ptr;
+				*data_handle->image_ptr = nullptr;
 			}
-			else
+
+			*data_handle->image_ptr = new std::valarray<float>(fits_handle.info->attributes().data.out_dim.n);
+
+			bool success = fits_handle.info->ReadImageUnprocessed<float>(**data_handle->image_ptr, data_handle->parameters, histogram, histogram_size);
+
+			if (!success || (*data_handle->image_ptr)->size() == 0)
 			{
-				image_data_handle.data_ptr = &((*image_data_handle.image)[0]);
+				delete* data_handle->image_ptr;
+				*data_handle->image_ptr = nullptr;
+				success = false;
+			}
+
+			return success;
+		}
+		return false;
+	}
+
+	__declspec(dllexport) FITSImageDataHandle LoadImageData(FITSHandle fits_handle, Loader::FITSImageLoaderParameters props, uint32_t* histogram, size_t histogram_size)
+	{
+		FITSImageDataHandle data_handle{ false, nullptr, props };
+		if (fits_handle.info)
+		{
+			data_handle.image_ptr = new std::valarray<float>*;
+			*data_handle.image_ptr = nullptr;
+
+			data_handle.valid = LoadImageDataForHandle(fits_handle, &data_handle, histogram, histogram_size);
+
+			if (!data_handle.valid)
+			{
+				delete data_handle.image_ptr;
+				data_handle.image_ptr = nullptr;
 			}
 		}
-		return image_data_handle;
+		return data_handle;
+	}
+
+	__declspec(dllexport) bool UnloadImageData(FITSImageDataHandle handle)
+	{
+		if (handle.image_ptr && *handle.image_ptr)
+		{
+			delete* handle.image_ptr;
+			*handle.image_ptr = nullptr;
+			return true;
+		}
+		return false;
+	}
+
+	__declspec(dllexport) bool IsImageDataLoaded(FITSImageDataHandle handle)
+	{
+		return handle.image_ptr && *handle.image_ptr;
 	}
 
 	__declspec(dllexport) void FreeImageData(FITSImageDataHandle handle)
 	{
-		if (handle.image)
+		if (handle.image_ptr)
 		{
-			delete handle.image;
-			handle.image = nullptr;
+			if (*handle.image_ptr)
+			{
+				delete* handle.image_ptr;
+			}
+			delete handle.image_ptr;
+			handle.image_ptr = nullptr;
 		}
 	}
 
@@ -158,12 +199,27 @@ extern "C"
 	{
 		FITSStatisticsHandle handle{ false, nullptr, 0, { } };
 
+		if (!fits_handle.info)
+		{
+			return handle;
+		}
+
+		if (data_handle.image_ptr && !*data_handle.image_ptr && !LoadImageDataForHandle(fits_handle, &data_handle, nullptr, 0))
+		{
+			return handle;
+		}
+
+		if (!data_handle.image_ptr || !*data_handle.image_ptr)
+		{
+			return handle;
+		}
+
 		Photometry::Catalog* catalog;
 
 		Photometry::Parameters params{};
 		Photometry::Extractor extractor{ params };
 		int status = 0;
-		if (!extractor.Extract(*fits_handle.info, *data_handle.image, &catalog, &status, callback))
+		if (!extractor.Extract(*fits_handle.info, **data_handle.image_ptr, &catalog, &status, callback))
 		{
 			char err_msg[61];
 			err_msg[0] = '\0';
@@ -182,6 +238,10 @@ extern "C"
 
 	__declspec(dllexport) bool GetPhotometry(FITSStatisticsHandle handle, int src_start, int src_n, int dst_start, Photometry::Object* photometry)
 	{
+		if (!handle.catalog)
+		{
+			return false;
+		}
 		if (src_start < 0 || src_n < 0 || src_start + src_n > handle.catalog->objects.size())
 		{
 			return false;
@@ -195,24 +255,59 @@ extern "C"
 
 	__declspec(dllexport) void FreeStatistics(FITSStatisticsHandle handle)
 	{
-		delete handle.catalog;
+		if (handle.catalog)
+		{
+			delete handle.catalog;
+		}
 	}
 
 	__declspec(dllexport) Processing::ImageStretchParameters ComputeStretch(FITSHandle fits_handle, FITSImageDataHandle data_handle)
 	{
 		Processing::ImageStretchParameters params;
-		Processing::ComputeImageStretch<float>(*data_handle.image, fits_handle.info->attributes().data.out_dim, &params);
+
+		if (!fits_handle.info)
+		{
+			return params;
+		}
+
+		if (data_handle.image_ptr && !*data_handle.image_ptr && !LoadImageDataForHandle(fits_handle, &data_handle, nullptr, 0))
+		{
+			return params;
+		}
+
+		if (!data_handle.image_ptr || !*data_handle.image_ptr)
+		{
+			return params;
+		}
+
+		Processing::ComputeImageStretch<float>(**data_handle.image_ptr, fits_handle.info->attributes().data.out_dim, &params);
+
 		return params;
 	}
 
 	__declspec(dllexport) FITSImageHandle ProcessImage(FITSHandle fits_handle, FITSImageDataHandle data_handle, FITSImageHandle image_handle, bool compute_stretch_params, Loader::FITSImageLoaderParameters props, uint32_t* histogram, size_t histogram_size)
 	{
+		if (!fits_handle.info)
+		{
+			return image_handle;
+		}
+
+		if (data_handle.image_ptr && !*data_handle.image_ptr && !LoadImageDataForHandle(fits_handle, &data_handle, nullptr, 0))
+		{
+			return image_handle;
+		}
+
+		if (!data_handle.image_ptr || !*data_handle.image_ptr)
+		{
+			return image_handle;
+		}
+
 		if (image_handle.data_ptr == nullptr)
 		{
 			image_handle.data_ptr = new unsigned char[fits_handle.info->attributes().data.out_dim.nx * fits_handle.info->attributes().data.out_dim.ny * 4];
 		}
 
-		fits_handle.info->ProcessImage<float>(*data_handle.image, image_handle.data_ptr, compute_stretch_params, props, histogram, histogram_size);
+		fits_handle.info->ProcessImage<float>(**data_handle.image_ptr, image_handle.data_ptr, compute_stretch_params, props, histogram, histogram_size);
 
 		return image_handle;
 	}

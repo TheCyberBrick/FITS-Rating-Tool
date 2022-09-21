@@ -72,6 +72,20 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         public uint[] StretchedHistogram { get; private set; } = new uint[512];
 
+        private bool _alwaysUnloadImageData = false;
+        public bool AlwaysUnloadImageData
+        {
+            get => _alwaysUnloadImageData;
+            set
+            {
+                _alwaysUnloadImageData = value;
+                if (value)
+                {
+                    UnloadImageData();
+                }
+            }
+        }
+
         public string File { get; }
 
         private readonly Dictionary<string, FitsImageHeaderRecord> _header = new();
@@ -140,12 +154,18 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 {
                     return;
                 }
+
                 if (fitsHandle.info.ToInt64() != 0)
                 {
                     IsFileClosed = true;
                     loader.CloseFitFile(fitsHandle);
                 }
             }
+        }
+
+        private void UpdateImageDataValid()
+        {
+            IsImageDataValid = dataHandle.image_ptr.ToInt64() != 0 && dataHandle.valid == 1 && loader.IsImageDataLoaded(dataHandle);
         }
 
         public bool LoadImageData(FitsImageLoaderParameters parameters)
@@ -156,20 +176,32 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 {
                     return false;
                 }
+
                 IsImageDataValid = false;
+
                 if (fitsHandle.info.ToInt64() == 0)
                 {
                     throw new Exception("Already disposed");
                 }
-                if (dataHandle.data.ToInt64() != 0)
+
+                if (dataHandle.image_ptr.ToInt64() != 0)
                 {
                     loader.FreeImageData(dataHandle);
                     dataHandle = default;
                 }
+
                 uint[] newHistogram = new uint[Histogram.Length];
                 dataHandle = loader.LoadImageData(fitsHandle, parameters, newHistogram, (uint)newHistogram.Length);
+
+                UpdateImageDataValid();
+                if (AlwaysUnloadImageData)
+                {
+                    UnloadImageData();
+                }
+
                 Histogram = newHistogram;
-                return IsImageDataValid = dataHandle.valid == 1;
+
+                return IsImageDataValid;
             }
         }
 
@@ -181,11 +213,10 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 {
                     return;
                 }
-                IsImageDataValid = false;
-                if (dataHandle.data.ToInt64() != 0)
+
+                if (dataHandle.image_ptr.ToInt64() != 0)
                 {
-                    loader.FreeImageData(dataHandle);
-                    dataHandle = default;
+                    loader.UnloadImageData(dataHandle);
                 }
             }
         }
@@ -193,34 +224,53 @@ namespace FitsRatingTool.Common.Models.FitsImage
         public bool ComputeStatisticsAndPhotometry(IFitsImage.PhotometryCallback? callback = null)
         {
             FitsStatisticsHandle handle;
+
             lock (this)
             {
                 if (disposed)
                 {
                     return false;
                 }
+
+                IsStatisticsValid = false;
+
                 if (fitsHandle.info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
-                if (dataHandle.image.ToInt64() == 0)
+
+                if (dataHandle.image_ptr.ToInt64() == 0)
                 {
                     return false;
                 }
+
                 if (statisticsHandle.catalog.ToInt64() != 0)
                 {
                     loader.FreeStatistics(statisticsHandle);
                     statisticsHandle = default;
                 }
-                handle = loader.ComputeStatistics(fitsHandle, dataHandle, callback != null ? (phase, nobj, iobj, nstars) => callback(phase, nobj, iobj, nstars, false, null) : null);
-                statisticsHandle = handle;
+
+                handle = statisticsHandle = loader.ComputeStatistics(fitsHandle, dataHandle, callback != null ? (phase, nobj, iobj, nstars) => callback(phase, nobj, iobj, nstars, false, null) : null);
+
+                UpdateImageDataValid();
+                if (AlwaysUnloadImageData)
+                {
+                    UnloadImageData();
+                }
+
+                if (!IsImageDataValid)
+                {
+                    return false;
+                }
+
                 IsStatisticsValid = handle.valid == 1;
-                var cb = callback;
             }
+
             if (callback != null)
             {
                 callback.Invoke(PhotometryPhase.Completed, 0, 0, 0, handle.valid == 1, handle.valid == 1 ? handle.statistics : null);
             }
+
             return handle.valid == 1;
         }
 
@@ -233,12 +283,15 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     statistics = default;
                     return false;
                 }
+
                 if (statisticsHandle.catalog.ToInt64() == 0)
                 {
                     statistics = default;
                     return false;
                 }
+
                 statistics = statisticsHandle.statistics;
+
                 return statisticsHandle.valid == 1;
             }
         }
@@ -252,12 +305,15 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     photometry = default;
                     return false;
                 }
+
                 if (statisticsHandle.catalog.ToInt64() == 0)
                 {
                     photometry = default;
                     return false;
                 }
+
                 photometry = new PhotometryObject[statisticsHandle.count];
+
                 return loader.GetPhotometry(statisticsHandle, 0, statisticsHandle.count, 0, photometry);
             }
         }
@@ -271,18 +327,28 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     parameters = default;
                     return false;
                 }
+
                 if (fitsHandle.info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
-                if (dataHandle.image.ToInt64() == 0)
+
+                if (dataHandle.image_ptr.ToInt64() == 0)
                 {
                     parameters = default;
                     return false;
                 }
+
                 parameters = loader.ComputeStretch(fitsHandle, dataHandle);
+
+                UpdateImageDataValid();
+                if (AlwaysUnloadImageData)
+                {
+                    UnloadImageData();
+                }
+
+                return IsImageDataValid;
             }
-            return true;
         }
 
         bool IFitsImage.ProcessImage(bool computeStretch, FitsImageLoaderParameters parameters, out IFitsImageData? data)
@@ -291,16 +357,19 @@ namespace FitsRatingTool.Common.Models.FitsImage
             {
                 if (disposed)
                 {
-                    data = default;
+                    data = null;
                     return false;
                 }
+
                 if (ProcessImage(computeStretch, parameters, out var nativeData))
                 {
                     data = nativeData;
                     return true;
                 }
             }
+
             data = null;
+
             return false;
         }
 
@@ -313,25 +382,45 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     data = default;
                     return false;
                 }
+
                 IsImageValid = false;
+
                 if (fitsHandle.info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
-                if (dataHandle.image.ToInt64() == 0)
+
+                if (dataHandle.image_ptr.ToInt64() == 0)
                 {
                     data = default;
                     return false;
                 }
+
                 if (imgHandle.data.ToInt64() != 0)
                 {
                     loader.FreeImage(imgHandle);
                     imgHandle = default;
                 }
+
                 uint[] newHistogram = new uint[StretchedHistogram.Length];
                 imgHandle = loader.ProcessImage(fitsHandle, dataHandle, imgHandle, computeStretch, parameters, newHistogram, (uint)newHistogram.Length);
-                StretchedHistogram = newHistogram;
+
+                UpdateImageDataValid();
+                if (AlwaysUnloadImageData)
+                {
+                    UnloadImageData();
+                }
+
+                if (!IsImageDataValid)
+                {
+                    data = default;
+                    return false;
+                }
+
                 IsImageValid = true;
+
+                StretchedHistogram = newHistogram;
+
                 data = new NativeFitsImageData(imgHandle.data);
             }
             return true;
@@ -364,7 +453,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                         statisticsHandle = default;
                     }
 
-                    if (dataHandle.image.ToInt64() != 0)
+                    if (dataHandle.image_ptr.ToInt64() != 0)
                     {
                         loader.FreeImageData(dataHandle);
                         dataHandle = default;

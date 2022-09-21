@@ -37,6 +37,10 @@ public class NativeFitsLoaderBootstrapper : INativeFitsLoader
 
     public FitsImageDataHandle LoadImageData(FitsHandle handle, FitsImageLoaderParameters parameters, uint[] histogram, uint histogramSize) => LoadImageDataNative(handle, parameters, histogram, histogramSize);
 
+    public bool UnloadImageData(FitsImageDataHandle handle) => UnloadImageDataNative(handle);
+
+    public bool IsImageDataLoaded(FitsImageDataHandle handle) => IsImageDataLoadedNative(handle);
+
     public void FreeImageData(FitsImageDataHandle handle) => FreeImageDataNative(handle);
 
 
@@ -75,6 +79,12 @@ public class NativeFitsLoaderBootstrapper : INativeFitsLoader
 
     [DllImport(@"NativeFitsLoader", EntryPoint = "LoadImageData", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
     private static extern FitsImageDataHandle LoadImageDataNative(FitsHandle handle, FitsImageLoaderParameters parameters, [In, Out] uint[] histogram, uint histogramSize);
+
+    [DllImport(@"NativeFitsLoader", EntryPoint = "UnloadImageData", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+    private static extern bool UnloadImageDataNative(FitsImageDataHandle handle);
+
+    [DllImport(@"NativeFitsLoader", EntryPoint = "IsImageDataLoaded", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+    private static extern bool IsImageDataLoadedNative(FitsImageDataHandle handle);
 
     [DllImport(@"NativeFitsLoader", EntryPoint = "FreeImageData", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
     private static extern void FreeImageDataNative(FitsImageDataHandle handle);

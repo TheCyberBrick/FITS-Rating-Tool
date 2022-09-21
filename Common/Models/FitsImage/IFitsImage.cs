@@ -34,6 +34,8 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         uint[] StretchedHistogram { get; }
 
+        bool AlwaysUnloadImageData { get; set; }
+
         new IReadOnlyDictionary<string, FitsImageHeaderRecord> Header { get; }
 
         FitsImageDim InDim { get; }

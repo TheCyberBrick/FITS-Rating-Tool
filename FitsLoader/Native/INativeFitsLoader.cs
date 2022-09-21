@@ -35,6 +35,10 @@ namespace FitsRatingTool.FitsLoader.Native
 
         FitsImageDataHandle LoadImageData(FitsHandle handle, FitsImageLoaderParameters parameters, uint[] histogram, uint histogramSize);
 
+        bool UnloadImageData(FitsImageDataHandle handle);
+
+        bool IsImageDataLoaded(FitsImageDataHandle handle);
+
         void FreeImageData(FitsImageDataHandle handle);
 
 
