@@ -346,7 +346,14 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         {
             bool changed = false;
 
-            var stats = manager.Get(record.File)?.Statistics;
+            var imageRecord = manager.Get(record.File);
+
+            if (imageRecord != null)
+            {
+                record.IsOutdated = imageRecord.IsOutdated;
+            }
+
+            var stats = imageRecord?.Statistics;
 
             if (record.Statistics != stats)
             {
@@ -423,6 +430,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 UpdateRecordState(args.File);
             }
             else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && args.AddedOrUpdated)
+            {
+                UpdateRecordState(args.File);
+            }
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Outdated)
             {
                 UpdateRecordState(args.File);
             }

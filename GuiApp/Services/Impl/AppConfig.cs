@@ -44,6 +44,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             get => manager.Get("DefaultInstrumentProfileId") ?? "";
             set => manager.Set("DefaultInstrumentProfileId", value);
         }
+        public bool InstrumentProfileChangeConfirmation
+        {
+            get => bool.TryParse(manager.Get("InstrumentProfileChangeConfirmation"), out bool enabled) ? enabled : true;
+            set => manager.Set("InstrumentProfileChangeConfirmation", value.ToString());
+        }
         #endregion
 
         #region Viewer

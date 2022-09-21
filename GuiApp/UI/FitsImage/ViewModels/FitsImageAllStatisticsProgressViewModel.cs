@@ -159,9 +159,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                     if (useRepository)
                     {
+                        var record = manager.Get(image);
+
                         var statistics = manager.Get(image)?.Statistics;
 
-                        if (statistics != null)
+                        if (statistics != null && (record == null || !record.IsOutdated))
                         {
                             results.Add(image, statistics);
                             iimage++;
@@ -226,6 +228,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                         }
 
                                         record.Statistics = stats;
+
+                                        record.IsOutdated = false;
                                     }
                                 }
                             }

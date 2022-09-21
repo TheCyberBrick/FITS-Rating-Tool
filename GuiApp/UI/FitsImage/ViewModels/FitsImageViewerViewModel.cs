@@ -498,9 +498,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                         var stats = record?.Statistics;
                                         var photometry = record?.Photometry;
 
-                                        if (stats == null || photometry == null)
+                                        if ((record != null && record.IsOutdated) || stats == null || photometry == null)
                                         {
-                                            // If either one is null, statistics need to be calculated
+                                            // If either one is null or outdated, statistics need to be calculated
                                             photometry = null;
                                             stats = await i.CalculateStatistics.Execute();
                                         }
@@ -531,6 +531,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                                 // Update stars count of statistics
                                                 Statistics = fitsImageStatisticsFactory.Create(stats, photometry.Count());
                                                 record.Statistics = Statistics;
+
+                                                record.IsOutdated = false;
                                             }
                                         }
                                     }
@@ -568,7 +570,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                 var statistics = record?.Statistics;
                                 var photometry = record?.Photometry;
 
-                                if (statistics != null && photometry != null && FitsImage == i)
+                                if ((record == null || !record.IsOutdated) && statistics != null && photometry != null && FitsImage == i)
                                 {
                                     using (DelayChangeNotifications())
                                     {
@@ -605,6 +607,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                             stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
                                             Statistics = stats;
                                             record.Statistics = Statistics;
+
+                                            record.IsOutdated = false;
                                         }
                                     }
 
@@ -705,23 +709,36 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             IsShownPhotometryIncomplete = isSubset;
         }
 
-        public void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
+        public async void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
             if (args.File.Equals(File))
             {
-                var record = manager.Get(args.File);
-
-                var stats = record?.Statistics;
-                if (stats != null)
+                if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Statistics || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Photometry)
                 {
-                    Statistics = stats;
+                    var record = manager.Get(args.File);
+
+                    var stats = record?.Statistics;
+                    if (stats != null)
+                    {
+                        Statistics = stats;
+                    }
+
+                    var photometry = record?.Photometry;
+                    if (photometry != null)
+                    {
+                        Photometry.Clear();
+                        if (ShowPhotometry) SetShownPhotometry(photometry);
+                    }
                 }
-
-                var photometry = record?.Photometry;
-                if (photometry != null)
+                else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Outdated)
                 {
-                    Photometry.Clear();
-                    if (ShowPhotometry) SetShownPhotometry(photometry);
+                    var image = FitsImage;
+                    if (image != null)
+                    {
+                        image.InvalidateStatisticsAndPhotometry = true;
+                    }
+
+                    await CheckStatisticsAndPhotometryAsync(false);
                 }
             }
         }
@@ -729,8 +746,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private async Task<Unit> CheckStatisticsAndPhotometryAsync(bool _, CancellationToken cancel = default)
         {
             var image = FitsImage;
+            var record = image != null ? manager.Get(image.File) : null;
 
-            if (image != null && image.IsImageDataValid && (ShowPhotometry || AutoCalculateStatistics) && (Statistics == null || Photometry.Count == 0))
+            if (image != null && image.IsImageDataValid && (ShowPhotometry || AutoCalculateStatistics) && ((record != null && record.IsOutdated) || Statistics == null || Photometry.Count == 0))
             {
                 using (var cts = new CancellationTokenSource())
                 {
@@ -742,15 +760,25 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         {
                             if (i == FitsImage && i.IsImageDataValid)
                             {
-                                var record = manager.Get(i.File);
+                                record = manager.Get(i.File);
 
                                 var stats = record?.Statistics;
                                 var photometry = record?.Photometry;
 
-                                bool needsStatistics = AutoCalculateStatistics && Statistics == null;
-                                bool needsPhotometry = ShowPhotometry && (photometry != null || AutoCalculateStatistics) && Photometry.Count == 0;
+                                bool needsStatistics;
+                                bool needsPhotometry;
 
-                                if ((needsStatistics || needsPhotometry) && (stats == null || photometry == null))
+                                if (record != null && record.IsOutdated)
+                                {
+                                    needsStatistics = needsPhotometry = true;
+                                }
+                                else
+                                {
+                                    needsStatistics = AutoCalculateStatistics && Statistics == null;
+                                    needsPhotometry = ShowPhotometry && (photometry != null || AutoCalculateStatistics) && Photometry.Count == 0;
+                                }
+
+                                if ((needsStatistics || needsPhotometry) && ((record != null && record.IsOutdated) || stats == null || photometry == null))
                                 {
                                     ct.ThrowIfCancellationRequested();
 
@@ -769,30 +797,38 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                                 ct.ThrowIfCancellationRequested();
 
-                                if (needsPhotometry && i == FitsImage)
+                                if (i == FitsImage)
                                 {
-                                    Photometry.Clear();
-                                    if (photometry != null)
+                                    if (needsPhotometry)
                                     {
-                                        if (record == null)
+                                        Photometry.Clear();
+                                        if (photometry != null)
                                         {
-                                            record = manager.GetOrAdd(i.File);
+                                            if (record == null)
+                                            {
+                                                record = manager.GetOrAdd(i.File);
+                                            }
+                                            SetShownPhotometry(photometry);
+                                            record.Photometry = photometry;
                                         }
-                                        SetShownPhotometry(photometry);
-                                        record.Photometry = photometry;
                                     }
-                                }
 
-                                if (needsStatistics && i == FitsImage)
-                                {
-                                    Statistics = stats;
-                                    if (stats != null)
+                                    if (needsStatistics)
                                     {
-                                        if (record == null)
+                                        Statistics = stats;
+                                        if (stats != null)
                                         {
-                                            record = manager.GetOrAdd(i.File);
+                                            if (record == null)
+                                            {
+                                                record = manager.GetOrAdd(i.File);
+                                            }
+                                            record.Statistics = stats;
                                         }
-                                        record.Statistics = stats;
+                                    }
+
+                                    if (record != null)
+                                    {
+                                        record.IsOutdated = false;
                                     }
                                 }
                             }
@@ -1051,7 +1087,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                 var stats = record?.Statistics;
                                 var photometry = record?.Photometry;
 
-                                if (stats != null && photometry != null)
+                                if ((record == null || !record.IsOutdated) && stats != null && photometry != null)
                                 {
                                     // If everything is already cached it can be displayed
                                     // right away
@@ -1066,9 +1102,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                                 if (AutoCalculateStatistics)
                                 {
-                                    if (stats == null || photometry == null)
+                                    if ((record != null && record.IsOutdated) || stats == null || photometry == null)
                                     {
-                                        // If either one is null, statistics need to be calculated
+                                        // If either one is null or outdated, statistics need to be calculated
                                         photometry = null;
                                         stats = await i.CalculateStatistics.Execute();
                                     }
@@ -1096,6 +1132,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                                 stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
                                                 Statistics = stats;
                                                 record.Statistics = stats;
+
+                                                record.IsOutdated = false;
                                             }
                                         }
                                     }

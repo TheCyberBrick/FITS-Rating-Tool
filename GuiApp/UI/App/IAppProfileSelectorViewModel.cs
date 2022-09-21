@@ -16,7 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using ReactiveUI;
+using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -28,5 +31,9 @@ namespace FitsRatingTool.GuiApp.UI.App
         }
 
         IInstrumentProfileSelectorViewModel Selector { get; }
+
+        ReactiveCommand<IReadOnlyInstrumentProfile?, bool> ChangeProfile { get; }
+
+        Interaction<Unit, bool> ChangeProfileConfirmationDialog { get; }
     }
 }

@@ -22,6 +22,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using Avalonia.Utilities;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -94,6 +95,20 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
+            private bool _outdated = false;
+            public bool IsOutdated
+            {
+                get => _outdated;
+                set
+                {
+                    if (_outdated != value)
+                    {
+                        _outdated = value;
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Outdated, false);
+                    }
+                }
+            }
+
             public bool IsValid => manager.fileRepository.ContainsFile(File);
 
 
@@ -122,11 +137,21 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IFitsImageMetadataRepository metadataRepository;
 
 
-        public FitsImageManager(IFileRepository fileRepository, IAnalysisRepository analysisRepository, IFitsImageMetadataRepository metadataRepository)
+        public FitsImageManager(IFileRepository fileRepository, IAnalysisRepository analysisRepository, IFitsImageMetadataRepository metadataRepository, IInstrumentProfileManager instrumentProfileManager)
         {
             this.fileRepository = fileRepository;
             this.analysisRepository = analysisRepository;
             this.metadataRepository = metadataRepository;
+
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, FitsImageManager>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+        }
+
+        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs e)
+        {
+            foreach (var record in records.Values)
+            {
+                record.IsOutdated = true;
+            }
         }
 
         private void NotifyChange(IFitsImageManager.IRecord record, IFitsImageManager.RecordChangedEventArgs.DataType type, bool removed)

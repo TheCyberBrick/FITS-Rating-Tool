@@ -35,6 +35,8 @@ namespace FitsRatingTool.GuiApp.Services
 
             IFitsImageMetadata? Metadata { get; set; }
 
+            bool IsOutdated { get; set; }
+
             bool IsValid { get; }
         }
 
@@ -42,7 +44,7 @@ namespace FitsRatingTool.GuiApp.Services
         {
             public enum DataType
             {
-                File, Statistics, Photometry, Metadata
+                File, Statistics, Photometry, Metadata, Outdated
             }
 
             public string File { get; }

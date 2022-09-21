@@ -92,6 +92,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
                 set => this.RaiseAndSetIfChanged(ref _isFilteredOut, value);
             }
 
+            private bool _isOutdated;
+            public bool IsOutdated
+            {
+                get => _isOutdated;
+                set => this.RaiseAndSetIfChanged(ref _isOutdated, value);
+            }
+
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
             public Record(string file, IFitsImageStatisticsViewModel? stats)

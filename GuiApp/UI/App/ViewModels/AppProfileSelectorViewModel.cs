@@ -17,10 +17,13 @@
 */
 
 using Avalonia.Utilities;
+using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using ReactiveUI;
 using System;
+using System.Reactive;
+using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -30,22 +33,33 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         {
             private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
             private readonly IInstrumentProfileManager instrumentProfileManager;
+            private readonly IAppConfig appConfig;
 
-            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager)
+            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
             {
                 this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
                 this.instrumentProfileManager = instrumentProfileManager;
+                this.appConfig = appConfig;
             }
 
             public IAppProfileSelectorViewModel Create()
             {
-                return new AppProfileSelectorViewModel(instrumentProfileSelectorFactory, instrumentProfileManager);
+                return new AppProfileSelectorViewModel(instrumentProfileSelectorFactory, instrumentProfileManager, appConfig);
             }
         }
 
         public IInstrumentProfileSelectorViewModel Selector { get; }
 
-        public AppProfileSelectorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager)
+        public ReactiveCommand<IReadOnlyInstrumentProfile?, bool> ChangeProfile { get; }
+
+        public Interaction<Unit, bool> ChangeProfileConfirmationDialog { get; } = new();
+
+
+        private volatile bool suppressChangeCommand;
+        private string? prevSelectedProfileId = null;
+
+
+        public AppProfileSelectorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
         {
             Selector = instrumentProfileSelectorFactory.Create();
             Selector.IsReadOnly = true;
@@ -55,10 +69,76 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             {
                 Selector.SelectById(initiallySelectedProfileId);
             }
+            prevSelectedProfileId = Selector.SelectedProfile?.Id;
+
+            ChangeProfile = ReactiveCommand.CreateFromTask<IReadOnlyInstrumentProfile?, bool>(async profile =>
+            {
+                bool confirmed = true;
+
+                if (appConfig.InstrumentProfileChangeConfirmation)
+                {
+                    try
+                    {
+                        confirmed = await ChangeProfileConfirmationDialog.Handle(Unit.Default);
+                    }
+                    catch (UnhandledInteractionException<Unit, bool>)
+                    {
+                        // OK
+                    }
+                }
+
+                if (confirmed)
+                {
+                    instrumentProfileManager.CurrentProfile = profile;
+
+                    suppressChangeCommand = true;
+                    try
+                    {
+                        if (profile != null)
+                        {
+                            Selector.SelectById(profile.Id);
+                        }
+                        else
+                        {
+                            Selector.SelectedProfile = null;
+                        }
+                    }
+                    finally
+                    {
+                        suppressChangeCommand = false;
+                    }
+                }
+                else
+                {
+                    suppressChangeCommand = true;
+                    try
+                    {
+                        if (prevSelectedProfileId != null)
+                        {
+                            Selector.SelectById(prevSelectedProfileId);
+                        }
+                        else
+                        {
+                            Selector.SelectedProfile = null;
+                        }
+                    }
+                    finally
+                    {
+                        suppressChangeCommand = false;
+                    }
+                }
+
+                prevSelectedProfileId = Selector.SelectedProfile?.Id;
+
+                return confirmed;
+            });
 
             this.WhenAnyValue(x => x.Selector.SelectedProfile).Subscribe(profile =>
             {
-                instrumentProfileManager.CurrentProfile = profile;
+                if (!suppressChangeCommand)
+                {
+                    ChangeProfile.Execute(profile).Subscribe();
+                }
             });
 
             WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);

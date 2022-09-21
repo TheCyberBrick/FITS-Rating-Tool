@@ -157,6 +157,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _isImageValid, value);
         }
 
+        private bool _invalidateStatisticsAndPhotometry;
+        public bool InvalidateStatisticsAndPhotometry
+        {
+            get => _invalidateStatisticsAndPhotometry;
+            set => this.RaiseAndSetIfChanged(ref _invalidateStatisticsAndPhotometry, value);
+        }
+
         public string File { get; }
 
         private bool _isUpdating;
@@ -269,8 +276,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 {
                     return fitsImageStatisticsFactory.Create(await Task.Run(() =>
                     {
-                        if (!fitsImage.GetStatistics(out var stats))
+                        if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {
+                            InvalidateStatisticsAndPhotometry = false;
                             fitsImage.ComputeStatisticsAndPhotometry();
                             fitsImage.GetStatistics(out stats);
                         }
@@ -286,8 +294,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 {
                     return fitsImageStatisticsProgressFactory.Create(callback => () => Task.Run(() =>
                     {
-                        if (!fitsImage.GetStatistics(out var stats))
+                        if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {
+                            InvalidateStatisticsAndPhotometry = false;
                             fitsImage.ComputeStatisticsAndPhotometry(callback);
                             fitsImage.GetStatistics(out stats);
                         }
@@ -313,8 +322,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                     var list = new List<IFitsImagePhotometryViewModel>();
                     foreach (var photometry in await Task.Run(() =>
                     {
-                        if (!fitsImage.GetPhotometry(out var photometry))
+                        if (InvalidateStatisticsAndPhotometry || !fitsImage.GetPhotometry(out var photometry))
                         {
+                            InvalidateStatisticsAndPhotometry = false;
                             fitsImage.ComputeStatisticsAndPhotometry();
                             fitsImage.GetPhotometry(out photometry);
                         }

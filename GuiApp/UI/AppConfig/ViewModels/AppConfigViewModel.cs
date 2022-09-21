@@ -122,6 +122,10 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             {
                 Description = "Profile that should be used by default."
             });
+            category.Settings.Add(new BoolSettingViewModel("Profile Change Confirmation", () => appConfig.InstrumentProfileChangeConfirmation, v => appConfig.InstrumentProfileChangeConfirmation = v)
+            {
+                Description = "Whether FITS Rating Tool should ask for confirmation before changing profile."
+            });
             category.Settings.Add(new BoolSettingViewModel("Open Files In New Window", () => appConfig.OpenFileInNewWindow, v => appConfig.OpenFileInNewWindow = v)
             {
                 Description = "Whether files opened through the explorer should be opened in a new window. Changing this setting may require restarting the currently open instance(s) to take effect."

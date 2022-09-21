@@ -85,6 +85,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
         uint[]? Histogram { get; }
 
         uint[]? StretchedHistogram { get; }
+
+        bool InvalidateStatisticsAndPhotometry { get; set; }
         #endregion
 
         #region +++ Commands +++

@@ -79,6 +79,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     SelectedItem="{Binding SelectedRecord}"
                     SelectionMode="Extended">
 
+            <DataGrid.Resources>
+              <SolidColorBrush x:Key="OutdatedBackgroundColor" Color="#25FF6030"/>
+              <SolidColorBrush x:Key="TransparentBackgroundColor" Color="Transparent"/>
+            </DataGrid.Resources>
+
             <DataGrid.Styles>
               <Style Selector="DataGridCell">
                 <Setter Property="ToolTip.Tip" Value="{Binding File}"/>
@@ -102,12 +107,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     </MenuItem>
                   </controls:FixedContextMenu>
                 </Setter>
+
+                <Setter Property="Background">
+                  <MultiBinding Converter="{x:Static converters:ConditionalConverters.IfElse}">
+                    <Binding Path="IsOutdated"/>
+                    <Binding Source="{StaticResource OutdatedBackgroundColor}"/>
+                    <Binding Source="{StaticResource TransparentBackgroundColor}"/>
+                  </MultiBinding>
+                </Setter>
               </Style>
             </DataGrid.Styles>
 
             <DataGrid.Columns>
-              <controls:DataGridSelectableTextColumn Header="#"  Binding="{Binding IndexPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
-              <controls:DataGridSelectableTextColumn Width="60" Header="File"  Binding="{Binding FileName, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="#" Binding="{Binding IndexPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="File" Binding="{Binding FileName, Mode=OneWay}" Foreground="#FFDEDEDE" Width="60"/>
               <controls:DataGridSelectableTextColumn Header="Rating" Binding="{Binding Statistics.Rating, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
               <controls:DataGridSelectableTextColumn Header="FWHM" Binding="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
               <controls:DataGridSelectableTextColumn Header="HFD" Binding="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>

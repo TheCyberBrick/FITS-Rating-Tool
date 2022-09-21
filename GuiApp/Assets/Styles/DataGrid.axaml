@@ -51,6 +51,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </LinearGradientBrush>
     </Setter>
 
+    <Setter Property="RowBackground" Value="Transparent"/>
+    <Setter Property="AlternatingRowBackground" Value="#0CFFFFFF"/>
+
     <Setter Property="GridLinesVisibility" Value="Vertical"/>
   </Style>
 
@@ -73,10 +76,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   </Style>
 
   <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
-    <Setter Property="Fill" Value="{DynamicResource SystemControlTransparentBrush}" />
+    <Setter Property="Fill" Value="Transparent" />
   </Style>
   <Style Selector="DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
-    <Setter Property="Fill" Value="{DynamicResource SystemListLowColor}" />
+    <Setter Property="Fill" Value="#3FFFFFFF" />
   </Style>
   <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundColor}" />

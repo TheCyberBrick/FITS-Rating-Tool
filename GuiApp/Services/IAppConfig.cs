@@ -26,6 +26,8 @@ namespace FitsRatingTool.GuiApp.Services
         bool OpenFileInNewWindow { get; set; }
 
         string DefaultInstrumentProfileId { get; set; }
+
+        bool InstrumentProfileChangeConfirmation { get; set; }
         #endregion
 
         #region Viewer
