@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <StyleInclude Source="/Assets/Styles/StatisticsControl.axaml"/>
 
     <!-- Custom theme -->
+    <StyleInclude Source="/Assets/Styles/FocusAdorner.axaml"/>
     <StyleInclude Source="/Assets/Styles/Button.axaml"/>
     <StyleInclude Source="/Assets/Styles/Window.axaml"/>
     <StyleInclude Source="/Assets/Styles/GridSplitter.axaml"/>

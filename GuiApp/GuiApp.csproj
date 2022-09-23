@@ -25,6 +25,7 @@
     <AvaloniaResource Remove="Assets\Styles\ContextMenu.axaml" />
     <AvaloniaResource Remove="Assets\Styles\DataGrid.axaml" />
     <AvaloniaResource Remove="Assets\Styles\FlyoutPresenter.axaml" />
+    <AvaloniaResource Remove="Assets\Styles\FocusAdorner.axaml" />
     <AvaloniaResource Remove="Assets\Styles\GridSplitter.axaml" />
     <AvaloniaResource Remove="Assets\Styles\HeaderedContentControl.axaml" />
     <AvaloniaResource Remove="Assets\Styles\MenuFlyoutPresenter.axaml" />

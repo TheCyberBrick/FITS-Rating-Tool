@@ -21,14 +21,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+             xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters"
              mc:Ignorable="d"
-             x:Class="FitsRatingTool.GuiApp.UI.App.Views.AppImageItemView">
+             x:Class="FitsRatingTool.GuiApp.UI.App.Views.AppImageItemView"
+             MaxWidth="{Binding Scale, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=256}">
 
   <Panel>
     <views:FitsImageView DataContext="{Binding Image}"/>
-    <Grid ColumnDefinitions="Auto" RowDefinitions="Auto"
-          Margin="5 5 0 0">
-      <Border Classes="themed"
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto"
+          Margin="-3 -3 0 0">
+      <Panel Grid.Column="0" Grid.Row="0"
+             Width="{Binding Scale, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=8}"
+             Height="{Binding Scale, Converter={x:Static converters:MathConverters.Multiplication}, ConverterParameter=8}"/>
+      <Border Grid.Column="1" Grid.Row="1"
+              Classes="themed"
               Padding="2 2 3 2">
         <TextBlock Text="{Binding IdPlusOne, StringFormat='# {0}'}"/>
       </Border>

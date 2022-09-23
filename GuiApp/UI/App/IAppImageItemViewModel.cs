@@ -33,6 +33,8 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         long IdPlusOne { get; }
 
+        float Scale { get; set; }
+
         IFitsImageViewModel Image { get; }
 
         ReactiveCommand<Unit, Unit> Remove { get; }

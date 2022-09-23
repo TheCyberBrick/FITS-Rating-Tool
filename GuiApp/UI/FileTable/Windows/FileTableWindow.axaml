@@ -90,7 +90,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <DataGrid.Columns>
           <controls:DataGridSelectableTextColumn Header="#" Binding="{Binding IdPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
           <controls:DataGridSelectableTextColumn Header="File Name" Binding="{Binding FileName, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE" Width="80"/>
-          <controls:DataGridSelectableTextColumn Header="File" Binding="{Binding File, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE" Width="80"/>
+          <controls:DataGridSelectableTextColumn Header="File Path" Binding="{Binding File, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE" Width="80"/>
           <controls:DataGridSelectableTextColumn Header="Date" Binding="{Binding Date, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE"/>
           <controls:DataGridSelectableTextColumn Header="Object" Binding="{Binding Object, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE"/>
           <controls:DataGridSelectableTextColumn Header="Filter" Binding="{Binding Filter, FallbackValue=-, Mode=OneWay}" Foreground="#FFDEDEDE"/>

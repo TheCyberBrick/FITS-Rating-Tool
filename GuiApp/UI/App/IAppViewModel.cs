@@ -49,6 +49,12 @@ namespace FitsRatingTool.GuiApp.UI.App
         #region +++ Images +++
         IFitsImageMultiViewerViewModel MultiViewer { get; }
 
+        float ThumbnailScale { get; set; }
+
+        ReactiveCommand<float, Unit> IncreaseThumbnailScale { get; }
+
+        ReactiveCommand<float, Unit> DecreaseThumbnailScale { get; }
+
         AvaloniaList<IAppImageItemViewModel> Items { get; }
 
         IAppImageItemViewModel? SelectedItem { get; set; }

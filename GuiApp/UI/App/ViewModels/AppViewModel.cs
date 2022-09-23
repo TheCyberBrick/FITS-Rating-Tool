@@ -58,6 +58,17 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public IFitsImageMultiViewerViewModel MultiViewer { get; }
 
+        public ReactiveCommand<float, Unit> IncreaseThumbnailScale { get; }
+
+        public ReactiveCommand<float, Unit> DecreaseThumbnailScale { get; }
+
+        private float _thumbnailScale = 1.0f;
+        public float ThumbnailScale
+        {
+            get => _thumbnailScale;
+            set => this.RaiseAndSetIfChanged(ref _thumbnailScale, value);
+        }
+
         public AvaloniaList<IAppImageItemViewModel> Items { get; } = new();
 
         private IAppImageItemViewModel? _selectedItem;
@@ -418,6 +429,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             ShowInstrumentProfileConfigurator = ReactiveCommand.Create(() => instrumentProfileConfiguratorFactory.Create());
 
+            IncreaseThumbnailScale = ReactiveCommand.Create<float>(s => ThumbnailScale = Math.Min(1.0f, ThumbnailScale + Math.Max(0.0f, s)));
+            DecreaseThumbnailScale = ReactiveCommand.Create<float>(s => ThumbnailScale = Math.Max(0.1f, ThumbnailScale - Math.Max(0.0f, s)));
+
 
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>
             {
@@ -440,6 +454,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
                 prevImageFile = currentImageFile;
                 currentImageFile = file;
+            });
+
+            this.WhenAnyValue(x => x.ThumbnailScale).Subscribe(x =>
+            {
+                foreach (var item in Items)
+                {
+                    item.Scale = ThumbnailScale;
+                }
             });
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
@@ -513,6 +535,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 record.Metadata = image;
 
                 var newItem = item = appImageItemFactory.Create(record.Id, image);
+                newItem.Scale = ThumbnailScale;
                 newItem.Remove.Subscribe(_ =>
                 {
                     RemoveItem(newItem);

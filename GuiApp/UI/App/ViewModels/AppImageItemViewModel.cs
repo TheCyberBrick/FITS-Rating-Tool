@@ -36,6 +36,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public long IdPlusOne => Id + 1;
 
+        private float _scale = 1.0f;
+        public float Scale
+        {
+            get => _scale;
+            set => this.RaiseAndSetIfChanged(ref _scale, value);
+        }
+
         public IFitsImageViewModel Image { get; }
 
         public ReactiveCommand<Unit, Unit> Remove { get; }
