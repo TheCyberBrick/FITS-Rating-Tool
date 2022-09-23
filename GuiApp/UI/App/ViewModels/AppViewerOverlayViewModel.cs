@@ -31,15 +31,17 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public class Factory : IAppViewerOverlayViewModel.IFactory
         {
             private readonly IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory;
+            private readonly IFitsImageManager fitsImageManager;
 
-            public Factory(IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory)
+            public Factory(IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageManager fitsImageManager)
             {
                 this.fitsImageCornerViewerFactory = fitsImageCornerViewerFactory;
+                this.fitsImageManager = fitsImageManager;
             }
 
             public IAppViewerOverlayViewModel Create(IFitsImageViewerViewModel viewer)
             {
-                return new AppViewerOverlayViewModel(viewer, fitsImageCornerViewerFactory);
+                return new AppViewerOverlayViewModel(viewer, fitsImageCornerViewerFactory, fitsImageManager);
             }
 
             IFitsImageViewerViewModel.IOverlay IFitsImageViewerViewModel.IOverlayFactory.Create(IFitsImageViewerViewModel viewer)
@@ -51,6 +53,24 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public IFitsImageViewerViewModel Viewer { get; }
 
+
+
+        private long _fileId;
+        public long FileId
+        {
+            get => _fileId;
+            private set
+            {
+                if (_fileId != value)
+                {
+                    this.RaiseAndSetIfChanged(ref _fileId, value);
+                    this.RaiseAndSetIfChanged(ref _fileIdPlusOne, value + 1, nameof(FileIdPlusOne));
+                }
+            }
+        }
+
+        private long _fileIdPlusOne;
+        public long FileIdPlusOne => _fileIdPlusOne;
 
         private bool _isExternalViewerEnabled = true;
         public bool IsExternalViewerEnabled
@@ -95,11 +115,23 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private readonly IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory;
 
-        public AppViewerOverlayViewModel(IFitsImageViewerViewModel viewer, IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory)
+        public AppViewerOverlayViewModel(IFitsImageViewerViewModel viewer, IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageManager fitsImageManager)
         {
             this.fitsImageCornerViewerFactory = fitsImageCornerViewerFactory;
 
             Viewer = viewer;
+
+            this.WhenAnyValue(x => x.Viewer.File).Subscribe(x =>
+            {
+                if (x != null)
+                {
+                    FileId = fitsImageManager.Get(x)?.Id ?? -1;
+                }
+                else
+                {
+                    FileId = -1;
+                }
+            });
 
             this.WhenAnyValue(x => x.IsCornerViewerEnabled).Subscribe(x =>
             {

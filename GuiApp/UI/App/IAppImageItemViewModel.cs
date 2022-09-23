@@ -22,29 +22,19 @@ using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
-    public interface IAppViewerOverlayViewModel : IFitsImageViewerViewModel.IOverlay
+    public interface IAppImageItemViewModel
     {
-        public interface IFactory : IFitsImageViewerViewModel.IOverlayFactory
+        public interface IFactory
         {
-            new IAppViewerOverlayViewModel Create(IFitsImageViewerViewModel viewer);
+            IAppImageItemViewModel Create(long id, IFitsImageViewModel image);
         }
 
-        long FileId { get; }
+        long Id { get; }
 
-        long FileIdPlusOne { get; }
+        long IdPlusOne { get; }
 
-        bool IsExternalViewerEnabled { get; set; }
+        IFitsImageViewModel Image { get; }
 
-        bool IsExternalCornerViewerEnabled { get; set; }
-
-        bool IsCornerViewerEnabled { get; set; }
-
-        double CornerViewerPercentage { get; set; }
-
-        IFitsImageCornerViewerViewModel? CornerViewer { get; }
-
-        ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
-
-        ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+        ReactiveCommand<Unit, Unit> Remove { get; }
     }
 }

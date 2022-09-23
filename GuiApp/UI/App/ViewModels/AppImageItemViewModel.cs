@@ -20,31 +20,32 @@ using FitsRatingTool.GuiApp.UI.FitsImage;
 using ReactiveUI;
 using System.Reactive;
 
-namespace FitsRatingTool.GuiApp.UI.App
+namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
-    public interface IAppViewerOverlayViewModel : IFitsImageViewerViewModel.IOverlay
+    public class AppImageItemViewModel : ViewModelBase, IAppImageItemViewModel
     {
-        public interface IFactory : IFitsImageViewerViewModel.IOverlayFactory
+        public class Factory : IAppImageItemViewModel.IFactory
         {
-            new IAppViewerOverlayViewModel Create(IFitsImageViewerViewModel viewer);
+            public IAppImageItemViewModel Create(long id, IFitsImageViewModel image)
+            {
+                return new AppImageItemViewModel(id, image);
+            }
         }
 
-        long FileId { get; }
+        public long Id { get; }
 
-        long FileIdPlusOne { get; }
+        public long IdPlusOne => Id + 1;
 
-        bool IsExternalViewerEnabled { get; set; }
+        public IFitsImageViewModel Image { get; }
 
-        bool IsExternalCornerViewerEnabled { get; set; }
+        public ReactiveCommand<Unit, Unit> Remove { get; }
 
-        bool IsCornerViewerEnabled { get; set; }
 
-        double CornerViewerPercentage { get; set; }
-
-        IFitsImageCornerViewerViewModel? CornerViewer { get; }
-
-        ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
-
-        ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+        public AppImageItemViewModel(long id, IFitsImageViewModel image)
+        {
+            Id = id;
+            Image = image;
+            Remove = ReactiveCommand.Create(() => { });
+        }
     }
 }

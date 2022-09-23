@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.Threading;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -35,13 +34,13 @@ using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
 using Avalonia.Utilities;
-using static FitsRatingTool.GuiApp.UI.App.IAppViewModel;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using System.Collections.Specialized;
 using System.Text;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using Avalonia.Collections;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -59,10 +58,10 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public IFitsImageMultiViewerViewModel MultiViewer { get; }
 
-        public ObservableCollection<Item> Items { get; } = new();
+        public AvaloniaList<IAppImageItemViewModel> Items { get; } = new();
 
-        private Item? _selectedItem;
-        public Item? SelectedItem
+        private IAppImageItemViewModel? _selectedItem;
+        public IAppImageItemViewModel? SelectedItem
         {
             get => _selectedItem;
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
@@ -168,6 +167,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private readonly IFitsImageManager manager;
         private readonly IFitsImageViewModel.IFactory fitsImageFactory;
+        private readonly IAppImageItemViewModel.IFactory appImageItemFactory;
         private readonly IVoyagerIntegration voyagerIntegration;
         private readonly IAppConfig appConfig;
 
@@ -181,7 +181,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public AppViewModel(IFitsImageManager manager, IFitsImageMultiViewerViewModel.IFactory multiImageViewerFactory, IFitsImageLoadProgressViewModel.IFactory imageLoadProgressFactory,
             IEvaluationTableViewModel.IFactory evaluationTableFactory, IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory,
-            IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageAllStatisticsProgressViewModel.IFactory fitsImageAllStatisticsFactory,
+            IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageAllStatisticsProgressViewModel.IFactory fitsImageAllStatisticsFactory, IAppImageItemViewModel.IFactory appImageItemFactory,
             IVoyagerIntegration voyagerIntegration, IJobConfiguratorViewModel.IFactory jobConfiguratorFactory, IExporterConfiguratorManager exporterConfiguratorManager,
             IJobConfigFactory jobConfigFactory, ICSVExporterConfiguratorViewModel.IFactory csvExporterConfiguratorFactory,
             IFitsHeaderExporterConfiguratorViewModel.IFactory fitsHeaderExporterConfiguratorFactory, IVoyagerExporterConfiguratorViewModel.IFactory voyagerExporterConfiguratorFactory,
@@ -193,6 +193,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         {
             this.manager = manager;
             this.fitsImageFactory = fitsImageFactory;
+            this.appImageItemFactory = appImageItemFactory;
             this.voyagerIntegration = voyagerIntegration;
             this.appConfig = appConfig;
 
@@ -236,7 +237,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             UnloadAllImages = ReactiveCommand.Create(() =>
             {
-                Item? item;
+                IAppImageItemViewModel? item;
                 while ((item = Items.FirstOrDefault()) != null)
                 {
                     RemoveItem(item);
@@ -278,13 +279,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             {
                 var files = await LoadImagesOpenFileDialog.Handle(Unit.Default);
 
-                Item? lastAddedItem = null;
+                IAppImageItemViewModel? lastAddedItem = null;
 
                 void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
                 {
                     if (e.NewItems != null)
                     {
-                        var item = e.NewItems[e.NewItems.Count - 1] as Item;
+                        var item = e.NewItems[e.NewItems.Count - 1] as IAppImageItemViewModel;
                         if (files.Contains(item?.Image.File))
                         {
                             lastAddedItem = item;
@@ -503,12 +504,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             }
         }
 
-        private bool AddImage(IFitsImageViewModel image, out Item? item)
+        private bool AddImage(IFitsImageViewModel image, out IAppImageItemViewModel? item)
         {
             item = null;
             if (!manager.Contains(image.File))
             {
-                var newItem = item = new Item(image);
+                var record = manager.GetOrAdd(image.File);
+                record.Metadata = image;
+
+                var newItem = item = appImageItemFactory.Create(record.Id, image);
                 newItem.Remove.Subscribe(_ =>
                 {
                     RemoveItem(newItem);
@@ -516,14 +520,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 });
 
                 Items.Add(item);
-                manager.GetOrAdd(image.File).Metadata = image;
 
                 return true;
             }
             return false;
         }
 
-        private bool RemoveItem(Item item)
+        private bool RemoveItem(IAppImageItemViewModel item)
         {
             var image = item.Image;
 

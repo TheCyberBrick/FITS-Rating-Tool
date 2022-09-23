@@ -28,6 +28,7 @@ using FitsRatingTool.GuiApp.UI.JobRunner;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using Avalonia.Collections;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -48,22 +49,9 @@ namespace FitsRatingTool.GuiApp.UI.App
         #region +++ Images +++
         IFitsImageMultiViewerViewModel MultiViewer { get; }
 
-        public class Item
-        {
-            public IFitsImageViewModel Image { get; }
+        AvaloniaList<IAppImageItemViewModel> Items { get; }
 
-            public ReactiveCommand<Unit, Unit> Remove { get; }
-
-            public Item(IFitsImageViewModel image)
-            {
-                Image = image;
-                Remove = ReactiveCommand.Create(() => { });
-            }
-        }
-
-        ObservableCollection<Item> Items { get; }
-
-        Item? SelectedItem { get; set; }
+        IAppImageItemViewModel? SelectedItem { get; set; }
 
         ReactiveCommand<string, Unit> LoadImage { get; }
 

@@ -228,7 +228,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <ContentControl Name="ImagePresenter"
-                                  Content="{Binding Image}"
+                                  Content="{Binding .}"
                                   MaxWidth="256">
                     <ContentControl.ContextMenu>
                       <controls:FixedContextMenu >

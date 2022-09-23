@@ -142,7 +142,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </Viewbox>
     </Button>
 
-    <TextBlock Text="(Too many stars - only a subset is shown)" VerticalAlignment="Top" Margin="8 8 0 0">
+    <Grid ColumnDefinitions="Auto" RowDefinitions="Auto"
+          VerticalAlignment="Top"
+          Margin="4 4 0 0"
+          IsVisible="{Binding Viewer.File, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=True}">
+      <Border Classes="themed"
+              Padding="2 2 3 2">
+        <TextBlock Text="{Binding FileIdPlusOne, StringFormat='# {0}', FallbackValue='# 1'}"/>
+      </Border>
+    </Grid>
+
+    <TextBlock Text="(Too many stars - only a subset is shown)" VerticalAlignment="Bottom" Margin="8 0 0 8">
       <TextBlock.IsVisible>
         <MultiBinding Converter="{x:Static BoolConverters.And}">
           <Binding Path="Viewer.IsShownPhotometryIncomplete"/>

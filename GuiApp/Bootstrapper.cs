@@ -100,6 +100,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IAppViewModel, AppViewModel>(Reuse.Singleton, made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
             container.Register<IAppProfileSelectorViewModel.IFactory, AppProfileSelectorViewModel.Factory>(Reuse.Singleton);
             container.Register<IAppViewerOverlayViewModel.IFactory, AppViewerOverlayViewModel.Factory>(Reuse.Singleton);
+            container.Register<IAppImageItemViewModel.IFactory, AppImageItemViewModel.Factory>(Reuse.Singleton);
 
             container.Register<IFitsImageAllStatisticsProgressViewModel.IFactory, FitsImageAllStatisticsProgressViewModel.Factory>(Reuse.Singleton);
             container.Register<IFitsImageHeaderRecordViewModel.IFactory, FitsImageHeaderRecordViewModel.Factory>(Reuse.Singleton);

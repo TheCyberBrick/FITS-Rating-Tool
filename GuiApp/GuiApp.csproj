@@ -150,6 +150,9 @@
     <Compile Update="UI\AppConfig\Windows\AppConfigWindow.axaml.cs">
       <DependentUpon>AppConfigWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\App\Views\AppImageItemView.axaml.cs">
+      <DependentUpon>AppImageItemView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\App\Views\AppViewerOverlayView.axaml.cs">
       <DependentUpon>AppViewerOverlayView.axaml</DependentUpon>
     </Compile>
