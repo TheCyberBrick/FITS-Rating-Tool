@@ -27,6 +27,8 @@ namespace FitsRatingTool.GuiApp.Services
     {
         public interface IRecord
         {
+            long Id { get; }
+
             string File { get; }
 
             IFitsImageStatisticsViewModel? Statistics { get; set; }
@@ -67,7 +69,7 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
-        IReadOnlyCollection<string> Files { get; }
+        IReadOnlyList<string> Files { get; }
 
         bool Contains(string file);
 

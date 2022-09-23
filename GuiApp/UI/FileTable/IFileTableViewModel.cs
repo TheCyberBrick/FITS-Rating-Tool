@@ -37,6 +37,10 @@ namespace FitsRatingTool.GuiApp.UI.FileTable
 
         public class Record
         {
+            public long Id { get; }
+
+            public long IdPlusOne => Id + 1;
+
             public string File { get; }
 
             public string? Object { get; }
@@ -61,9 +65,10 @@ namespace FitsRatingTool.GuiApp.UI.FileTable
 
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
-            public Record(string file, string? obj, string? date, string? filter, float? exposureTime, long fileSize,
+            public Record(long id, string file, string? obj, string? date, string? filter, float? exposureTime, long fileSize,
                 DateTime creationDate, DateTime modificationDate, IFitsImageMetadata? metadata, IReadOnlyList<IFitsImageHeaderRecord> header)
             {
+                Id = id;
                 File = file;
                 Object = obj;
                 Date = date;

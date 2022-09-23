@@ -36,6 +36,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         #region +++ Records +++
         public class Record : ReactiveObject
         {
+            public long Id { get; }
+
+            public long IdPlusOne => Id + 1;
+
             public string File { get; }
 
             public string FileName { get; }
@@ -101,8 +105,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
-            public Record(string file, IFitsImageStatisticsViewModel? stats)
+            public Record(long id, string file, IFitsImageStatisticsViewModel? stats)
             {
+                Id = id;
                 File = file;
                 FileName = Path.GetFileName(file);
                 Statistics = stats;

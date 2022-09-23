@@ -38,7 +38,7 @@ namespace FitsRatingTool.GuiApp.Repositories
             }
         }
 
-        IReadOnlyCollection<string> Files { get; }
+        IReadOnlyList<string> Files { get; }
 
         void AddFile(string file);
 

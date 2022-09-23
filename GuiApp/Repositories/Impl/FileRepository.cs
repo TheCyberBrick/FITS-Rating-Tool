@@ -26,7 +26,7 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
         private readonly HashSet<string> fileSet = new();
         private readonly List<string> files = new();
 
-        public IReadOnlyCollection<string> Files => files;
+        public IReadOnlyList<string> Files => files;
 
         public void AddFile(string file)
         {

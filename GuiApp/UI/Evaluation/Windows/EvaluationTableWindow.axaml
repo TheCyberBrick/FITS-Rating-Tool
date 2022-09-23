@@ -119,8 +119,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </DataGrid.Styles>
 
             <DataGrid.Columns>
-              <controls:DataGridSelectableTextColumn Header="#" Binding="{Binding IndexPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
-              <controls:DataGridSelectableTextColumn Header="File" Binding="{Binding FileName, Mode=OneWay}" Foreground="#FFDEDEDE" Width="60"/>
+              <controls:DataGridSelectableTextColumn Header="#" Binding="{Binding IdPlusOne, Mode=OneWay}" Foreground="#FFDEDEDE"/>
+              <controls:DataGridSelectableTextColumn Header="File" Binding="{Binding FileName, Mode=OneWay}" Foreground="#FFDEDEDE" Width="80"/>
               <controls:DataGridSelectableTextColumn Header="Rating" Binding="{Binding Statistics.Rating, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
               <controls:DataGridSelectableTextColumn Header="FWHM" Binding="{Binding Statistics.FWHMMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>
               <controls:DataGridSelectableTextColumn Header="HFD" Binding="{Binding Statistics.HFDMean, StringFormat={}{0:N2}, Mode=OneWay}" Foreground="#FFDEDEDE"/>

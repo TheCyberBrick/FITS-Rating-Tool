@@ -77,7 +77,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                     var record = manager.Get(file);
                     if (record != null)
                     {
-                        Records.Add(CreateRecord(record.File, record.Metadata));
+                        Records.Add(CreateRecord(record.Id, record.File, record.Metadata));
                     }
                 }
             }
@@ -120,7 +120,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
             }
         }
 
-        private IFileTableViewModel.Record CreateRecord(string file, IFitsImageMetadata? metadata)
+        private IFileTableViewModel.Record CreateRecord(long id, string file, IFitsImageMetadata? metadata)
         {
             Dictionary<string, string> header = new();
 
@@ -151,7 +151,8 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                 // OK
             }
 
-            var newRecord = new IFileTableViewModel.Record(file,
+            var newRecord = new IFileTableViewModel.Record(
+                id, file,
                 GetObjectFromHeader(header),
                 GetDateStringFromHeader(header),
                 GetFilterFromHeader(header),
@@ -169,7 +170,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
             var record = manager.Get(file);
             if (record != null)
             {
-                Records.Add(CreateRecord(file, record.Metadata));
+                Records.Add(CreateRecord(record.Id, file, record.Metadata));
             }
         }
 
@@ -200,7 +201,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                 {
                     if (file.Equals(other.File))
                     {
-                        Records[idx] = CreateRecord(file, record.Metadata);
+                        Records[idx] = CreateRecord(record.Id, file, record.Metadata);
                         break;
                     }
                     ++idx;

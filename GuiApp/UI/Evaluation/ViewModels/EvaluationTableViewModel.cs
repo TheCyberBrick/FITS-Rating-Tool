@@ -65,7 +65,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private class Record : IEvaluationTableViewModel.Record
         {
-            public Record(string file, IFitsImageStatisticsViewModel? stats, EvaluationTableViewModel vm) : base(file, stats)
+            public Record(long id, string file, IFitsImageStatisticsViewModel? stats, EvaluationTableViewModel vm) : base(id, file, stats)
             {
                 this.WhenAnyValue(x => x.Statistics!.Rating)
                     .Skip(1)
@@ -74,9 +74,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
         private readonly Dictionary<string, IEvaluationTableViewModel.Record> recordMap = new();
-
-
-        private readonly Dictionary<string, IEvaluationTableViewModel.Record> unfilteredRecords = new();
 
         private AvaloniaList<IEvaluationTableViewModel.Record> _records = new();
         public AvaloniaList<IEvaluationTableViewModel.Record> Records
@@ -256,13 +253,17 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 foreach (var file in manager.Files)
                 {
-                    AddRecord(file);
+                    var record = manager.Get(file);
+                    if (record != null)
+                    {
+                        AddRecord(record.Id, file);
+                    }
                 }
             }
 
             this.WhenAnyValue(x => x.SelectedRecord).Skip(1).Subscribe(x =>
             {
-                foreach (var record in unfilteredRecords.Values)
+                foreach (var record in recordMap.Values)
                 {
                     record.IsSelected = false;
                 }
@@ -319,16 +320,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             });
         }
 
-        private void AddRecord(string file)
+        private void AddRecord(long id, string file)
         {
             if (!recordMap.TryGetValue(file, out var record))
             {
-                record = new Record(file, manager.Get(file)?.Statistics, this);
+                record = new Record(id, file, manager.Get(file)?.Statistics, this);
 
                 record.Remove.Subscribe(_ => manager.Remove(file));
 
                 recordMap.Add(file, record);
-                unfilteredRecords.Add(record.File, record);
             }
 
             UpdateRecordState(record, true);
@@ -399,7 +399,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             if (recordMap.Remove(file, out record) && record != null)
             {
-                unfilteredRecords.Remove(record.File);
                 Records.Remove(record);
 
                 ResetIndices();
@@ -418,7 +417,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 if (args.AddedOrUpdated)
                 {
-                    AddRecord(args.File);
+                    var record = manager.Get(args.File);
+                    if (record != null)
+                    {
+                        AddRecord(record.Id, args.File);
+                    }
                 }
                 else
                 {
@@ -719,18 +722,21 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
                     var newList = new AvaloniaList<IEvaluationTableViewModel.Record>();
 
-                    foreach (var record in unfilteredRecords.Values)
+                    foreach (var f in manager.Files)
                     {
-                        UpdateRecordGroup(grouping, record);
+                        if (recordMap.TryGetValue(f, out var record))
+                        {
+                            UpdateRecordGroup(grouping, record);
 
-                        if (IsRecordShown(record))
-                        {
-                            record.IsFilteredOut = false;
-                            newList.Add(record);
-                        }
-                        else
-                        {
-                            record.IsFilteredOut = true;
+                            if (IsRecordShown(record))
+                            {
+                                record.IsFilteredOut = false;
+                                newList.Add(record);
+                            }
+                            else
+                            {
+                                record.IsFilteredOut = true;
+                            }
                         }
                     }
 
@@ -757,7 +763,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 {
                     var grouping = BuildGrouping();
 
-                    if (unfilteredRecords.TryGetValue(file, out var record) && record != null)
+                    if (recordMap.TryGetValue(file, out var record) && record != null)
                     {
                         UpdateRecordGroup(grouping, record);
 
@@ -833,16 +839,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 var newList = new AvaloniaList<IEvaluationTableViewModel.Record>();
 
-                foreach (var record in unfilteredRecords.Values)
+                foreach (var f in manager.Files)
                 {
-                    if (IsRecordShown(record))
+                    if (recordMap.TryGetValue(f, out var record))
                     {
-                        record.IsFilteredOut = false;
-                        newList.Add(record);
-                    }
-                    else
-                    {
-                        record.IsFilteredOut = true;
+                        if (IsRecordShown(record))
+                        {
+                            record.IsFilteredOut = false;
+                            newList.Add(record);
+                        }
+                        else
+                        {
+                            record.IsFilteredOut = true;
+                        }
                     }
                 }
 

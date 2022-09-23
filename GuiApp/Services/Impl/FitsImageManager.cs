@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using Avalonia.Utilities;
+using System.Threading;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -30,6 +31,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     {
         private class Record : IFitsImageManager.IRecord
         {
+            public long Id { get; }
+
             public string File { get; }
 
             public IFitsImageStatisticsViewModel? Statistics
@@ -114,8 +117,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             private readonly FitsImageManager manager;
 
-            public Record(string file, FitsImageManager manager)
+            public Record(long id, string file, FitsImageManager manager)
             {
+                Id = id;
                 File = file;
                 this.manager = manager;
             }
@@ -130,7 +134,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         }
 
         private readonly ConcurrentDictionary<string, Record> records = new();
-
+        private long idCounter = -1;
 
         private readonly IFileRepository fileRepository;
         private readonly IAnalysisRepository analysisRepository;
@@ -159,7 +163,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             _recordChanged?.Invoke(this, new IFitsImageManager.RecordChangedEventArgs(record.File, type, removed));
         }
 
-        public IReadOnlyCollection<string> Files => fileRepository.Files;
+        public IReadOnlyList<string> Files => fileRepository.Files;
 
         public bool Contains(string file)
         {
@@ -180,7 +184,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             Record? newRecord = null;
             var record = records.GetOrAdd(file, f =>
             {
-                newRecord = new Record(f, this);
+                newRecord = new Record(Interlocked.Increment(ref idCounter), f, this);
                 return newRecord;
             });
             if (record == newRecord)
