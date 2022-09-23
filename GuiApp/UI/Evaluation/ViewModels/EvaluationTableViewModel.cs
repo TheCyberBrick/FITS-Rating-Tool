@@ -361,7 +361,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 record.Statistics = stats;
             }
 
-            UpdateRecordGroup(BuildGrouping(), record, manager.Get(record.File)?.Metadata);
+            UpdateRecordGroup(evaluationManager.CurrentFilterGrouping, record, manager.Get(record.File)?.Metadata);
 
             if (IsRecordShown(record))
             {
@@ -702,23 +702,20 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             };
         }
 
-        private IGroupingManager.IGrouping BuildGrouping()
-        {
-            return groupingManager.BuildGrouping(GroupingConfigurator.GroupingConfiguration.GroupingKeys.ToArray());
-        }
-
         private void UpdateGroupsAndRecords(string? file = null)
         {
             using (DelayChangeNotifications())
             {
+                evaluationManager.CurrentFilterGroupingConfiguration = GroupingConfigurator.GroupingConfiguration;
+
+                var grouping = evaluationManager.CurrentFilterGrouping;
+
                 if (file == null)
                 {
                     var prevSelectedGroupKey = SelectedGroupKey;
 
                     GroupKeys.Clear();
                     GroupKeys.Add("All");
-
-                    var grouping = BuildGrouping();
 
                     var newList = new AvaloniaList<IEvaluationTableViewModel.Record>();
 
@@ -746,8 +743,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
                     ResetIndices();
 
-                    evaluationManager.CurrentFilterGrouping = grouping.IsEmpty ? null : grouping;
-
                     if (GroupKeys.Contains(prevSelectedGroupKey))
                     {
                         SelectedGroupKey = prevSelectedGroupKey;
@@ -761,8 +756,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 }
                 else
                 {
-                    var grouping = BuildGrouping();
-
                     if (recordMap.TryGetValue(file, out var record) && record != null)
                     {
                         UpdateRecordGroup(grouping, record);
@@ -785,8 +778,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                             }
                         }
                     }
-
-                    evaluationManager.CurrentFilterGrouping = grouping;
                 }
             }
         }

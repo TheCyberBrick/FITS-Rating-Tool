@@ -28,6 +28,7 @@ using ReactiveUI;
 using System.Reactive.Concurrency;
 using Avalonia.Utilities;
 using System.IO;
+using System.Linq;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -39,11 +40,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private readonly IEvaluationService evaluationService;
         private readonly IFitsImageManager manager;
+        private readonly IGroupingManager groupingManager;
 
-        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IAppConfig appConfig)
+        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IGroupingManager groupingManager, IAppConfig appConfig)
         {
             this.evaluationService = evaluationService;
             this.manager = manager;
+            this.groupingManager = groupingManager;
+
+            CurrentGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
 
             CurrentFormulaChanged += (s, e) =>
             {
@@ -62,8 +67,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             };
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationManager>(manager, nameof(manager.RecordChanged), OnRecordChanged);
-
-            CurrentGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
 
             LoadDefaultFormula(appConfig);
         }
@@ -234,7 +237,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public IGroupingManager.IGrouping? CurrentGrouping
         {
             get => _currentGrouping;
-            set
+            private set
             {
                 if (_currentGrouping != value)
                 {
@@ -249,7 +252,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public IGroupingManager.IGrouping? CurrentFilterGrouping
         {
             get => _currentFilterGrouping;
-            set
+            private set
             {
                 if (_currentFilterGrouping != value)
                 {
@@ -316,6 +319,16 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     var old = _currentGroupingConfiguration;
                     _currentGroupingConfiguration = value;
                     _currentGroupingConfigurationChanged?.Invoke(this, new IEvaluationManager.GroupingConfigurationChangedEventArgs(old, value));
+
+                    if (value != null)
+                    {
+                        var grouping = groupingManager.BuildGrouping(value.GroupingKeys.ToArray());
+                        CurrentGrouping = grouping.IsEmpty ? null : grouping;
+                    }
+                    else
+                    {
+                        CurrentGrouping = null;
+                    }
                 }
             }
         }
@@ -331,6 +344,16 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     var old = _currentFilterGroupingConfiguration;
                     _currentFilterGroupingConfiguration = value;
                     _currentFilterGroupingConfigurationChanged?.Invoke(this, new IEvaluationManager.GroupingConfigurationChangedEventArgs(old, value));
+
+                    if (value != null)
+                    {
+                        var grouping = groupingManager.BuildGrouping(value.GroupingKeys.ToArray());
+                        CurrentFilterGrouping = grouping.IsEmpty ? null : grouping;
+                    }
+                    else
+                    {
+                        CurrentFilterGrouping = null;
+                    }
                 }
             }
         }

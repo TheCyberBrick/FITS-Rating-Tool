@@ -20,8 +20,6 @@ using FitsRatingTool.Common.Services;
 using Microsoft.VisualStudio.Threading;
 using ReactiveUI;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -29,15 +27,11 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.Services;
-using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.Utils;
 using Avalonia.Utilities;
-using System.Windows.Input;
 using Avalonia.Collections;
 using FitsRatingTool.GuiApp.Models;
-using System.Reactive.Concurrency;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -236,23 +230,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        private IGroupingManager.IGrouping BuildGrouping()
-        {
-            return groupingManager.BuildGrouping(GroupingConfigurator.GroupingConfiguration.GroupingKeys.ToArray());
-        }
-
         private void UpdateGroupingConfiguration(GroupingConfiguration configuration)
         {
+            // Setting a new grouping (configuration) also triggers the ratings
+            // auto update, if enabled
             evaluationManager.CurrentGroupingConfiguration = configuration;
 
-            var grouping = BuildGrouping();
-            grouping = grouping.IsEmpty ? null : grouping;
-
-            UpdateGroupKeys(grouping);
-
-            // Setting a new grouping also triggers the ratings
-            // auto update, if enabled
-            evaluationManager.CurrentGrouping = grouping;
+            UpdateGroupKeys(evaluationManager.CurrentGrouping);
         }
 
         private void UpdateGroupKeys(IGroupingManager.IGrouping? grouping, string? file = null)

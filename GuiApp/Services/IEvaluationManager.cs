@@ -79,9 +79,9 @@ namespace FitsRatingTool.GuiApp.Services
 
 
 
-        IGroupingManager.IGrouping? CurrentGrouping { get; set; }
+        IGroupingManager.IGrouping? CurrentGrouping { get; }
 
-        IGroupingManager.IGrouping? CurrentFilterGrouping { get; set; }
+        IGroupingManager.IGrouping? CurrentFilterGrouping { get; }
 
         string? CurrentFilterGroupKey { get; set; }
 
