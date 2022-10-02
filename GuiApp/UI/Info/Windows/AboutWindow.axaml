@@ -91,6 +91,7 @@ Public License 3.
             <sys:String>OxyPlot (https://github.com/oxyplot/oxyplot-avalonia).</sys:String>
             <sys:String>Microsoft.VisualStudio.Threading (https://github.com/microsoft/vs-threading).</sys:String>
             <sys:String>StreamJsonRpc (https://github.com/microsoft/vs-streamjsonrpc).</sys:String>
+            <sys:String>Math.NET Numerics (https://numerics.mathdotnet.com/).</sys:String>
             <sys:String>Icons by Icons8 (https://icons8.com).</sys:String>
             <sys:String>.NET (https://github.com/dotnet/runtime).</sys:String>
           </collections:List>

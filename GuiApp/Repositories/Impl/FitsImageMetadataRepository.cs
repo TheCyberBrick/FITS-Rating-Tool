@@ -34,10 +34,16 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
 
             IEnumerable<IFitsImageHeaderRecord> IFitsImageMetadata.Header => records;
 
+            public int ImageWidth { get; }
+
+            public int ImageHeight { get; }
+
             public Metadata(IFitsImageMetadata image)
             {
                 File = image.File;
                 records.AddRange(image.Header);
+                ImageWidth = image.ImageWidth;
+                ImageHeight = image.ImageHeight;
             }
         }
 

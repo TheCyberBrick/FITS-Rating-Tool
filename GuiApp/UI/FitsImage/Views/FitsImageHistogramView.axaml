@@ -52,11 +52,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </oxy:Plot.Axes>
       <oxy:Plot.Series>
         <oxy:LinearBarSeries Items="{Binding Items}"
-                              DataFieldX="Index" DataFieldY="Value"
-                              BarWidth="10000"
-                              StrokeThickness="1"
-                              StrokeColor="#F0F8FF"
-                              FillColor="#F0F8FF"/>
+                             DataFieldX="Index" DataFieldY="Value"
+                             BarWidth="10000"
+                             StrokeThickness="1"
+                             StrokeColor="#F0F8FF"
+                             FillColor="#F0F8FF"/>
       </oxy:Plot.Series>
     </oxy:Plot>
   </Border>

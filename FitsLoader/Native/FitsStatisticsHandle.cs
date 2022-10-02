@@ -22,9 +22,9 @@ namespace FitsRatingTool.FitsLoader.Native
 {
     public readonly struct FitsStatisticsHandle
     {
-        public readonly byte valid;
-        public readonly IntPtr catalog;
-        public readonly int count;
-        public readonly PhotometryStatistics statistics;
+        public readonly byte Valid;
+        public readonly IntPtr Catalog;
+        public readonly int Count;
+        public readonly PhotometryStatistics Statistics;
     }
 }

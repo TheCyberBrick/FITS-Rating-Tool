@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis;
 using ReactiveUI;
 using System.Reactive;
 
@@ -37,6 +38,8 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         bool IsExternalCornerViewerEnabled { get; set; }
 
+        bool IsExternalImageAnalysisEnabled { get; set; }
+
         bool IsCornerViewerEnabled { get; set; }
 
         double CornerViewerPercentage { get; set; }
@@ -46,5 +49,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
 
         ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+
+        ReactiveCommand<Unit, IImageAnalysisViewModel> ShowExternalImageAnalysis { get; }
     }
 }

@@ -24,6 +24,10 @@ namespace FitsRatingTool.Common.Models.FitsImage
     {
         string File { get; }
 
+        int ImageWidth { get; }
+
+        int ImageHeight { get; }
+
         IEnumerable<IFitsImageHeaderRecord> Header { get; }
     }
 }

@@ -21,6 +21,8 @@ using Avalonia.ReactiveUI;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
 using FitsRatingTool.GuiApp.UI.FitsImage.Windows;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis.Windows;
 using ReactiveUI;
 using System;
 
@@ -85,6 +87,28 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
 
                             return window;
                         }, false, w => w.DataContext == vm);
+                    }));
+
+                    d.Add(overlay.ShowExternalImageAnalysis.Subscribe(vm =>
+                    {
+                        windowManager.Show(() =>
+                        {
+                            overlay.IsExternalImageAnalysisEnabled = false;
+
+                            var window = new ImageAnalysisWindow()
+                            {
+                                DataContext = vm
+                            };
+
+                            void onClosing(object? sender, EventArgs e)
+                            {
+                                overlay.IsExternalImageAnalysisEnabled = true;
+                                window.Closing -= onClosing;
+                            };
+                            window.Closing += onClosing;
+
+                            return window;
+                        }, false, w => (w.DataContext as IImageAnalysisViewModel)?.File == vm.File);
                     }));
                 }
             });

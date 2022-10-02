@@ -82,65 +82,138 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" BoxShadow="0 0 5 1 #BB000000"/>
     <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BoxShadow="0 0 5 1 #BB000000"/>
 
-    <Button Padding="0"
-            BorderThickness="0"
-            Background="Transparent"
-            Cursor="Hand"
+    <Border Name="MenuBorder"
             VerticalAlignment="Top" HorizontalAlignment="Right"
-            Margin="1"
-            Command="{Binding ShowExternalViewer}"
-            IsVisible="{Binding IsExternalViewerEnabled, FallbackValue=True}"
-            ToolTip.Tip="External viewer">
-      <Button.Styles>
-        <Style Selector="Button Viewbox">
-          <Setter Property="Width" Value="18"/>
-          <Setter Property="Height" Value="18"/>
-        </Style>
-        <Style Selector="Button:pointerover Viewbox">
-          <Setter Property="Width" Value="16"/>
-          <Setter Property="Height" Value="16"/>
-          <Setter Property="Margin" Value="0 1 1 0"/>
-        </Style>
-        <Style Selector="Button:pressed Viewbox">
-          <Setter Property="Width" Value="14"/>
-          <Setter Property="Height" Value="14"/>
-          <Setter Property="Margin" Value="0 2 2 0"/>
-        </Style>
-      </Button.Styles>
-      <Viewbox>
-        <Image Source="/Assets/Icons/external.png"/>
-      </Viewbox>
-    </Button>
+            ClipToBounds="True"
+            Cursor="Hand">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="MaxHeight" Duration="0:0:0.25"/>
+        </Transitions>
+      </Border.Transitions>
 
-    <Button Padding="0"
-            BorderThickness="0"
-            Background="Transparent"
-            Cursor="Hand"
-            VerticalAlignment="Bottom" HorizontalAlignment="Right"
-            Margin="1"
-            Command="{Binding ShowExternalCornerViewer}"
-            IsVisible="{Binding IsExternalCornerViewerEnabled, FallbackValue=True}"
-            ToolTip.Tip="Corner viewer">
-      <Button.Styles>
-        <Style Selector="Button Viewbox">
-          <Setter Property="Width" Value="18"/>
-          <Setter Property="Height" Value="18"/>
+      <Border.Styles>
+        <Style Selector="Border#MenuBorder">
+          <Setter Property="MaxHeight" Value="26"/>
         </Style>
-        <Style Selector="Button:pointerover Viewbox">
-          <Setter Property="Width" Value="16"/>
-          <Setter Property="Height" Value="16"/>
-          <Setter Property="Margin" Value="0 1 1 0"/>
+
+        <Style Selector="Border#MenuBorder:pointerover">
+          <Setter Property="MaxHeight" Value="200"/>
         </Style>
-        <Style Selector="Button:pressed Viewbox">
-          <Setter Property="Width" Value="14"/>
-          <Setter Property="Height" Value="14"/>
-          <Setter Property="Margin" Value="0 2 2 0"/>
+
+        <Style Selector="Border#MenuBorder Border#BackgroundBorder">
+          <Setter Property="Opacity" Value="0.0"/>
         </Style>
-      </Button.Styles>
-      <Viewbox>
-        <Image Source="/Assets/Icons/external_multiple.png"/>
-      </Viewbox>
-    </Button>
+
+        <Style Selector="Border#MenuBorder:pointerover Border#BackgroundBorder">
+          <Setter Property="Opacity" Value="1.0"/>
+        </Style>
+      </Border.Styles>
+
+      <Panel>
+        <Border Name="BackgroundBorder"
+                Background="#40000000"
+                CornerRadius="4">
+          <Border.Transitions>
+            <Transitions>
+              <DoubleTransition Property="Opacity" Duration="0:0:0.25"/>
+            </Transitions>
+          </Border.Transitions>
+        </Border>
+
+        <StackPanel Margin="1">
+          <Button Padding="0"
+                  BorderThickness="0"
+                  Background="Transparent"
+                  Cursor="Hand"
+                  VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                  Margin="1"
+                  Command="{Binding ShowExternalImageAnalysis}"
+                  IsVisible="{Binding IsExternalImageAnalysisEnabled, FallbackValue=True}"
+                  ToolTip.Tip="Image analysis">
+            <Button.Styles>
+              <Style Selector="Button Viewbox">
+                <Setter Property="Width" Value="18"/>
+                <Setter Property="Height" Value="18"/>
+              </Style>
+              <Style Selector="Button:pointerover Viewbox">
+                <Setter Property="Width" Value="16"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="Margin" Value="0 1 1 1"/>
+              </Style>
+              <Style Selector="Button:pressed Viewbox">
+                <Setter Property="Width" Value="14"/>
+                <Setter Property="Height" Value="14"/>
+                <Setter Property="Margin" Value="0 2 2 2"/>
+              </Style>
+            </Button.Styles>
+            <Viewbox>
+              <Image Source="/Assets/Icons/magnifying_glass.png" Margin="1"/>
+            </Viewbox>
+          </Button>
+
+          <Button Padding="0"
+                  BorderThickness="0"
+                  Background="Transparent"
+                  Cursor="Hand"
+                  VerticalAlignment="Top" HorizontalAlignment="Right"
+                  Margin="1"
+                  Command="{Binding ShowExternalViewer}"
+                  IsVisible="{Binding IsExternalViewerEnabled, FallbackValue=True}"
+                  ToolTip.Tip="External viewer">
+            <Button.Styles>
+              <Style Selector="Button Viewbox">
+                <Setter Property="Width" Value="18"/>
+                <Setter Property="Height" Value="18"/>
+              </Style>
+              <Style Selector="Button:pointerover Viewbox">
+                <Setter Property="Width" Value="16"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="Margin" Value="0 1 1 1"/>
+              </Style>
+              <Style Selector="Button:pressed Viewbox">
+                <Setter Property="Width" Value="14"/>
+                <Setter Property="Height" Value="14"/>
+                <Setter Property="Margin" Value="0 2 2 2"/>
+              </Style>
+            </Button.Styles>
+            <Viewbox>
+              <Image Source="/Assets/Icons/external.png"/>
+            </Viewbox>
+          </Button>
+
+          <Button Padding="0"
+                  BorderThickness="0"
+                  Background="Transparent"
+                  Cursor="Hand"
+                  VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                  Margin="1"
+                  Command="{Binding ShowExternalCornerViewer}"
+                  IsVisible="{Binding IsExternalCornerViewerEnabled, FallbackValue=True}"
+                  ToolTip.Tip="Corner viewer">
+            <Button.Styles>
+              <Style Selector="Button Viewbox">
+                <Setter Property="Width" Value="18"/>
+                <Setter Property="Height" Value="18"/>
+              </Style>
+              <Style Selector="Button:pointerover Viewbox">
+                <Setter Property="Width" Value="16"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="Margin" Value="0 1 1 1"/>
+              </Style>
+              <Style Selector="Button:pressed Viewbox">
+                <Setter Property="Width" Value="14"/>
+                <Setter Property="Height" Value="14"/>
+                <Setter Property="Margin" Value="0 2 2 2"/>
+              </Style>
+            </Button.Styles>
+            <Viewbox>
+              <Image Source="/Assets/Icons/external_multiple.png"/>
+            </Viewbox>
+          </Button>
+        </StackPanel>
+      </Panel>
+    </Border>
 
     <Grid ColumnDefinitions="Auto" RowDefinitions="Auto"
           VerticalAlignment="Top"

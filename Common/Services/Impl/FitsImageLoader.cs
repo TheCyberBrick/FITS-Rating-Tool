@@ -34,7 +34,7 @@ namespace FitsRatingTool.Common.Services.Impl
         {
             var fitsHandle = loader.LoadFit(file, maxInputSize, maxWidth, maxHeight);
 
-            if (fitsHandle.valid == 1)
+            if (fitsHandle.Valid == 1)
             {
                 return new NativeFitsImage(loader, file, fitsHandle);
             }

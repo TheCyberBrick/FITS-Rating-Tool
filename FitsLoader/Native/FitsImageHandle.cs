@@ -20,6 +20,6 @@ namespace FitsRatingTool.FitsLoader.Native
 {
     public readonly struct FitsImageHandle
     {
-        public readonly IntPtr data;
+        public readonly IntPtr Data;
     }
 }

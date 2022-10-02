@@ -26,8 +26,9 @@
 struct FITSHandle
 {
 	bool valid;
-	Loader::FITSImageDim inDim;
-	Loader::FITSImageDim outDim;
+	Loader::FITSImageDim in_dim;
+	Loader::FITSImageDim out_dim;
+	bool debayer;
 	int header_records;
 	int max_header_keyword_size;
 	int max_header_value_size;
@@ -76,8 +77,9 @@ extern "C"
 			return handle;
 		}
 
-		handle.inDim = fits->attributes().data.in_dim;
-		handle.outDim = fits->attributes().data.out_dim;
+		handle.in_dim = fits->attributes().data.in_dim;
+		handle.out_dim = fits->attributes().data.out_dim;
+		handle.debayer = fits->debayer();
 		handle.header_records = static_cast<int>(fits->attributes().header.size());
 		handle.max_header_keyword_size = FLEN_KEYWORD;
 		handle.max_header_value_size = FLEN_VALUE;

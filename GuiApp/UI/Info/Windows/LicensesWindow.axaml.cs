@@ -61,6 +61,7 @@ namespace FitsRatingTool.GuiApp.UI.Info.Windows
                 new License("OxyPlot", Properties.Resources.LICENSE_OxyPlot),
                 new License("Microsoft.VisualStudio.Threading", Properties.Resources.LICENSE_VSThreading),
                 new License("StreamJsonRpc", Properties.Resources.LICENSE_StreamJsonRpc),
+                new License("Math.NET Numerics", Properties.Resources.LICENSE_MathDotNet),
                 new License(".NET", Properties.Resources.LICENSE_DotNet),
             };
 

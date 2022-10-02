@@ -1,0 +1,116 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.ImageAnalysis.Views"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
+        Width="700" Height="400"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.ImageAnalysis.Windows.ImageAnalysisWindow"
+        Icon="/Assets/Icons/magnifying_glass.png"
+        Title="Image Analysis"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True"
+        Classes="pinnable"
+        Padding="0">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/magnifying_glass.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="*,4,Auto"
+        Margin="4">
+
+    <Border Grid.Column="0"
+            Background="#FF383838"
+            Classes="themed"
+            Padding="4">
+      <views:ImageAnalysisView DataContext="{Binding .}"/>
+    </Border>
+
+    <HeaderedContentControl Grid.Column="2"
+                            Padding="4">
+      <HeaderedContentControl.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="16" Height="16">
+            <Image Source="/Assets/Icons/wrench.png"/>
+          </Viewbox>
+          <TextBlock Text="Settings" VerticalAlignment="Center"/>
+        </StackPanel>
+      </HeaderedContentControl.Header>
+
+      <Grid ColumnDefinitions="Auto,8,*"
+            RowDefinitions="Auto,4,Auto,Auto,Auto">
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Measure" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <ComboBox Grid.Column="2"
+                      SelectedIndex="{Binding DataKeyIndex}"
+                      HorizontalAlignment="Stretch">
+          <collections:ArrayList>
+            <system:String>HFD</system:String>
+            <system:String>FWHM</system:String>
+            <system:String>Eccentricity</system:String>
+            <system:String>Residual</system:String>
+          </collections:ArrayList>
+        </ComboBox>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Max. Samples:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <Slider Grid.Row="2" Grid.Column="2"
+                Value="{Binding MaxSamples}"
+                Minimum="1" Maximum="1000"
+                MinWidth="80"
+                Margin="0 0 0 2"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Smoothness:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <controls:PrecisionSlider Grid.Row="3" Grid.Column="2"
+                                  Value="{Binding Smoothness}"
+                                  Minimum="0.0" Maximum="1.0"
+                                  MinWidth="80"
+                                  Margin="0 0 0 2"
+                                  PrecisionScale="0.01"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Steps:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <Slider Grid.Row="4" Grid.Column="2"
+                Value="{Binding Steps}"
+                Minimum="1" Maximum="16"
+                MinWidth="80"
+                Margin="0 0 0 2"/>
+
+      </Grid>
+
+    </HeaderedContentControl>
+
+  </Grid>
+
+</Window>

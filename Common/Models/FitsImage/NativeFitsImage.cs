@@ -102,9 +102,13 @@ namespace FitsRatingTool.Common.Models.FitsImage
             }
         }
 
-        public FitsImageDim InDim => fitsHandle.inDim;
+        public FitsImageDim InDim => fitsHandle.InDim;
 
-        public FitsImageDim OutDim => fitsHandle.outDim;
+        public FitsImageDim OutDim => fitsHandle.OutDim;
+
+        public int ImageWidth => fitsHandle.Debayer ? InDim.Width / 2 : InDim.Width;
+
+        public int ImageHeight => fitsHandle.Debayer ? InDim.Height / 2 : InDim.Height;
 
         internal NativeFitsImage(INativeFitsLoader loader, string file, FitsHandle fitsHandle)
         {
@@ -112,11 +116,11 @@ namespace FitsRatingTool.Common.Models.FitsImage
             File = file;
             this.fitsHandle = fitsHandle;
 
-            for (int i = 0; i < fitsHandle.header_records; ++i)
+            for (int i = 0; i < fitsHandle.HeaderRecords; ++i)
             {
-                StringBuilder keyword = new(fitsHandle.max_header_keyword_size);
-                StringBuilder value = new(fitsHandle.max_header_value_size);
-                StringBuilder comment = new(fitsHandle.max_header_comment_size);
+                StringBuilder keyword = new(fitsHandle.MaxHeaderKeywordSize);
+                StringBuilder value = new(fitsHandle.MaxHeaderValueSize);
+                StringBuilder comment = new(fitsHandle.MaxHeaderCommentSize);
 
                 loader.ReadHeaderRecord(fitsHandle, i, keyword, (uint)keyword.Capacity + 1, value, (uint)value.Capacity + 1, comment, (uint)comment.Capacity + 1);
 
@@ -155,7 +159,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return;
                 }
 
-                if (fitsHandle.info.ToInt64() != 0)
+                if (fitsHandle.Info.ToInt64() != 0)
                 {
                     IsFileClosed = true;
                     loader.CloseFitFile(fitsHandle);
@@ -165,7 +169,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         private void UpdateImageDataValid()
         {
-            IsImageDataValid = dataHandle.image_ptr.ToInt64() != 0 && dataHandle.valid == 1 && loader.IsImageDataLoaded(dataHandle);
+            IsImageDataValid = dataHandle.ImagePtr.ToInt64() != 0 && dataHandle.Valid == 1 && loader.IsImageDataLoaded(dataHandle);
         }
 
         public bool LoadImageData(FitsImageLoaderParameters parameters)
@@ -179,12 +183,12 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 IsImageDataValid = false;
 
-                if (fitsHandle.info.ToInt64() == 0)
+                if (fitsHandle.Info.ToInt64() == 0)
                 {
                     throw new Exception("Already disposed");
                 }
 
-                if (dataHandle.image_ptr.ToInt64() != 0)
+                if (dataHandle.ImagePtr.ToInt64() != 0)
                 {
                     loader.FreeImageData(dataHandle);
                     dataHandle = default;
@@ -217,7 +221,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return;
                 }
 
-                if (dataHandle.image_ptr.ToInt64() != 0)
+                if (dataHandle.ImagePtr.ToInt64() != 0)
                 {
                     loader.UnloadImageData(dataHandle);
                 }
@@ -237,17 +241,17 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 IsStatisticsValid = false;
 
-                if (fitsHandle.info.ToInt64() == 0)
+                if (fitsHandle.Info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
 
-                if (dataHandle.image_ptr.ToInt64() == 0)
+                if (dataHandle.ImagePtr.ToInt64() == 0)
                 {
                     return false;
                 }
 
-                if (statisticsHandle.catalog.ToInt64() != 0)
+                if (statisticsHandle.Catalog.ToInt64() != 0)
                 {
                     loader.FreeStatistics(statisticsHandle);
                     statisticsHandle = default;
@@ -269,15 +273,15 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return false;
                 }
 
-                IsStatisticsValid = handle.valid == 1;
+                IsStatisticsValid = handle.Valid == 1;
             }
 
             if (callback != null)
             {
-                callback.Invoke(PhotometryPhase.Completed, 0, 0, 0, handle.valid == 1, handle.valid == 1 ? handle.statistics : null);
+                callback.Invoke(PhotometryPhase.Completed, 0, 0, 0, handle.Valid == 1, handle.Valid == 1 ? handle.Statistics : null);
             }
 
-            return handle.valid == 1;
+            return handle.Valid == 1;
         }
 
         public bool GetStatistics(out PhotometryStatistics statistics)
@@ -290,15 +294,15 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return false;
                 }
 
-                if (statisticsHandle.catalog.ToInt64() == 0)
+                if (statisticsHandle.Catalog.ToInt64() == 0)
                 {
                     statistics = default;
                     return false;
                 }
 
-                statistics = statisticsHandle.statistics;
+                statistics = statisticsHandle.Statistics;
 
-                return statisticsHandle.valid == 1;
+                return statisticsHandle.Valid == 1;
             }
         }
 
@@ -312,15 +316,15 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return false;
                 }
 
-                if (statisticsHandle.catalog.ToInt64() == 0)
+                if (statisticsHandle.Catalog.ToInt64() == 0)
                 {
                     photometry = default;
                     return false;
                 }
 
-                photometry = new PhotometryObject[statisticsHandle.count];
+                photometry = new PhotometryObject[statisticsHandle.Count];
 
-                return loader.GetPhotometry(statisticsHandle, 0, statisticsHandle.count, 0, photometry);
+                return loader.GetPhotometry(statisticsHandle, 0, statisticsHandle.Count, 0, photometry);
             }
         }
 
@@ -334,12 +338,12 @@ namespace FitsRatingTool.Common.Models.FitsImage
                     return false;
                 }
 
-                if (fitsHandle.info.ToInt64() == 0)
+                if (fitsHandle.Info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
 
-                if (dataHandle.image_ptr.ToInt64() == 0)
+                if (dataHandle.ImagePtr.ToInt64() == 0)
                 {
                     parameters = default;
                     return false;
@@ -394,18 +398,18 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 IsImageValid = false;
 
-                if (fitsHandle.info.ToInt64() == 0)
+                if (fitsHandle.Info.ToInt64() == 0)
                 {
                     throw new ObjectDisposedException(nameof(NativeFitsImage));
                 }
 
-                if (dataHandle.image_ptr.ToInt64() == 0)
+                if (dataHandle.ImagePtr.ToInt64() == 0)
                 {
                     data = default;
                     return false;
                 }
 
-                if (imgHandle.data.ToInt64() != 0)
+                if (imgHandle.Data.ToInt64() != 0)
                 {
                     loader.FreeImage(imgHandle);
                     imgHandle = default;
@@ -433,7 +437,7 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 StretchedHistogram = newHistogram;
 
-                data = new NativeFitsImageData(imgHandle.data);
+                data = new NativeFitsImageData(imgHandle.Data);
             }
             return true;
         }
@@ -453,19 +457,19 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 if (!disposed)
                 {
-                    if (imgHandle.data.ToInt64() != 0)
+                    if (imgHandle.Data.ToInt64() != 0)
                     {
                         loader.FreeImage(imgHandle);
                         imgHandle = default;
                     }
 
-                    if (statisticsHandle.catalog.ToInt64() != 0)
+                    if (statisticsHandle.Catalog.ToInt64() != 0)
                     {
                         loader.FreeStatistics(statisticsHandle);
                         statisticsHandle = default;
                     }
 
-                    if (dataHandle.image_ptr.ToInt64() != 0)
+                    if (dataHandle.ImagePtr.ToInt64() != 0)
                     {
                         loader.FreeImageData(dataHandle);
                         dataHandle = default;

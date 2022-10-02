@@ -19,6 +19,7 @@
 using Avalonia.Utilities;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using ReactiveUI;
 using System;
@@ -31,17 +32,19 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public class Factory : IAppViewerOverlayViewModel.IFactory
         {
             private readonly IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory;
+            private readonly IImageAnalysisViewModel.IFactory imageAnalysisFactory;
             private readonly IFitsImageManager fitsImageManager;
 
-            public Factory(IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageManager fitsImageManager)
+            public Factory(IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IImageAnalysisViewModel.IFactory imageAnalysisFactory, IFitsImageManager fitsImageManager)
             {
                 this.fitsImageCornerViewerFactory = fitsImageCornerViewerFactory;
+                this.imageAnalysisFactory = imageAnalysisFactory;
                 this.fitsImageManager = fitsImageManager;
             }
 
             public IAppViewerOverlayViewModel Create(IFitsImageViewerViewModel viewer)
             {
-                return new AppViewerOverlayViewModel(viewer, fitsImageCornerViewerFactory, fitsImageManager);
+                return new AppViewerOverlayViewModel(viewer, fitsImageCornerViewerFactory, imageAnalysisFactory, fitsImageManager);
             }
 
             IFitsImageViewerViewModel.IOverlay IFitsImageViewerViewModel.IOverlayFactory.Create(IFitsImageViewerViewModel viewer)
@@ -86,6 +89,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isExternalCornerViewerEnabled, value);
         }
 
+        private bool _isExternalImageAnalysisEnabled = true;
+        public bool IsExternalImageAnalysisEnabled
+        {
+            get => _isExternalImageAnalysisEnabled;
+            set => this.RaiseAndSetIfChanged(ref _isExternalImageAnalysisEnabled, value);
+        }
+
         private bool _isCornerViewerEnabled;
         public bool IsCornerViewerEnabled
         {
@@ -111,11 +121,12 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
 
+        public ReactiveCommand<Unit, IImageAnalysisViewModel> ShowExternalImageAnalysis { get; }
 
 
         private readonly IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory;
 
-        public AppViewerOverlayViewModel(IFitsImageViewerViewModel viewer, IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IFitsImageManager fitsImageManager)
+        public AppViewerOverlayViewModel(IFitsImageViewerViewModel viewer, IFitsImageCornerViewerViewModel.IFactory fitsImageCornerViewerFactory, IImageAnalysisViewModel.IFactory imageAnalysisFactory, IFitsImageManager fitsImageManager)
         {
             this.fitsImageCornerViewerFactory = fitsImageCornerViewerFactory;
 
@@ -162,6 +173,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 vm.Percentage = CornerViewerPercentage;
                 return vm;
             });
+
+            ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Create(Viewer.File!), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
         }
 
         private void CreateOrUpdateCornerViewer()

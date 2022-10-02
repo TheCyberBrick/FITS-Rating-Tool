@@ -16,14 +16,37 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.FitsLoader.Models;
-
-namespace FitsRatingTool.FitsLoader.Native
+namespace FitsRatingTool.GuiApp.UI.ImageAnalysis
 {
-    public readonly struct FitsImageDataHandle
+    public interface IImageAnalysisViewModel
     {
-        public readonly byte Valid;
-        public readonly IntPtr ImagePtr;
-        public readonly FitsImageLoaderParameters Parameters;
+        public interface IFactory
+        {
+            IImageAnalysisViewModel Create(string file);
+        }
+
+        string File { get; }
+
+        string FileName { get; }
+
+        int DataKeyIndex { get; set; }
+
+        int MaxSamples { get; set; }
+
+        float Smoothness { get; set; }
+
+        int Steps { get; set; }
+
+        int HorizontalResolution { get; set; }
+
+        int VerticalResolution { get; set; }
+
+        double[,] RawData { get; }
+
+        double[,] Data { get; }
+
+        double DataStepSize { get; }
+
+        double[] DataSteps { get; }
     }
 }

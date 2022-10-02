@@ -22,13 +22,14 @@ namespace FitsRatingTool.FitsLoader.Native
 {
     public readonly struct FitsHandle
     {
-        public readonly byte valid;
-        public readonly FitsImageDim inDim;
-        public readonly FitsImageDim outDim;
-        public readonly int header_records;
-        public readonly int max_header_keyword_size;
-        public readonly int max_header_value_size;
-        public readonly int max_header_comment_size;
-        public readonly IntPtr info;
+        public readonly byte Valid;
+        public readonly FitsImageDim InDim;
+        public readonly FitsImageDim OutDim;
+        public readonly bool Debayer;
+        public readonly int HeaderRecords;
+        public readonly int MaxHeaderKeywordSize;
+        public readonly int MaxHeaderValueSize;
+        public readonly int MaxHeaderCommentSize;
+        public readonly IntPtr Info;
     }
 }

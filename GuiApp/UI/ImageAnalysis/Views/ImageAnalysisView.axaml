@@ -1,0 +1,73 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+             xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
+             xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.ImageAnalysis.Views.ImageAnalysisView">
+
+  <oxy:Plot Background="Transparent"
+            TextColor="#FFDEDEDE"
+            UseLayoutRounding="True"
+            Padding="2 0"
+            IsEnabled="False"
+            PlotAreaBorderThickness="1"
+            PlotAreaBorderColor="#90000000">
+    <oxy:Plot.Axes>
+      <oxy:LinearAxis Key="x"
+                      Position="Bottom"
+                      IsAxisVisible="False"
+                      MinimumPadding="0" MaximumPadding="0"/>
+      <oxy:LinearAxis Key="y"
+                      Position="Left"
+                      IsAxisVisible="False"
+                      MinimumPadding="0" MaximumPadding="0"/>
+      <oxy:LinearColorAxis Key="z"
+                           Position="Right"
+                           LowColor="Transparent"
+                           HighColor="Transparent"
+                           PaletteSize="100"
+                           EdgeRenderingMode="PreferSpeed"
+                           FontWeight="SemiBold"
+                           FontSize="10.5"
+                           MinimumPadding="0" MaximumPadding="0">
+        <GradientStop Color="#4C4C4C" Offset="0.0"/>
+        <GradientStop Color="#999999" Offset="0.5"/>
+        <GradientStop Color="#E6E6E6" Offset="1.0"/>
+      </oxy:LinearColorAxis>
+    </oxy:Plot.Axes>
+    <oxy:Plot.Series>
+      <oxy:HeatMapSeries ColorAxisKey="Z"
+                         Data="{Binding Data}"
+                         X0="-1" X1="1"
+                         Y0="-1" Y1="1"
+                         Margin="0"
+                         Padding="0"/>
+      <controls:ContourSeries Data="{Binding RawData}"
+                              ContourLevels="{Binding DataSteps}"
+                              Margin="0"
+                              Padding="0"/>
+    </oxy:Plot.Series>
+  </oxy:Plot>
+
+</UserControl>

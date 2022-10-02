@@ -59,6 +59,8 @@ namespace Loader
 
 		FITSStandardAttributes const& attributes() const { return m_attributes; }
 
+		bool const debayer() const { return m_debayer; }
+
 		void ReadHeader();
 
 		bool ReadImage(unsigned char* data, FITSImageLoaderParameters props);

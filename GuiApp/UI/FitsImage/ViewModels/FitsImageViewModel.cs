@@ -215,6 +215,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         IEnumerable<IFitsImageHeaderRecord> IFitsImageMetadata.Header { get => _header; }
 
+        public int ImageWidth => fitsImage.ImageWidth;
+
+        public int ImageHeight => fitsImage.ImageHeight;
+
 
         private IFitsImageViewerViewModel? _owner;
         public IFitsImageViewerViewModel? Owner

@@ -38,6 +38,8 @@ using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FileTable.ViewModels;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis;
+using FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
@@ -141,6 +143,8 @@ namespace FitsRatingTool.GuiApp
             container.Register<IInstrumentProfileViewModel.IFactory, InstrumentProfileViewModel.Factory>(Reuse.Singleton);
             container.Register<IInstrumentProfileSelectorViewModel.IFactory, InstrumentProfileSelectorViewModel.Factory>(Reuse.Singleton);
             container.Register<IInstrumentProfileConfiguratorViewModel.IFactory, InstrumentProfileConfiguratorViewModel.Factory>(Reuse.Singleton);
+
+            container.Register<IImageAnalysisViewModel.IFactory, ImageAnalysisViewModel.Factory>(Reuse.Singleton);
         }
 
         private static void RegisterViews(Container container)
