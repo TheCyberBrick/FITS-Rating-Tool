@@ -377,7 +377,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private void Init()
         {
-            CloseFile(); // At the moment the FITS file isn't read or modified anymore after loading the data, so the file can be closed
+            CloseFile(); // Close file after initial loading. When data needs to be read again it'll be reopened.
             this.WhenAnyValue(x => x.Bitmap).Subscribe(x =>
             {
                 this.RaisePropertyChanged(nameof(HasImage));

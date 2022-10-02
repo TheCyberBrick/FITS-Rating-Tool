@@ -73,7 +73,7 @@ namespace FitsRatingTool.GuiApp
         private static void RegisterServices(Container container)
         {
             // Common
-            container.Register<IFitsImageLoader, FitsImageLoader>(Reuse.Singleton);
+            container.Register<IFitsImageLoader, AppFitsImageLoader>(Reuse.Singleton);
             container.Register<IGroupingManager, GroupingManager>(Reuse.Singleton);
             container.Register<IEvaluationService, EvaluationService>(Reuse.Singleton);
             container.Register<IJobConfigFactory, JobConfigFactory>(Reuse.Singleton);

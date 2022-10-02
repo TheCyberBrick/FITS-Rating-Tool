@@ -31,7 +31,7 @@
 namespace Loader
 {
 
-	FITSInfo::FITSInfo(const char* file, size_t max_input_size, int max_input_width, int max_input_height) :
+	FITSInfo::FITSInfo(std::string& file, size_t max_input_size, int max_input_width, int max_input_height) :
 		m_file(file), m_fits_file(nullptr), max_input_size(max_input_size), max_input_width(max_input_width), max_input_height(max_input_height),
 		m_attributes(), m_debayer(false), m_kernel_size(0), m_kernel_stride(0), m_valid(false)
 	{
@@ -72,6 +72,21 @@ namespace Loader
 		CloseFile();
 	}
 
+	bool FITSInfo::OpenFile()
+	{
+		if (!m_fits_file)
+		{
+			int status = 0;
+			if (fits_open_diskfile(&m_fits_file, m_file.c_str(), READONLY, &status))
+			{
+				m_valid = false;
+				m_fits_file = nullptr;
+				return false;
+			}
+		}
+		return true;
+	}
+
 	void FITSInfo::CloseFile()
 	{
 		if (m_fits_file != nullptr)
@@ -88,13 +103,14 @@ namespace Loader
 
 		int status;
 
-		status = 0;
-		if (fits_open_diskfile(&m_fits_file, m_file, READONLY, &status))
+		if (!OpenFile())
 		{
 			return;
 		}
 
 		int nhdu;
+
+		status = 0;
 		if (fits_get_num_hdus(m_fits_file, &nhdu, &status))
 		{
 			return;

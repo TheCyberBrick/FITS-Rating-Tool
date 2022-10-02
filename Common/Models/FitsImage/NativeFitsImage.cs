@@ -193,10 +193,13 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 uint[] newHistogram = new uint[Histogram.Length];
                 dataHandle = loader.LoadImageData(fitsHandle, parameters, newHistogram, (uint)newHistogram.Length);
 
+                IsFileClosed = false;
+
                 UpdateImageDataValid();
                 if (AlwaysUnloadImageData)
                 {
                     UnloadImageData();
+                    CloseFile();
                 }
 
                 Histogram = newHistogram;
@@ -252,10 +255,13 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 handle = statisticsHandle = loader.ComputeStatistics(fitsHandle, dataHandle, callback != null ? (phase, nobj, iobj, nstars) => callback(phase, nobj, iobj, nstars, false, null) : null);
 
+                IsFileClosed = false;
+
                 UpdateImageDataValid();
                 if (AlwaysUnloadImageData)
                 {
                     UnloadImageData();
+                    CloseFile();
                 }
 
                 if (!IsImageDataValid)
@@ -341,10 +347,13 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
                 parameters = loader.ComputeStretch(fitsHandle, dataHandle);
 
+                IsFileClosed = false;
+
                 UpdateImageDataValid();
                 if (AlwaysUnloadImageData)
                 {
                     UnloadImageData();
+                    CloseFile();
                 }
 
                 return IsImageDataValid;
@@ -405,10 +414,13 @@ namespace FitsRatingTool.Common.Models.FitsImage
                 uint[] newHistogram = new uint[StretchedHistogram.Length];
                 imgHandle = loader.ProcessImage(fitsHandle, dataHandle, imgHandle, computeStretch, parameters, newHistogram, (uint)newHistogram.Length);
 
+                IsFileClosed = false;
+
                 UpdateImageDataValid();
                 if (AlwaysUnloadImageData)
                 {
                     UnloadImageData();
+                    CloseFile();
                 }
 
                 if (!IsImageDataValid)

@@ -41,8 +41,10 @@ namespace Loader
 	class FITSInfo
 	{
 	public:
-		FITSInfo(const char* file, size_t max_input_size, int max_input_width, int max_input_height);
+		FITSInfo(std::string& file, size_t max_input_size, int max_input_width, int max_input_height);
 		~FITSInfo();
+
+		bool OpenFile();
 
 		void CloseFile();
 
@@ -67,7 +69,7 @@ namespace Loader
 		template<typename T_OUT>
 		void ProcessImage(std::valarray<T_OUT>& data, unsigned char* outData, bool computeStrechParams, FITSImageLoaderParameters props, uint32_t* histogram, size_t histogram_size);
 	private:
-		const char* m_file;
+		std::string m_file;
 		fitsfile* m_fits_file;
 
 		bool m_valid;

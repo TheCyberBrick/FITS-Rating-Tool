@@ -52,6 +52,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         #endregion
 
         #region Viewer
+        public bool KeepImageDataLoaded
+        {
+            get => bool.TryParse(manager.Get("KeepImageDataLoaded"), out bool value) ? value : false;
+            set => manager.Set("KeepImageDataLoaded", value.ToString());
+        }
+
         public int AutoLoadMaxImageCount
         {
             get => int.TryParse(manager.Get("AutoLoadMaxImageCount"), out int count) ? count : 64;

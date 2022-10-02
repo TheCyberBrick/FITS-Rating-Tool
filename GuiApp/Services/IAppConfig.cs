@@ -31,6 +31,8 @@ namespace FitsRatingTool.GuiApp.Services
         #endregion
 
         #region Viewer
+        bool KeepImageDataLoaded { get; set; }
+
         int AutoLoadMaxImageCount { get; set; }
 
         long MaxImageSize { get; set; }

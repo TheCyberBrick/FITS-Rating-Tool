@@ -139,6 +139,11 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         {
             var category = appConfigCategoryFactory.Create("Images");
 
+            category.Settings.Add(new BoolSettingViewModel("Keep Image Data Loaded", () => appConfig.KeepImageDataLoaded, v => appConfig.KeepImageDataLoaded = v)
+            {
+                Description = "Whether the raw image data should remain loaded in the background. Enabling this option may improve the responsiveness, e.g., when adjusting the image stretch of large images, but increases memory usage."
+            });
+            category.Settings.Add(SettingSeparatorViewModel.Instance);
             category.Settings.Add(new IntegerSettingViewModel("Max. Auto Load Count", () => appConfig.AutoLoadMaxImageCount, v => appConfig.AutoLoadMaxImageCount = v, 1, 512, 1)
             {
                 Description = "Maximum number of automatically loaded images. This includes images opened through the explorer, voyager integration or via program launch argument."

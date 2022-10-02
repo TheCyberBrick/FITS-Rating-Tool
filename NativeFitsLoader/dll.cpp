@@ -58,8 +58,9 @@ struct FITSStatisticsHandle
 
 extern "C"
 {
-	__declspec(dllexport) FITSHandle LoadFit(const char* file, uint64_t max_input_size, uint32_t max_input_width, uint32_t max_input_height)
+	__declspec(dllexport) FITSHandle LoadFit(const char* file_cstr, uint64_t max_input_size, uint32_t max_input_width, uint32_t max_input_height)
 	{
+		std::string file(file_cstr);
 		Loader::FITSInfo* fits = new Loader::FITSInfo(file, max_input_size, max_input_width, max_input_height);
 
 		fits->ReadHeader();
@@ -125,6 +126,11 @@ extern "C"
 	{
 		if (fits_handle.info && data_handle->image_ptr)
 		{
+			if (!fits_handle.info->OpenFile())
+			{
+				return false;
+			}
+
 			if (*data_handle->image_ptr)
 			{
 				delete* data_handle->image_ptr;
