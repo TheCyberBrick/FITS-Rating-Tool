@@ -25,6 +25,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -36,18 +37,27 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
         {
             private readonly IFitsImageManager fitsImageManager;
             private readonly IStarSampler starSampler;
+            private readonly IImageAnalysisManager imageAnalysisManager;
 
-            public Factory(IFitsImageManager fitsImageManager, IStarSampler starSampler)
+            public Factory(IFitsImageManager fitsImageManager, IStarSampler starSampler, IImageAnalysisManager imageAnalysisManager)
             {
                 this.fitsImageManager = fitsImageManager;
                 this.starSampler = starSampler;
+                this.imageAnalysisManager = imageAnalysisManager;
             }
 
             public IImageAnalysisViewModel Create(string file)
             {
-                return new ImageAnalysisViewModel(file, fitsImageManager, starSampler);
+                return new ImageAnalysisViewModel(file, fitsImageManager, starSampler, imageAnalysisManager);
             }
         }
+
+
+        private static readonly int DEFAULT_MAX_SAMPLES = 250;
+        private static readonly float DEFAULT_SMOOTHNESS = 0.563f;
+        private static readonly bool DEFAULT_WEIGHTED_SMOOTHING = false;
+        private static readonly bool DEFAULT_NORMALIZE_DIMENSIONS = true;
+        private static readonly int DEFAULT_STEPS = 6;
 
 
         public string File { get; }
@@ -61,26 +71,43 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
             set => this.RaiseAndSetIfChanged(ref _dataKeyIndex, value);
         }
 
-        private int _maxSamples = 250;
+        private int _maxSamples = DEFAULT_MAX_SAMPLES;
         public int MaxSamples
         {
             get => _maxSamples;
             set => this.RaiseAndSetIfChanged(ref _maxSamples, value);
         }
 
-        private float _smoothness = 0.1f;
+        private float _smoothness = DEFAULT_SMOOTHNESS;
         public float Smoothness
         {
             get => _smoothness;
             set => this.RaiseAndSetIfChanged(ref _smoothness, Math.Max(0.0f, value));
         }
 
-        private int _steps = 6;
+        private bool _weightedSmoothing = DEFAULT_WEIGHTED_SMOOTHING;
+        public bool WeightedSmoothing
+        {
+            get => _weightedSmoothing;
+            set => this.RaiseAndSetIfChanged(ref _weightedSmoothing, value);
+        }
+
+        private bool _normalizeDimensions = DEFAULT_NORMALIZE_DIMENSIONS;
+        public bool NormalizeDimensions
+        {
+            get => _normalizeDimensions;
+            set => this.RaiseAndSetIfChanged(ref _normalizeDimensions, value);
+        }
+
+        private int _steps = DEFAULT_STEPS;
         public int Steps
         {
             get => _steps;
             set => this.RaiseAndSetIfChanged(ref _steps, value);
         }
+
+        private ObservableAsPropertyHelper<bool> _hasSteps;
+        public bool HasSteps => _hasSteps.Value;
 
         private int _horizontalResolution = 256;
         public int HorizontalResolution
@@ -124,42 +151,88 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _dataSteps, value);
         }
 
+        private int _dataSamples;
+        public int DataSamples
+        {
+            get => _dataSamples;
+            private set => this.RaiseAndSetIfChanged(ref _dataSamples, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> Reset { get; }
+
 
 
         private readonly IFitsImageManager fitsImageManager;
         private readonly IStarSampler starSampler;
+        private readonly IImageAnalysisManager imageAnalysisManager;
 
-        private ImageAnalysisViewModel(string file, IFitsImageManager fitsImageManager, IStarSampler starSampler)
+        private ImageAnalysisViewModel(string file, IFitsImageManager fitsImageManager, IStarSampler starSampler, IImageAnalysisManager imageAnalysisManager)
         {
             this.fitsImageManager = fitsImageManager;
             this.starSampler = starSampler;
+            this.imageAnalysisManager = imageAnalysisManager;
 
             File = file;
             FileName = Path.GetFileName(file);
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, ImageAnalysisViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+            LoadParameters();
 
-            UpdateData();
+            _hasSteps = this.WhenAnyValue(x => x.Steps, x => x > 0).ToProperty(this, x => x.HasSteps);
 
             this.WhenAnyValue(x => x.DataKeyIndex)
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(_ => UpdateData());
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
 
             this.WhenAnyValue(x => x.MaxSamples)
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(_ => UpdateData());
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
 
             this.WhenAnyValue(x => x.Smoothness)
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(_ => UpdateData());
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
+
+            this.WhenAnyValue(x => x.WeightedSmoothing)
+                .Throttle(TimeSpan.FromMilliseconds(250))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
+
+            this.WhenAnyValue(x => x.NormalizeDimensions)
+                .Throttle(TimeSpan.FromMilliseconds(250))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
+
 
             this.WhenAnyValue(x => x.Steps)
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(_ => UpdateData());
+                .Subscribe(x =>
+                {
+                    SaveParameters();
+                    UpdateData();
+                });
 
             this.WhenAnyValue(x => x.VerticalResolution)
                 .Throttle(TimeSpan.FromMilliseconds(250))
@@ -170,6 +243,62 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(_ => UpdateData());
+
+            Reset = ReactiveCommand.Create(() =>
+            {
+                MaxSamples = DEFAULT_MAX_SAMPLES;
+                Smoothness = DEFAULT_SMOOTHNESS;
+                WeightedSmoothing = DEFAULT_WEIGHTED_SMOOTHING;
+                NormalizeDimensions = DEFAULT_NORMALIZE_DIMENSIONS;
+                Steps = DEFAULT_STEPS;
+            });
+
+            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, ImageAnalysisViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+
+            UpdateData();
+        }
+
+        private void LoadParameters()
+        {
+            if (imageAnalysisManager.CurrentDataKeyIndex.HasValue)
+            {
+                DataKeyIndex = imageAnalysisManager.CurrentDataKeyIndex.Value;
+            }
+
+            if (imageAnalysisManager.CurrentMaxSamples.HasValue)
+            {
+                MaxSamples = imageAnalysisManager.CurrentMaxSamples.Value;
+            }
+
+            if (imageAnalysisManager.CurrentSmoothness.HasValue)
+            {
+                Smoothness = imageAnalysisManager.CurrentSmoothness.Value;
+            }
+
+            if (imageAnalysisManager.CurrentWeightedSmoothing.HasValue)
+            {
+                WeightedSmoothing = imageAnalysisManager.CurrentWeightedSmoothing.Value;
+            }
+
+            if (imageAnalysisManager.CurrentNormalizeDimensions.HasValue)
+            {
+                NormalizeDimensions = imageAnalysisManager.CurrentNormalizeDimensions.Value;
+            }
+
+            if (imageAnalysisManager.CurrentSteps.HasValue)
+            {
+                Steps = imageAnalysisManager.CurrentSteps.Value;
+            }
+        }
+
+        private void SaveParameters()
+        {
+            imageAnalysisManager.CurrentDataKeyIndex = DataKeyIndex;
+            imageAnalysisManager.CurrentMaxSamples = MaxSamples;
+            imageAnalysisManager.CurrentSmoothness = Smoothness;
+            imageAnalysisManager.CurrentWeightedSmoothing = WeightedSmoothing;
+            imageAnalysisManager.CurrentNormalizeDimensions = NormalizeDimensions;
+            imageAnalysisManager.CurrentSteps = Steps;
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
@@ -204,27 +333,51 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
             }
         }
 
+        private double GetRegularization(double smoothness)
+        {
+            return 100.0f * Math.Pow(smoothness, 4.0);
+        }
+
         private async void UpdateData(int dataKeyIndex, IFitsImageMetadata metadata, List<IFitsImagePhotometryViewModel> photometry)
         {
-            var tps = new ThinPlateSpline()
+            var tps = new ThinPlateSpline();
+
+            List<double>? dynamicRegularization;
+
+            float dynamicRegularizationFraction = 0.9f;
+
+            if (!WeightedSmoothing)
             {
-                Regularization = 100f * Smoothness
-            };
+                tps.Regularization = (float)GetRegularization(Smoothness);
+                dynamicRegularization = null;
+            }
+            else
+            {
+                tps.Regularization = (1.0f - dynamicRegularizationFraction) * (float)GetRegularization(Smoothness);
+                dynamicRegularization = new();
+            }
 
             List<Point> points = new();
             List<double> values = new();
 
             photometry = await Task.Run(() => starSampler.Sample(photometry, MaxSamples, out var _));
 
+            double fx = NormalizeDimensions ? 1.0 / metadata.ImageWidth : 1.0;
+            double fy = NormalizeDimensions ? 1.0 / metadata.ImageHeight : 1.0;
+
             foreach (var p in photometry)
             {
-                points.Add(new Point(p.PSF.X, p.PSF.Y));
+                points.Add(new Point(p.PSF.X * fx, p.PSF.Y * fy));
                 values.Add(GetValue(dataKeyIndex, p));
+                if (dynamicRegularization != null)
+                {
+                    dynamicRegularization.Add(dynamicRegularizationFraction * GetRegularization(Smoothness * GetSmoothingWeight(dataKeyIndex, p)));
+                }
             }
 
             var newData = await Task.Run(() =>
             {
-                if (tps.Solve(points, values, out var solution))
+                if (tps.Solve(points, values, out var solution, dynamicRegularization))
                 {
                     double[,] rawData = new double[HorizontalResolution, VerticalResolution];
 
@@ -235,7 +388,7 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
                     {
                         for (int x = 0; x < HorizontalResolution; ++x)
                         {
-                            double value = rawData[x, VerticalResolution - 1 - y] = solution.Interpolate(new Point(metadata.ImageWidth / HorizontalResolution * (x + 0.5f), metadata.ImageHeight / VerticalResolution * (y + 0.5f)));
+                            double value = rawData[x, VerticalResolution - 1 - y] = solution.Interpolate(new Point(metadata.ImageWidth * fx / HorizontalResolution * (x + 0.5f), metadata.ImageHeight * fy / VerticalResolution * (y + 0.5f)));
                             min = Math.Min(value, min);
                             max = Math.Max(value, max);
                         }
@@ -274,6 +427,8 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
             RawData = newData?.Item1 ?? new double[0, 0];
             Data = newData?.Item2 ?? new double[0, 0];
 
+            DataSamples = photometry.Count;
+
             if (newData != null && Steps > 0)
             {
                 DataStepSize = (newData.Item4 - newData.Item3) / Steps;
@@ -288,7 +443,16 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
 
         private bool IsValidDataKeyIndex(int dataKeyIndex)
         {
-            return dataKeyIndex >= 0 && dataKeyIndex <= 3;
+            return dataKeyIndex >= 0 && dataKeyIndex <= 4;
+        }
+
+        private double GetSmoothingWeight(int dataKeyIndex, IFitsImagePhotometryViewModel photometry)
+        {
+            return DataKeyIndex switch
+            {
+                1 or 2 => 1.0 - photometry.PSF.Weight,
+                _ => 1.0
+            };
         }
 
         private double GetValue(int dataKeyIndex, IFitsImagePhotometryViewModel photometry)
@@ -299,6 +463,7 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
                 1 => photometry.PSF.FWHM,
                 2 => photometry.PSF.Eccentricity,
                 3 => photometry.PSF.Residual,
+                4 => photometry.PSF.Weight,
                 _ => 0
             };
         }

@@ -25,13 +25,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              x:Class="FitsRatingTool.GuiApp.UI.FitsImage.Views.FitsImageViewerStretchView">
 
   <Grid Grid.Row="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-    <TextBlock Grid.Column="0" Grid.Row="0" Foreground="#FFDEDEDE" Text="Shadows:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <TextBlock Grid.Column="0" Grid.Row="0" Foreground="#FFDEDEDE" Text="Shadows" VerticalAlignment="Center" Margin="0 0 8 2"/>
     <controls:PrecisionSlider Grid.Column="1" Grid.Row="0" Value="{Binding FitsImage.Shadows}" Minimum="0" Maximum="1" Margin="0 0 0 2"/>
 
-    <TextBlock Grid.Column="0" Grid.Row="1" Foreground="#FFDEDEDE" Text="Midtones:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <TextBlock Grid.Column="0" Grid.Row="1" Foreground="#FFDEDEDE" Text="Midtones" VerticalAlignment="Center" Margin="0 0 8 2"/>
     <controls:PrecisionSlider Grid.Column="1" Grid.Row="1" Value="{Binding FitsImage.Midtones}" Minimum="0" Maximum="1" Margin="0 0 0 2"/>
 
-    <TextBlock Grid.Column="0" Grid.Row="2" Foreground="#FFDEDEDE" Text="Highlights:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+    <TextBlock Grid.Column="0" Grid.Row="2" Foreground="#FFDEDEDE" Text="Highlights" VerticalAlignment="Center" Margin="0 0 8 2"/>
     <controls:PrecisionSlider Grid.Column="1" Grid.Row="2" Value="{Binding FitsImage.Highlights}" Minimum="0" Maximum="1" Margin="0 0 0 2"/>
 
     <CheckBox Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2"

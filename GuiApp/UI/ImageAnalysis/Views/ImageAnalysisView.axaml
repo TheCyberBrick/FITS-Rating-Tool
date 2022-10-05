@@ -23,51 +23,125 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
              xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
              xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:converters="clr-namespace:FitsRatingTool.GuiApp.UI.Converters"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.ImageAnalysis.Views.ImageAnalysisView">
 
-  <oxy:Plot Background="Transparent"
-            TextColor="#FFDEDEDE"
-            UseLayoutRounding="True"
-            Padding="2 0"
-            IsEnabled="False"
-            PlotAreaBorderThickness="1"
-            PlotAreaBorderColor="#90000000">
-    <oxy:Plot.Axes>
-      <oxy:LinearAxis Key="x"
-                      Position="Bottom"
-                      IsAxisVisible="False"
-                      MinimumPadding="0" MaximumPadding="0"/>
-      <oxy:LinearAxis Key="y"
-                      Position="Left"
-                      IsAxisVisible="False"
-                      MinimumPadding="0" MaximumPadding="0"/>
-      <oxy:LinearColorAxis Key="z"
-                           Position="Right"
-                           LowColor="Transparent"
-                           HighColor="Transparent"
-                           PaletteSize="100"
-                           EdgeRenderingMode="PreferSpeed"
-                           FontWeight="SemiBold"
-                           FontSize="10.5"
-                           MinimumPadding="0" MaximumPadding="0">
-        <GradientStop Color="#4C4C4C" Offset="0.0"/>
-        <GradientStop Color="#999999" Offset="0.5"/>
-        <GradientStop Color="#E6E6E6" Offset="1.0"/>
-      </oxy:LinearColorAxis>
-    </oxy:Plot.Axes>
-    <oxy:Plot.Series>
-      <oxy:HeatMapSeries ColorAxisKey="Z"
-                         Data="{Binding Data}"
-                         X0="-1" X1="1"
-                         Y0="-1" Y1="1"
-                         Margin="0"
-                         Padding="0"/>
-      <controls:ContourSeries Data="{Binding RawData}"
-                              ContourLevels="{Binding DataSteps}"
-                              Margin="0"
-                              Padding="0"/>
-    </oxy:Plot.Series>
-  </oxy:Plot>
+  <Panel>
+    <oxy:Plot Background="Transparent"
+              TextColor="#FFDEDEDE"
+              UseLayoutRounding="True"
+              Padding="2 0"
+              IsEnabled="False"
+              PlotAreaBorderThickness="1"
+              PlotAreaBorderColor="#90000000">
+      <oxy:Plot.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+          <Binding Path="DataSteps.Length" Converter="{x:Static converters:ComparatorConverters.Greater}" ConverterParameter="0"/>
+          <Binding Path="Data.Length" Converter="{x:Static converters:ComparatorConverters.Equal}" ConverterParameter="0"/>
+        </MultiBinding>
+      </oxy:Plot.IsVisible>
+
+      <oxy:Plot.Axes>
+        <oxy:LinearAxis Key="x"
+                        Position="Bottom"
+                        IsAxisVisible="False"
+                        MinimumPadding="0" MaximumPadding="0"/>
+
+        <oxy:LinearAxis Key="y"
+                        Position="Left"
+                        IsAxisVisible="False"
+                        MinimumPadding="0" MaximumPadding="0"/>
+
+        <oxy:LinearColorAxis Key="z"
+                             Position="Right"
+                             LowColor="Transparent"
+                             HighColor="Transparent"
+                             PaletteSize="256"
+                             EdgeRenderingMode="PreferSpeed"
+                             FontWeight="SemiBold"
+                             FontSize="10.5"
+                             MinimumPadding="0" MaximumPadding="0">
+          <GradientStop Color="#4C4C4C" Offset="0.0"/>
+          <GradientStop Color="#999999" Offset="0.5"/>
+          <GradientStop Color="#E6E6E6" Offset="1.0"/>
+        </oxy:LinearColorAxis>
+      </oxy:Plot.Axes>
+
+      <oxy:Plot.Series>
+        <oxy:HeatMapSeries ColorAxisKey="Z"
+                           Data="{Binding Data}"
+                           X0="-1" X1="1"
+                           Y0="-1" Y1="1"
+                           Margin="0"
+                           Padding="0"/>
+
+        <controls:ContourSeries Data="{Binding RawData}"
+                                ContourLevels="{Binding DataSteps}"
+                                Margin="0"
+                                Padding="0"/>
+      </oxy:Plot.Series>
+
+    </oxy:Plot>
+
+    <oxy:Plot Background="Transparent"
+              TextColor="#FFDEDEDE"
+              UseLayoutRounding="True"
+              Padding="2 0"
+              IsEnabled="False"
+              PlotAreaBorderThickness="1"
+              PlotAreaBorderColor="#90000000">
+      <oxy:Plot.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.And}">
+          <Binding Path="DataSteps.Length" Converter="{x:Static converters:ComparatorConverters.Equal}" ConverterParameter="0"/>
+          <Binding Path="Data.Length" Converter="{x:Static converters:ComparatorConverters.Greater}" ConverterParameter="0"/>
+        </MultiBinding>
+      </oxy:Plot.IsVisible>
+
+      <oxy:Plot.Axes>
+        <oxy:LinearAxis Key="x"
+                        Position="Bottom"
+                        IsAxisVisible="False"
+                        MinimumPadding="0" MaximumPadding="0"/>
+
+        <oxy:LinearAxis Key="y"
+                        Position="Left"
+                        IsAxisVisible="False"
+                        MinimumPadding="0" MaximumPadding="0"/>
+
+        <oxy:LinearColorAxis Key="z"
+                             Position="Right"
+                             LowColor="Transparent"
+                             HighColor="Transparent"
+                             PaletteSize="1024"
+                             EdgeRenderingMode="PreferSpeed"
+                             FontWeight="SemiBold"
+                             FontSize="10.5"
+                             MinimumPadding="0" MaximumPadding="0">
+          <GradientStop Color="#000083" Offset="0.0"/>
+          <GradientStop Color="#0000E7" Offset="0.1"/>
+          <GradientStop Color="#0050FF" Offset="0.2"/>
+          <GradientStop Color="#00B7FF" Offset="0.3"/>
+          <GradientStop Color="#1CFFE3" Offset="0.4"/>
+          <GradientStop Color="#83FF7C" Offset="0.5"/>
+          <GradientStop Color="#EFFF10" Offset="0.6"/>
+          <GradientStop Color="#FFAB00" Offset="0.7"/>
+          <GradientStop Color="#FF4800" Offset="0.8"/>
+          <GradientStop Color="#E30000" Offset="0.9"/>
+          <GradientStop Color="#800000" Offset="1.0"/>
+        </oxy:LinearColorAxis>
+      </oxy:Plot.Axes>
+
+      <oxy:Plot.Series>
+        <oxy:HeatMapSeries ColorAxisKey="Z"
+                           Data="{Binding RawData}"
+                           X0="-1" X1="1"
+                           Y0="-1" Y1="1"
+                           Margin="0"
+                           Padding="0"/>
+      </oxy:Plot.Series>
+
+    </oxy:Plot>
+  </Panel>
 
 </UserControl>

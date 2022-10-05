@@ -130,13 +130,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         Grid.ColumnSpan="2"
                         DataContext="{Binding GroupingConfigurator}"/>
 
-              <Separator Grid.Row="4"/>
+              <Separator Grid.Row="4" Margin="0 1 0 0"/>
 
               <CheckBox Grid.Row="6"
                         Content="Skip files where one or more grouping keys have no value"
                         IsChecked="{Binding GroupingKeysRequired}"/>
 
-              <Separator Grid.Row="8"/>
+              <Separator Grid.Row="8" Margin="0 1 0 0"/>
 
               <Panel Grid.Row="10">
                 <CheckBox Content="Filter by grouping keys"
@@ -344,7 +344,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     Command="{Binding SelectCachePathWithOpenFolderDialog}"/>
 
             <Separator Grid.Row="2" Grid.ColumnSpan="4"
-                       Margin="0 2"/>
+                       Margin="0 4"/>
 
             <eviews:EvaluationExporterConfiguratorView
                       Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4"

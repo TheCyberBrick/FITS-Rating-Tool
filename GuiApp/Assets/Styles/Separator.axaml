@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </Border>
 
         <Separator/>
-
+        
         <Menu>
           <MenuItem Header="Menu">
             <MenuItem Header="Item 1"/>
@@ -49,14 +49,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Setter Property="Height" Value="2"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Padding="{TemplateBinding Margin}"
-                Height="{TemplateBinding Height}"
+        <Border Height="{TemplateBinding Height}"
                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalAlignment}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <Grid Name="SeparatorGrid"
                 ColumnDefinitions="*"
-                RowDefinitions="1,1">
+                RowDefinitions="*,1,1,*">
             <Grid.Resources>
               <LinearGradientBrush x:Key="BorderSeparatorLight" StartPoint="0%,0%" EndPoint="100%,0%">
                 <LinearGradientBrush.GradientStops>
@@ -76,12 +75,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </LinearGradientBrush>
             </Grid.Resources>
             <Rectangle Name="SeparatorDark"
-                       Grid.Row="0"
+                       Grid.Row="1"
                        Height="1"
                        VerticalAlignment="Top"
                        Fill="{DynamicResource BorderSeparatorDark}"/>
             <Rectangle Name="SeparatorLight"
-                       Grid.Row="1"
+                       Grid.Row="2"
                        Height="1"
                        VerticalAlignment="Top"
                        Fill="{DynamicResource BorderSeparatorLight}"/>
@@ -97,13 +96,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Setter Property="Height" Value="NaN"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Padding="{TemplateBinding Margin}"
-                Width="{TemplateBinding Width}"
+        <Border Width="{TemplateBinding Width}"
                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                 VerticalAlignment="{TemplateBinding VerticalAlignment}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <Grid Name="SeparatorGrid"
-                ColumnDefinitions="1,1"
+                ColumnDefinitions="*,1,1,*"
                 RowDefinitions="*">
             <Grid.Resources>
               <LinearGradientBrush x:Key="BorderSeparatorLight" StartPoint="0%,0%" EndPoint="0%,100%">
@@ -124,12 +122,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </LinearGradientBrush>
             </Grid.Resources>
             <Rectangle Name="SeparatorDark"
-                       Grid.Column="0"
+                       Grid.Column="1"
                        Width="1"
                        HorizontalAlignment="Left"
                        Fill="{DynamicResource BorderSeparatorDark}"/>
             <Rectangle Name="SeparatorLight"
-                       Grid.Column="1"
+                       Grid.Column="2"
                        Width="1"
                        HorizontalAlignment="Left"
                        Fill="{DynamicResource BorderSeparatorLight}"/>

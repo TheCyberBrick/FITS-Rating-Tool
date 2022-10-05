@@ -16,6 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using ReactiveUI;
+using System.Reactive;
+
 namespace FitsRatingTool.GuiApp.UI.ImageAnalysis
 {
     public interface IImageAnalysisViewModel
@@ -35,7 +38,13 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis
 
         float Smoothness { get; set; }
 
+        bool WeightedSmoothing { get; set; }
+
+        bool NormalizeDimensions { get; set; }
+
         int Steps { get; set; }
+
+        bool HasSteps { get; }
 
         int HorizontalResolution { get; set; }
 
@@ -48,5 +57,9 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis
         double DataStepSize { get; }
 
         double[] DataSteps { get; }
+
+        int DataSamples { get; }
+
+        ReactiveCommand<Unit, Unit> Reset { get; }
     }
 }

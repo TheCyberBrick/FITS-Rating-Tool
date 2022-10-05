@@ -19,7 +19,6 @@
 using MathNet.Numerics.LinearAlgebra.Double;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FitsRatingTool.GuiApp.Models
@@ -89,11 +88,11 @@ namespace FitsRatingTool.GuiApp.Models
             return d <= 0.0f ? 0.0f : d * d * Math.Log(d);
         }
 
-        public bool Solve(List<Point> points, List<double> values, [NotNullWhen(true)] out Solution? solution)
+        public bool Solve(List<Point> points, List<double> values, [NotNullWhen(true)] out Solution? solution, List<double>? dynamicRegularization = null)
         {
             solution = null;
 
-            if (points.Count != values.Count || points.Count < 3)
+            if (points.Count != values.Count || (dynamicRegularization != null && dynamicRegularization.Count != values.Count) || points.Count < 3)
             {
                 return false;
             }
@@ -126,7 +125,8 @@ namespace FitsRatingTool.GuiApp.Models
 
             for (int i = 0; i < n; ++i)
             {
-                A[i, i] = Regularization * a2;
+                double r = Regularization + (dynamicRegularization != null ? dynamicRegularization[i] : 0.0);
+                A[i, i] = r * a2;
 
                 Point p = points[i];
 

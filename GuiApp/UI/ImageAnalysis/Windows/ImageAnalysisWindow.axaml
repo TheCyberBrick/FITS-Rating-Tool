@@ -55,7 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Border Grid.Column="0"
             Background="#FF383838"
             Classes="themed"
-            Padding="4">
+            Padding="8 4 4 4">
       <views:ImageAnalysisView DataContext="{Binding .}"/>
     </Border>
 
@@ -70,43 +70,77 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </StackPanel>
       </HeaderedContentControl.Header>
 
-      <Grid ColumnDefinitions="Auto,8,*"
-            RowDefinitions="Auto,4,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,16,*"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
 
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Measure" VerticalAlignment="Center" Margin="0 0 8 2"/>
         <ComboBox Grid.Column="2"
-                      SelectedIndex="{Binding DataKeyIndex}"
-                      HorizontalAlignment="Stretch">
+                  SelectedIndex="{Binding DataKeyIndex}"
+                  HorizontalAlignment="Stretch">
           <collections:ArrayList>
             <system:String>HFD</system:String>
             <system:String>FWHM</system:String>
             <system:String>Eccentricity</system:String>
             <system:String>Residual</system:String>
+            <system:String>Weight</system:String>
           </collections:ArrayList>
         </ComboBox>
 
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="Max. Samples:" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <Separator Grid.Row="1" Grid.ColumnSpan="3" Margin="0 4"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Samples" VerticalAlignment="Center" Margin="0 0 8 2"/>
         <Slider Grid.Row="2" Grid.Column="2"
                 Value="{Binding MaxSamples}"
                 Minimum="1" Maximum="1000"
                 MinWidth="80"
                 Margin="0 0 0 2"/>
 
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="Smoothness:" VerticalAlignment="Center" Margin="0 0 8 2"/>
-        <controls:PrecisionSlider Grid.Row="3" Grid.Column="2"
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Steps" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <Slider Grid.Row="3" Grid.Column="2"
+                Value="{Binding Steps}"
+                Minimum="0" Maximum="16"
+                Ticks="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+                IsSnapToTickEnabled="True"
+                MinWidth="80"
+                Margin="0 0 0 2"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Smoothness" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <controls:PrecisionSlider Grid.Row="4" Grid.Column="2"
                                   Value="{Binding Smoothness}"
                                   Minimum="0.0" Maximum="1.0"
                                   MinWidth="80"
                                   Margin="0 0 0 2"
-                                  PrecisionScale="0.01"/>
+                                  PrecisionScale="0.1"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="0" Text="Steps:" VerticalAlignment="Center" Margin="0 0 8 2"/>
-        <Slider Grid.Row="4" Grid.Column="2"
-                Value="{Binding Steps}"
-                Minimum="1" Maximum="16"
-                MinWidth="80"
-                Margin="0 0 0 2"/>
+        <Separator Grid.Row="5" Grid.ColumnSpan="3" Margin="0 4"/>
 
+        <CheckBox Grid.Row="6" Grid.ColumnSpan="3" Content="Weighted Smoothing" IsChecked="{Binding WeightedSmoothing}" ToolTip.Tip="If checked, the local smoothness will be based on the PSF weight. A large PSF weight results in less smoothing and vice versa."/>
+
+        <CheckBox Grid.Row="7" Grid.ColumnSpan="3" Content="Normalize Dimensions" IsChecked="{Binding NormalizeDimensions}"/>
+
+        <Separator Grid.Row="8" Grid.ColumnSpan="3" Margin="0 4"/>
+
+        <TextBlock Grid.Row="9" Grid.Column="0" Text="Used samples"/>
+        <TextBlock Grid.Row="9" Grid.Column="2" Text="{Binding DataSamples, FallbackValue=-}"/>
+
+        <Button Grid.Row="10" Grid.ColumnSpan="3"
+                Command="{Binding Reset}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Margin="0 4 0 0">
+          <Grid ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Column="0"
+                       Text="Reset"
+                       HorizontalAlignment="Left"
+                       Margin="4 0 0 0"/>
+            <Viewbox Grid.Column="2"
+                     Width="16" Height="16"
+                     HorizontalAlignment="Right"
+                     Margin="-2 -1 -2 -2">
+              <Image Source="/Assets/Icons/undo.png"/>
+            </Viewbox>
+          </Grid>
+        </Button>
       </Grid>
 
     </HeaderedContentControl>
