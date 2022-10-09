@@ -129,7 +129,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   VerticalAlignment="Bottom" HorizontalAlignment="Right"
                   Margin="1"
                   Command="{Binding ShowExternalImageAnalysis}"
-                  IsVisible="{Binding IsExternalImageAnalysisEnabled, FallbackValue=True}"
                   ToolTip.Tip="Image analysis">
             <Button.Styles>
               <Style Selector="Button Viewbox">
@@ -159,7 +158,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   VerticalAlignment="Top" HorizontalAlignment="Right"
                   Margin="1"
                   Command="{Binding ShowExternalViewer}"
-                  IsVisible="{Binding IsExternalViewerEnabled, FallbackValue=True}"
                   ToolTip.Tip="External viewer">
             <Button.Styles>
               <Style Selector="Button Viewbox">
@@ -189,7 +187,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   VerticalAlignment="Bottom" HorizontalAlignment="Right"
                   Margin="1"
                   Command="{Binding ShowExternalCornerViewer}"
-                  IsVisible="{Binding IsExternalCornerViewerEnabled, FallbackValue=True}"
                   ToolTip.Tip="Corner viewer">
             <Button.Styles>
               <Style Selector="Button Viewbox">

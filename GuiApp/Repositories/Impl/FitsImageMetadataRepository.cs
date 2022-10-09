@@ -21,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FitsRatingTool.FitsLoader.Models;
+using System.IO;
 
 namespace FitsRatingTool.GuiApp.Repositories.Impl
 {
@@ -28,7 +29,9 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
     {
         private class Metadata : IFitsImageMetadata
         {
-            public string File { get; private set; }
+            public string File { get; }
+
+            public string FileName => Path.GetFileName(File);
 
             private readonly List<IFitsImageHeaderRecord> records = new();
 

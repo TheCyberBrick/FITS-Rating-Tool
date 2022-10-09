@@ -75,27 +75,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private long _fileIdPlusOne;
         public long FileIdPlusOne => _fileIdPlusOne;
 
-        private bool _isExternalViewerEnabled = true;
-        public bool IsExternalViewerEnabled
-        {
-            get => _isExternalViewerEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isExternalViewerEnabled, value);
-        }
-
-        private bool _isExternalCornerViewerEnabled = true;
-        public bool IsExternalCornerViewerEnabled
-        {
-            get => _isExternalCornerViewerEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isExternalCornerViewerEnabled, value);
-        }
-
-        private bool _isExternalImageAnalysisEnabled = true;
-        public bool IsExternalImageAnalysisEnabled
-        {
-            get => _isExternalImageAnalysisEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isExternalImageAnalysisEnabled, value);
-        }
-
         private bool _isCornerViewerEnabled;
         public bool IsCornerViewerEnabled
         {

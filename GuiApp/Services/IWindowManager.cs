@@ -24,11 +24,11 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public interface IWindowManager
     {
-        public class WindowOpenedEventArgs : EventArgs
+        public class WindowEventArgs : EventArgs
         {
             public Window Window { get; }
 
-            public WindowOpenedEventArgs(Window window)
+            public WindowEventArgs(Window window)
             {
                 Window = window;
             }
@@ -40,6 +40,12 @@ namespace FitsRatingTool.GuiApp.Services
 
         IEnumerable<T> Get<T>() where T : Window;
 
-        event EventHandler<WindowOpenedEventArgs> WindowOpened;
+        void MinimizeAll();
+
+        void RestoreAll();
+
+        event EventHandler<WindowEventArgs> WindowOpened;
+
+        event EventHandler<WindowEventArgs> WindowClosed;
     }
 }

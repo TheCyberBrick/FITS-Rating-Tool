@@ -20,22 +20,23 @@ using FitsRatingTool.Common.Models.FitsImage;
 using System;
 using System.Collections.Generic;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using FitsRatingTool.GuiApp.Models;
 
 namespace FitsRatingTool.GuiApp.Services
 {
     public interface IFitsImageManager
     {
-        public interface IRecord
+        public interface IRecord : IFitsImageFile
         {
             long Id { get; }
-
-            string File { get; }
 
             IFitsImageStatisticsViewModel? Statistics { get; set; }
 
             IEnumerable<IFitsImagePhotometryViewModel>? Photometry { get; set; }
 
             IFitsImageMetadata? Metadata { get; set; }
+
+            IEnumerable<IFitsImageContainer> ImageContainers { get; }
 
             bool IsOutdated { get; set; }
 
@@ -46,7 +47,7 @@ namespace FitsRatingTool.GuiApp.Services
         {
             public enum DataType
             {
-                File, Statistics, Photometry, Metadata, Outdated
+                File, Statistics, Photometry, Metadata, ImageContainers, Outdated
             }
 
             public string File { get; }
@@ -78,6 +79,8 @@ namespace FitsRatingTool.GuiApp.Services
         IRecord GetOrAdd(string file);
 
         IRecord? Remove(string file);
+
+        IDisposable RegisterImageContainer(IFitsImageContainer container);
 
         event EventHandler<RecordChangedEventArgs> RecordChanged;
     }

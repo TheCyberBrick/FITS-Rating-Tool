@@ -21,10 +21,13 @@ using Avalonia.Visuals.Media.Imaging;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
@@ -32,23 +35,25 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
-    public class FitsImageViewModel : ViewModelBase, IFitsImageViewModel
+    public class FitsImageViewModel : ViewModelBase, IFitsImageViewModel, IFitsImageContainer
     {
         public class Factory : IFitsImageViewModel.IFactory
         {
             private readonly IFitsImageLoader imageLoader;
             private readonly IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory;
+            private readonly IFitsImageManager fitsImageManager;
             private readonly IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory;
             private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
             private readonly IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory;
             private readonly IAppConfig appConfig;
 
-            public Factory(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory,
+            public Factory(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
                 IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
                 IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IAppConfig appConfig)
             {
                 this.imageLoader = imageLoader;
                 this.fitsImageHeaderRecordFactory = fitsImageHeaderRecordFactory;
+                this.fitsImageManager = fitsImageManager;
                 this.fitsImageStatisticsProgressFactory = fitsImageStatisticsProgressFactory;
                 this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
                 this.fitsImagePhotometryFactory = fitsImagePhotometryFactory;
@@ -62,13 +67,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             public IFitsImageViewModel Create(string file, long maxInputSize = -1, int maxWidth = -1, int maxHeight = -1)
             {
-                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file,
+                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file,
                     maxInputSize < 0 ? appConfig.MaxImageSize : maxInputSize, maxWidth < 0 ? appConfig.MaxImageWidth : maxWidth, maxHeight < 0 ? appConfig.MaxImageHeight : maxHeight);
             }
 
             public IFitsImageViewModel Create(IFitsImage image)
             {
-                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image);
+                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image);
             }
         }
 
@@ -166,17 +171,19 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public string File { get; }
 
+        public string FileName => Path.GetFileName(File);
+
         private bool _isUpdating;
         public bool IsUpdating
         {
-            get { return _isUpdating; }
+            get => _isUpdating;
             private set { this.RaiseAndSetIfChanged(ref _isUpdating, value); }
         }
 
         private BitmapInterpolationMode _interpolationMode = BitmapInterpolationMode.HighQuality;
         public BitmapInterpolationMode InterpolationMode
         {
-            get { return _interpolationMode; }
+            get => _interpolationMode;
             set
             {
                 if (_interpolationMode != value)
@@ -242,9 +249,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
 
 
+        public ObservableCollection<IFitsImage> FitsImages { get; } = new();
+
+
 
         private readonly IFitsImage fitsImage;
         private readonly IDisposable fitsImageRef;
+        private IDisposable? fitsImageContainerRegistration;
 
         private FitsImageLoaderParameters loaderParameters = new() { monoColorOutline = false, saturation = 1.0f };
 
@@ -253,12 +264,14 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
 
         private readonly IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory;
+        private readonly IFitsImageManager fitsImageManager;
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory,
+        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file)
         {
             this.fitsImageHeaderRecordFactory = fitsImageHeaderRecordFactory;
+            this.fitsImageManager = fitsImageManager;
 
             fitsImage = null!; // Set in other constructors
             fitsImageRef = null!;
@@ -343,55 +356,71 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             });
         }
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory,
+        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IFitsImage image)
-            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image.File)
+            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image.File)
         {
             fitsImage = image;
             fitsImageRef = image.Ref();
+
             if (!image.IsImageDataValid)
             {
                 throw new Exception("Invalid FITS image data");
             }
+
             IsImageDataValid = true;
+
             Histogram = image.Histogram;
+
             Init();
         }
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory,
+        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file, long maxInputSize, int maxWidth, int maxHeight)
-            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file)
+            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file)
         {
             fitsImage = imageLoader.LoadFit(file, maxInputSize, maxWidth, maxHeight)!;
             if (fitsImage == null)
             {
                 throw new Exception($"Failed loading FITS '{file}'");
             }
+
             fitsImageRef = fitsImage.Ref();
+
             if (!fitsImage.LoadImageData(loaderParameters))
             {
                 throw new Exception($"Failed loading FITS '{file}': Invalid image data");
             }
+
             IsImageDataValid = fitsImage.IsImageDataValid;
+
             Histogram = fitsImage.Histogram;
+
             Init();
         }
 
         private void Init()
         {
             CloseFile(); // Close file after initial loading. When data needs to be read again it'll be reopened.
+
             this.WhenAnyValue(x => x.Bitmap).Subscribe(x =>
             {
                 this.RaisePropertyChanged(nameof(HasImage));
             });
+
             foreach (var record in fitsImage.Header.Values)
             {
                 _header.Add(fitsImageHeaderRecordFactory.Create(record));
             }
+
             fitsImage.ComputeStretch(out var stretch);
+
             SetStretchParameters(stretch);
+
+            FitsImages.Add(fitsImage);
+            fitsImageContainerRegistration = fitsImageManager.RegisterImageContainer(this);
         }
 
         private void SetStretchParameters(ImageStretchParameters p)
@@ -563,6 +592,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public void Dispose()
         {
+            fitsImageContainerRegistration?.Dispose();
+            fitsImageContainerRegistration = null;
+
             IsImageValid = false;
 
             var bitmap = Bitmap;

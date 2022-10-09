@@ -47,67 +47,25 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
 
                     d.Add(overlay.ShowExternalViewer.Subscribe(vm =>
                     {
-                        windowManager.Show(() =>
+                        windowManager.Show(() => new FitsImageViewerWindow()
                         {
-                            overlay.IsExternalViewerEnabled = false;
-
-                            var window = new FitsImageViewerWindow()
-                            {
-                                DataContext = vm
-                            };
-
-                            void onClosing(object? sender, EventArgs e)
-                            {
-                                overlay.IsExternalViewerEnabled = true;
-                                window.Closing -= onClosing;
-                            };
-                            window.Closing += onClosing;
-
-                            return window;
+                            DataContext = vm
                         }, false, w => w.DataContext == vm);
                     }));
 
                     d.Add(overlay.ShowExternalCornerViewer.Subscribe(vm =>
                     {
-                        windowManager.Show(() =>
+                        windowManager.Show(() => new FitsImageCornerViewerWindow()
                         {
-                            overlay.IsExternalCornerViewerEnabled = false;
-
-                            var window = new FitsImageCornerViewerWindow()
-                            {
-                                DataContext = vm
-                            };
-
-                            void onClosing(object? sender, EventArgs e)
-                            {
-                                overlay.IsExternalCornerViewerEnabled = true;
-                                window.Closing -= onClosing;
-                            };
-                            window.Closing += onClosing;
-
-                            return window;
+                            DataContext = vm
                         }, false, w => w.DataContext == vm);
                     }));
 
                     d.Add(overlay.ShowExternalImageAnalysis.Subscribe(vm =>
                     {
-                        windowManager.Show(() =>
+                        windowManager.Show(() => new ImageAnalysisWindow()
                         {
-                            overlay.IsExternalImageAnalysisEnabled = false;
-
-                            var window = new ImageAnalysisWindow()
-                            {
-                                DataContext = vm
-                            };
-
-                            void onClosing(object? sender, EventArgs e)
-                            {
-                                overlay.IsExternalImageAnalysisEnabled = true;
-                                window.Closing -= onClosing;
-                            };
-                            window.Closing += onClosing;
-
-                            return window;
+                            DataContext = vm
                         }, false, w => (w.DataContext as IImageAnalysisViewModel)?.File == vm.File);
                     }));
                 }

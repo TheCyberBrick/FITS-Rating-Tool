@@ -65,6 +65,18 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
 
             this.WhenActivated(d =>
             {
+                d.Add(this.GetObservable(WindowStateProperty).Subscribe(state =>
+                {
+                    if (state == WindowState.Minimized)
+                    {
+                        windowManager.MinimizeAll();
+                    }
+                    else
+                    {
+                        windowManager.RestoreAll();
+                    }
+                }));
+
                 if (ViewModel != null)
                 {
                     d.Add(ViewModel.Exit.Subscribe(_ => Close()));

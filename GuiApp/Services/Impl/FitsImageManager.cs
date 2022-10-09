@@ -24,6 +24,9 @@ using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using Avalonia.Utilities;
 using System.Threading;
+using FitsRatingTool.GuiApp.Models;
+using System.Collections.Specialized;
+using System.IO;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -34,6 +37,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             public long Id { get; }
 
             public string File { get; }
+
+            public string FileName => Path.GetFileName(File);
 
             public IFitsImageStatisticsViewModel? Statistics
             {
@@ -112,6 +117,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
+            private List<IFitsImageContainer> _containers = new();
+            public IEnumerable<IFitsImageContainer> ImageContainers => _containers;
+
             public bool IsValid => manager.fileRepository.ContainsFile(File);
 
 
@@ -131,10 +139,51 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     throw new InvalidOperationException("File '" + File + "' is no longer in the file repository");
                 }
             }
+
+            internal void OnContainerImageAdded(IFitsImageContainer container)
+            {
+                if (ContainsImage(container))
+                {
+                    if (!_containers.Contains(container))
+                    {
+                        _containers.Add(container);
+                    }
+                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, false);
+                }
+            }
+
+            internal void OnContainerImageRemoved(IFitsImageContainer container, bool forceRemove)
+            {
+                if (forceRemove || !ContainsImage(container))
+                {
+                    if (_containers.Remove(container))
+                    {
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, true);
+                    }
+                }
+                else
+                {
+                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, false);
+                }
+            }
+
+            private bool ContainsImage(IFitsImageContainer container)
+            {
+                foreach (var image in container.FitsImages)
+                {
+                    if (image.File == File)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         private readonly ConcurrentDictionary<string, Record> records = new();
         private long idCounter = -1;
+
+        private readonly ConcurrentDictionary<IFitsImageContainer, int> containers = new();
 
         private readonly IFileRepository fileRepository;
         private readonly IAnalysisRepository analysisRepository;
@@ -192,6 +241,20 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 fileRepository.AddFile(file);
 
                 NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.DataType.File, false);
+
+                lock (containers)
+                {
+                    foreach (var container in containers.Keys)
+                    {
+                        foreach (var image in container.FitsImages)
+                        {
+                            if (image.File == file)
+                            {
+                                record.OnContainerImageAdded(container);
+                            }
+                        }
+                    }
+                }
             }
             return record;
         }
@@ -213,16 +276,120 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return null;
         }
 
+        public IDisposable RegisterImageContainer(IFitsImageContainer container)
+        {
+            lock (containers)
+            {
+                if (containers.AddOrUpdate(container, 1, (p, i) => i + 1) == 1)
+                {
+                    var images = new List<IFitsImage>(container.FitsImages);
+
+                    container.FitsImages.CollectionChanged += OnContainerFitsImagesChanged;
+
+                    foreach (var image in images)
+                    {
+                        var record = Get(image.File);
+                        if (record is Record r)
+                        {
+                            r.OnContainerImageAdded(container);
+                        }
+                    }
+                }
+            }
+            return new ImageContainerRegistrationReleaser(this, container);
+        }
+
+        private void UnregisterImageContainer(IFitsImageContainer container)
+        {
+            lock (containers)
+            {
+                if (containers.AddOrUpdate(container, 0, (p, i) => i - 1) <= 0)
+                {
+                    var images = new List<IFitsImage>(container.FitsImages);
+
+                    container.FitsImages.CollectionChanged -= OnContainerFitsImagesChanged;
+
+                    if (containers.TryRemove(container, out var _))
+                    {
+                        foreach (var image in images)
+                        {
+                            var record = Get(image.File);
+                            if (record is Record r)
+                            {
+                                r.OnContainerImageRemoved(container, true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnContainerFitsImagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (sender is IFitsImageContainer container)
+            {
+                if (e.OldItems != null && (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Reset))
+                {
+                    foreach (var i in e.OldItems)
+                    {
+                        if (i is IFitsImage image)
+                        {
+                            var record = Get(image.File);
+                            if (record is Record r)
+                            {
+                                r.OnContainerImageRemoved(container, false);
+                            }
+                        }
+                    }
+                }
+
+                if (e.NewItems != null && (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Reset))
+                {
+                    foreach (var i in e.NewItems)
+                    {
+                        if (i is IFitsImage image)
+                        {
+                            var record = Get(image.File);
+                            if (record is Record r)
+                            {
+                                r.OnContainerImageAdded(container);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private event EventHandler<IFitsImageManager.RecordChangedEventArgs>? _recordChanged;
         public event EventHandler<IFitsImageManager.RecordChangedEventArgs> RecordChanged
         {
-            add
+            add => _recordChanged += value;
+            remove => _recordChanged -= value;
+        }
+
+        private class ImageContainerRegistrationReleaser : IDisposable
+        {
+            private readonly FitsImageManager manager;
+            private readonly IFitsImageContainer container;
+
+            private volatile bool disposed;
+
+            public ImageContainerRegistrationReleaser(FitsImageManager manager, IFitsImageContainer container)
             {
-                _recordChanged += value;
+                this.manager = manager;
+                this.container = container;
             }
-            remove
+
+            public void Dispose()
             {
-                _recordChanged -= value;
+                lock (this)
+                {
+                    if (!disposed)
+                    {
+                        disposed = true;
+                        manager.UnregisterImageContainer(container);
+                    }
+                }
             }
         }
     }

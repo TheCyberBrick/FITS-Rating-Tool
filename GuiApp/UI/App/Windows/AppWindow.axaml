@@ -34,7 +34,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         Foreground="#FFECECEC"
         FontFamily="Tahoma"
         FontSize="10.5"
-        DragDrop.AllowDrop="True">
+        DragDrop.AllowDrop="True"
+        Classes="pinnable">
 
   <Design.DataContext>
     <vm:AppViewModel/>

@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia;
 using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     public class WindowManager : IWindowManager
     {
         private readonly Dictionary<Type, List<Window>> windows = new();
+
+        private readonly Dictionary<Window, WindowState> restoreStates = new();
 
         public IEnumerable<Window> Windows => windows.SelectMany(pair => pair.Value);
 
@@ -65,9 +68,19 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 windows[type] = list ??= new();
                 list.Add(window);
 
+                var stateObservableSubscription = window.GetObservable(Window.WindowStateProperty).Subscribe(state =>
+                {
+                    if (state != WindowState.Minimized)
+                    {
+                        restoreStates.Remove(window);
+                    }
+                });
+
                 void onClosed(object? sender, EventArgs e)
                 {
                     window.Closed -= onClosed;
+
+                    stateObservableSubscription.Dispose();
 
                     if (windows.TryGetValue(type, out var currentList) && currentList != null)
                     {
@@ -77,12 +90,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                             windows.Remove(type);
                         }
                     }
+
+                    _windowClosed?.Invoke(this, new IWindowManager.WindowEventArgs(window));
                 }
                 window.Closed += onClosed;
 
                 window.Show();
 
-                _windowOpened?.Invoke(this, new IWindowManager.WindowOpenedEventArgs(window));
+                _windowOpened?.Invoke(this, new IWindowManager.WindowEventArgs(window));
 
                 return true;
             }
@@ -108,11 +123,39 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return new List<T>();
         }
 
-        private EventHandler<IWindowManager.WindowOpenedEventArgs>? _windowOpened;
-        public event EventHandler<IWindowManager.WindowOpenedEventArgs> WindowOpened
+        public void MinimizeAll()
+        {
+            foreach (var window in Windows)
+            {
+                restoreStates.TryAdd(window, window.WindowState);
+                window.WindowState = WindowState.Minimized;
+            }
+        }
+
+        public void RestoreAll()
+        {
+            foreach (var window in restoreStates.Keys)
+            {
+                if (restoreStates.TryGetValue(window, out var restoreState))
+                {
+                    window.WindowState = restoreState;
+                }
+            }
+            restoreStates.Clear();
+        }
+
+        private EventHandler<IWindowManager.WindowEventArgs>? _windowOpened;
+        public event EventHandler<IWindowManager.WindowEventArgs> WindowOpened
         {
             add => _windowOpened += value;
             remove => _windowOpened -= value;
+        }
+
+        private EventHandler<IWindowManager.WindowEventArgs>? _windowClosed;
+        public event EventHandler<IWindowManager.WindowEventArgs> WindowClosed
+        {
+            add => _windowClosed += value;
+            remove => _windowClosed -= value;
         }
     }
 }

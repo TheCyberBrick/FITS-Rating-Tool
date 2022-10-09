@@ -16,16 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.Common.Models.FitsImage;
+using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.Common.Models.FitsImage
+namespace FitsRatingTool.GuiApp.Models
 {
-    public interface IFitsImageMetadata : IFitsImageFile
+    public interface IFitsImageContainer
     {
-        int ImageWidth { get; }
-
-        int ImageHeight { get; }
-
-        IEnumerable<IFitsImageHeaderRecord> Header { get; }
+        ObservableCollection<IFitsImage> FitsImages { get; }
     }
 }

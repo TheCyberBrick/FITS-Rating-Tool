@@ -34,12 +34,6 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         long FileIdPlusOne { get; }
 
-        bool IsExternalViewerEnabled { get; set; }
-
-        bool IsExternalCornerViewerEnabled { get; set; }
-
-        bool IsExternalImageAnalysisEnabled { get; set; }
-
         bool IsCornerViewerEnabled { get; set; }
 
         double CornerViewerPercentage { get; set; }

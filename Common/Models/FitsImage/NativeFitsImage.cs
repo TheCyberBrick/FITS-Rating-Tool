@@ -88,6 +88,8 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         public string File { get; }
 
+        public string FileName => Path.GetFileName(File);
+
         private readonly Dictionary<string, FitsImageHeaderRecord> _header = new();
         public IReadOnlyDictionary<string, FitsImageHeaderRecord> Header { get => _header; }
 
