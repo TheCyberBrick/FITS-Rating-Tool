@@ -454,6 +454,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
                 prevImageFile = currentImageFile;
                 currentImageFile = file;
+
+                manager.CurrentFile = file;
             });
 
             this.WhenAnyValue(x => x.ThumbnailScale).Subscribe(x =>

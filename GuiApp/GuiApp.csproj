@@ -206,9 +206,6 @@
     <Compile Update="UI\FitsImage\Views\FitsImageMultiViewerView.axaml.cs">
       <DependentUpon>FitsImageMultiViewerView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="UI\FitsImage\Views\FitsImageViewerControlsView.axaml.cs">
-      <DependentUpon>FitsImageViewerControlsView.axaml</DependentUpon>
-    </Compile>
     <Compile Update="UI\FitsImage\Views\FitsImageViewerSettingsView.axaml.cs">
       <DependentUpon>FitsImageViewerSettingsView.axaml</DependentUpon>
     </Compile>

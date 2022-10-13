@@ -18,6 +18,7 @@
 
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageMultiViewerViewModel;
@@ -353,6 +354,15 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 }
             }
             return null;
+        }
+
+        public void Dispose()
+        {
+            List<Instance> instances = new(Instances);
+            foreach (var instance in instances)
+            {
+                RemoveInstance(instance);
+            }
         }
     }
 }

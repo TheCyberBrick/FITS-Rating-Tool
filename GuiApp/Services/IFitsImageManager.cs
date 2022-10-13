@@ -70,6 +70,19 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
+        public class CurrentFileChangedEventArgs : EventArgs
+        {
+            public string? OldFile { get; }
+
+            public string? NewFile { get; }
+
+            public CurrentFileChangedEventArgs(string? oldFile, string? newFile)
+            {
+                OldFile = oldFile;
+                NewFile = newFile;
+            }
+        }
+
         IReadOnlyList<string> Files { get; }
 
         bool Contains(string file);
@@ -80,8 +93,12 @@ namespace FitsRatingTool.GuiApp.Services
 
         IRecord? Remove(string file);
 
+        string? CurrentFile { get; set; }
+
         IDisposable RegisterImageContainer(IFitsImageContainer container);
 
         event EventHandler<RecordChangedEventArgs> RecordChanged;
+
+        event EventHandler<CurrentFileChangedEventArgs> CurrentFileChanged;
     }
 }

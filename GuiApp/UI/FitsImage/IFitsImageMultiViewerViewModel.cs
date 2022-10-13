@@ -24,7 +24,7 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public interface IFitsImageMultiViewerViewModel
+    public interface IFitsImageMultiViewerViewModel : IDisposable
     {
         public interface IFactory
         {

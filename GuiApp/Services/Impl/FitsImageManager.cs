@@ -367,6 +367,28 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             remove => _recordChanged -= value;
         }
 
+        private string? _currentFile;
+        public string? CurrentFile
+        {
+            get => _currentFile;
+            set
+            {
+                if (_currentFile != value)
+                {
+                    var old = _currentFile;
+                    _currentFile = value;
+                    _currentFileChanged?.Invoke(this, new IFitsImageManager.CurrentFileChangedEventArgs(old, value));
+                }
+            }
+        }
+
+        private event EventHandler<IFitsImageManager.CurrentFileChangedEventArgs>? _currentFileChanged;
+        public event EventHandler<IFitsImageManager.CurrentFileChangedEventArgs> CurrentFileChanged
+        {
+            add => _currentFileChanged += value;
+            remove => _currentFileChanged -= value;
+        }
+
         private class ImageContainerRegistrationReleaser : IDisposable
         {
             private readonly FitsImageManager manager;

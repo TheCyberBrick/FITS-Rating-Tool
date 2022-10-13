@@ -73,7 +73,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             public IFitsImageViewModel Create(IFitsImage image)
             {
-                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image);
+                return new FitsImageViewModel(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image);
             }
         }
 
@@ -266,7 +266,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory;
         private readonly IFitsImageManager fitsImageManager;
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
+        private FitsImageViewModel(IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file)
         {
@@ -356,10 +356,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             });
         }
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
+        private FitsImageViewModel(IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IFitsImage image)
-            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image.File)
+            : this(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image.File)
         {
             fitsImage = image;
             fitsImageRef = image.Ref();
@@ -379,7 +379,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
             IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
             IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file, long maxInputSize, int maxWidth, int maxHeight)
-            : this(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file)
+            : this(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file)
         {
             fitsImage = imageLoader.LoadFit(file, maxInputSize, maxWidth, maxHeight)!;
             if (fitsImage == null)

@@ -1,4 +1,4 @@
-/*
+﻿/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,21 +16,24 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using System;
+using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.GuiApp.UI.FitsImage.Views
+namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public partial class FitsImageViewerControlsView : UserControl
+    public interface IFitsImageSelectorViewModel : IDisposable
     {
-        public FitsImageViewerControlsView()
+        public interface IFactory
         {
-            InitializeComponent();
+            IFitsImageSelectorViewModel Create();
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        ObservableCollection<string> Files { get; }
+
+        bool SelectCurrentFile { get; set; }
+
+        string? SelectedFile { get; set; }
+
+        IFitsImageViewModel? SelectedImage { get; }
     }
 }

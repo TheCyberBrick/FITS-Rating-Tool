@@ -50,15 +50,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <Border Background="#FF383838">
     <Panel>
       <views:FitsImageViewerView DataContext="{Binding .}"/>
-
-      <TextBlock Text="(Too many stars - only a subset is shown)" VerticalAlignment="Top" Margin="8 8 0 0">
-        <TextBlock.IsVisible>
-          <MultiBinding Converter="{x:Static BoolConverters.And}">
-            <Binding Path="IsShownPhotometryIncomplete"/>
-            <Binding Path="ShowPhotometry"/>
-          </MultiBinding>
-        </TextBlock.IsVisible>
-      </TextBlock>
     </Panel>
   </Border>
 
