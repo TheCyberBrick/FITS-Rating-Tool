@@ -48,11 +48,14 @@ namespace FitsRatingTool.GuiApp.Services
 
             if (!container.IsInitialized)
             {
-                void onInitialized(Template? initTemplate)
+                void onInitialized(IList<(Template Template, T Instance)> initInstances)
                 {
-                    if (EqualityComparer<Template>.Default.Equals(template, initTemplate))
+                    foreach (var kv in initInstances)
                     {
-                        consumer.Invoke(allowNull ? container.InstanceOrNull : container.Instance);
+                        if (EqualityComparer<Template>.Default.Equals(kv.Template, template))
+                        {
+                            consumer.Invoke(kv.Instance);
+                        }
                     }
                     container.OnInitialized -= onInitialized;
                 }

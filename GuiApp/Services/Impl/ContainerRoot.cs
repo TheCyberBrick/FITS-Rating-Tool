@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -38,7 +39,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 lifecycle.Initialize(null, null);
                 container.Instantiate(template);
-                return lifecycle;
+                return Disposable.Create(() => lifecycle.Clear(true));
             }
             else
             {

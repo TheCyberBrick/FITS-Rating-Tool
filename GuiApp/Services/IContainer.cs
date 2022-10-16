@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -26,11 +27,11 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IContainer<T, Template> : INotifyPropertyChanged, INotifyPropertyChanging
         where T : class
     {
-        object? Owner { get; }
-
         bool IsInitialized { get; }
 
         IContainer<T, Template> Instantiate(Template template);
+
+        void Remove(T instance);
 
         void Clear();
 
@@ -40,7 +41,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         IObservable<T?> WhenChanged { get; }
 
-        event Action<Template?> OnInitialized;
+        event Action<IList<(Template Template, T Instance)>> OnInitialized;
     }
 
     public interface IRegistrar<T, Template>
@@ -68,11 +69,9 @@ namespace FitsRatingTool.GuiApp.Services
         void OnInstantiated();
     }
 
-    public interface IContainerLifecycle : IDisposable
+    public interface IContainerLifecycle
     {
-        object? Instance { get; }
-
-        void Initialize(IContainerLifecycle? parent, object? owner);
+        void Initialize(IContainerLifecycle? parent, object? dependee);
 
         void Clear(bool dispose);
     }

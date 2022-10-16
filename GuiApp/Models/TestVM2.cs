@@ -10,6 +10,10 @@ namespace FitsRatingTool.GuiApp.Models
 {
     internal class TestVM2 : ITestVM2, IDisposable, IContainerEvents
     {
+        private static long idCt = 0;
+
+        private long id;
+
         private string someValue;
 
         public TestVM2(IRegistrar<ITestVM2, ITestVM2.Args> reg)
@@ -21,7 +25,8 @@ namespace FitsRatingTool.GuiApp.Models
 
         private TestVM2(ITestVM2.Args args, IFitsImageManager manager, IService1 svc)
         {
-            Debug.WriteLine("TestVM2 created");
+            id = idCt++;
+            Debug.WriteLine("TestVM2 (" + id + ") created");
             someValue = args.name;
             this.svc = svc;
         }
@@ -30,32 +35,37 @@ namespace FitsRatingTool.GuiApp.Models
         {
             svc.Run("TestVM2");
 
-            Debug.WriteLine("TestVM2: " + someValue);
+            Debug.WriteLine("TestVM2 (" + id + "): " + someValue);
         }
 
         public void Dispose()
         {
-            Debug.WriteLine("TestVM2 Dispose");
+            Debug.WriteLine("TestVM2 (" + id + ") Dispose");
         }
 
         void IContainerEvents.OnAdded(object dependency)
         {
-            Debug.WriteLine("TestVM2 OnAdded: " + dependency);
+            Debug.WriteLine("TestVM2 (" + id + ") OnAdded: " + dependency);
         }
 
         void IContainerEvents.OnRemoved(object dependency)
         {
-            Debug.WriteLine("TestVM2 OnRemoved: " + dependency);
+            Debug.WriteLine("TestVM2 (" + id + ") OnRemoved: " + dependency);
         }
 
         void IContainerEvents.OnAddedTo(object dependee)
         {
-            Debug.WriteLine("TestVM2 OnAddedTo: " + dependee);
+            Debug.WriteLine("TestVM2 (" + id + ") OnAddedTo: " + dependee);
         }
 
         void IContainerEvents.OnInstantiated()
         {
-            Debug.WriteLine("TestVM2 OnInstantiated");
+            Debug.WriteLine("TestVM2 (" + id + ") OnInstantiated");
+        }
+
+        public override string ToString()
+        {
+            return "TestVM2 (" + id + ")";
         }
     }
 }

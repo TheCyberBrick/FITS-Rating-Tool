@@ -10,6 +10,10 @@ namespace FitsRatingTool.GuiApp.Models
 {
     internal class TestVM1 : ITestVM1, IDisposable, IContainerEvents
     {
+        private static long idCt = 0;
+
+        private long id;
+
         public static readonly object MY_SCOPE = "TestVM1 Scope";
 
         private string someValue;
@@ -27,8 +31,10 @@ namespace FitsRatingTool.GuiApp.Models
 
         private TestVM1(ITestVM1.Args args, IFitsImageManager manager, IContainer<ITestVM2, ITestVM2.Args> testVm2Container, IService1 svc)
         {
-            Debug.WriteLine("TestVM1 created");
+            id = idCt++;
+
             someValue = args.name;
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") created");
             this.manager = manager;
             this.svc = svc;
             this.testVm2Container = testVm2Container;
@@ -38,44 +44,49 @@ namespace FitsRatingTool.GuiApp.Models
         {
             var a = new ITestVM2.Args();
 
-            svc.Run("TestVM1.1");
+            svc.Run("TestVM1 (" + id + ", " + someValue + ") 1");
 
             a.name = "123";
             testVm2Container.Instantiate(a);
-            Debug.WriteLine("TestVM1.1: " + someValue + " " + manager);
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") 2: " + someValue + " " + manager);
             testVm2Container.Instance.DoSomething();
 
             a.name = "456";
             testVm2Container.Instantiate(a);
-            Debug.WriteLine("TestVM1.2: " + someValue + " " + manager);
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") 3: " + someValue + " " + manager);
             testVm2Container.Instance.DoSomething();
 
-            svc.Run("TestVM1.2");
+            svc.Run("TestVM1 (" + id + ", " + someValue + ") 4");
         }
 
         public void Dispose()
         {
-            Debug.WriteLine("TestVM1 Dispose");
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") Dispose");
         }
 
         void IContainerEvents.OnAdded(object dependency)
         {
-            Debug.WriteLine("TestVM1 OnAdded: " + dependency);
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnAdded: " + dependency);
         }
 
         void IContainerEvents.OnRemoved(object dependency)
         {
-            Debug.WriteLine("TestVM1 OnRemoved: " + dependency);
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnRemoved: " + dependency);
         }
 
         void IContainerEvents.OnAddedTo(object dependee)
         {
-            Debug.WriteLine("TestVM1 OnAddedTo: " + dependee);
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnAddedTo: " + dependee);
         }
 
         void IContainerEvents.OnInstantiated()
         {
-            Debug.WriteLine("TestVM1 OnInstantiated");
+            Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnInstantiated");
+        }
+
+        public override string ToString()
+        {
+            return "TestVM1 (" + id + ", " + someValue + ")";
         }
     }
 }

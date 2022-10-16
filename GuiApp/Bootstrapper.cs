@@ -104,7 +104,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
 
             // App
-            container.Register(typeof(IContainer<,>), typeof(Container<,>), setup: Setup.With(allowDisposableTransient: true));
+            container.Register(typeof(IContainer<,>), typeof(Container<,>));
             container.Register(typeof(IContainerRoot<,>), typeof(ContainerRoot<,>));
             container.Register<IWindowManager, WindowManager>(Reuse.Singleton);
             container.Register<IFitsImageManager, FitsImageManager>(Reuse.Singleton);

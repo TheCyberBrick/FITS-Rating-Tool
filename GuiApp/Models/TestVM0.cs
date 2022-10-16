@@ -24,26 +24,40 @@ namespace FitsRatingTool.GuiApp.Models
 
         public ITestVM1 TestVm1 { get; private set; }
 
-        private TestVM0(ITestVM0.Args args, /*IContainer<ITestVM1, ITestVM1.Args> testVm1Container*/Func<IContainer<ITestVM1, ITestVM1.Args>> testVm1ContainerF, IContainer<ITestVM2, ITestVM2.Args> testVm2Container)
+        private readonly IContainer<ITestVM1, ITestVM1.Args> testVm1Container2;
+
+        private TestVM0(ITestVM0.Args args, /*IContainer<ITestVM1, ITestVM1.Args> testVm1Container*/Func<IContainer<ITestVM1, ITestVM1.Args>> testVm1ContainerF/*, IContainer<ITestVM2, ITestVM2.Args> testVm2Container*/)
         {
             Debug.WriteLine("TestVM0 created");
 
-            var testVm1Container1 = testVm1ContainerF();
-
             var a = new ITestVM1.Args();
-            a.name = "ABC";
-            testVm1Container1.Instantiate(a);
 
-            testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
-            //initContainers(testVm1Container1);
+            /*var testVm1Container1 = testVm1ContainerF();
 
-            testVm1Container1.WhenChanged.Subscribe(vm => TestVm1 = vm!);
-
-            var testVm1Container2 = testVm1ContainerF();
+            a.name = "I1";
+            //testVm1Container1.Instantiate(a);
 
             a = new ITestVM1.Args();
-            a.name = "DEF";
+            a.name = "I2";
+            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
+
+            a = new ITestVM1.Args();
+            a.name = "I4";
+            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
+            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
+            //initContainers(testVm1Container1);
+
+            testVm1Container1.WhenChanged.Subscribe(vm => TestVm1 = vm!);*/
+
+            testVm1Container2 = testVm1ContainerF();
+            //testVm1Container2 = testVm1Container;
+
+            a = new ITestVM1.Args();
+            a.name = "I3";
             testVm1Container2.Instantiate(a);
+            testVm1Container2.Instantiate(a);
+            testVm1Container2.Instantiate(a);
+            //testVm1Container2.Inject(a, vm => testVm1Container2.Remove(vm));
 
             testVm1Container2.WhenChanged.Subscribe(vm => TestVm1 = vm!);
         }
@@ -56,7 +70,15 @@ namespace FitsRatingTool.GuiApp.Models
 
         public void Test()
         {
-            TestVm1.DoSomething();
+            var a = new ITestVM1.Args();
+            a = new ITestVM1.Args();
+            a.name = "I3";
+
+            //testVm1Container2.Instantiate(a);
+
+            //testVm1Container2.Remove(TestVm1);
+            
+            TestVm1?.DoSomething();
 
             /*testVm2Container.Instantiate(new ITestVM2.Args());
             testVm2Container.Instance.DoSomething();*/
@@ -85,6 +107,11 @@ namespace FitsRatingTool.GuiApp.Models
         void IContainerEvents.OnInstantiated()
         {
             Debug.WriteLine("TestVM0 OnInstantiated");
+        }
+
+        public override string ToString()
+        {
+            return "TestVM0";
         }
     }
 }
