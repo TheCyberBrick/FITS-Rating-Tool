@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Models
 {
-    internal class TestVM2 : ITestVM2, IDisposable, IContainerEvents
+    internal class TestVM2 : ITestVM2, IDisposable, IContainerRelations, IContainerInstantiation
     {
         private static long idCt = 0;
 
@@ -43,22 +43,22 @@ namespace FitsRatingTool.GuiApp.Models
             Debug.WriteLine("TestVM2 (" + id + ") Dispose");
         }
 
-        void IContainerEvents.OnAdded(object dependency)
+        void IContainerRelations.OnAdded(object dependency)
         {
             Debug.WriteLine("TestVM2 (" + id + ") OnAdded: " + dependency);
         }
 
-        void IContainerEvents.OnRemoved(object dependency)
+        void IContainerRelations.OnRemoved(object dependency)
         {
             Debug.WriteLine("TestVM2 (" + id + ") OnRemoved: " + dependency);
         }
 
-        void IContainerEvents.OnAddedTo(object dependee)
+        void IContainerRelations.OnAddedTo(object dependee)
         {
             Debug.WriteLine("TestVM2 (" + id + ") OnAddedTo: " + dependee);
         }
 
-        void IContainerEvents.OnInstantiated()
+        void IContainerInstantiation.OnInstantiated()
         {
             Debug.WriteLine("TestVM2 (" + id + ") OnInstantiated");
         }

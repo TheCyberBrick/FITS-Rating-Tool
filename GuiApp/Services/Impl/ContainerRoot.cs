@@ -39,7 +39,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 lifecycle.Initialize(null, null);
                 container.Instantiate(template);
-                return Disposable.Create(() => lifecycle.Clear(true));
+                return Disposable.Create(() => lifecycle.Destroy(true));
             }
             else
             {

@@ -79,7 +79,7 @@ namespace FitsRatingTool.GuiApp
 
             var d = container.Resolve<IContainerRoot<ITestVM0, ITestVM0.Args>>().Instantiate(new ITestVM0.Args(), out var c0);
 
-            c0.Instance.Test();
+            c0.GetAny().Test();
 
             d.Dispose();
         }

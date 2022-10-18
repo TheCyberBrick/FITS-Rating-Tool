@@ -18,52 +18,43 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FitsRatingTool.GuiApp.Services
 {
     public static class IContainerExtensions
     {
-        public static T Inject<T, Template>(this IContainer<T, Template> container, Template template)
+        public static T GetAny<T, Template>(this IContainer<T, Template> container)
             where T : class
         {
-            return container.Instantiate(template).Instance;
+            return container.FirstOrDefault() ?? throw new InvalidOperationException("No instance");
+        }
+        public static T? GetAnyOrDefault<T, Template>(this IContainer<T, Template> container)
+            where T : class
+        {
+            return container.FirstOrDefault();
         }
 
-        public static T? Inject<T, Template>(this IContainer<T, Template> container, Template template, bool allowNull = true)
+        public static void Inject<T, Template>(this IContainer<T, Template> container, Template template, Action<T>? consumer = null)
             where T : class
         {
-            return container.Instantiate(template).InstanceOrNull;
-        }
-
-        public static void Inject<T, Template>(this IContainer<T, Template> container, Template template, Action<T> consumer)
-            where T : class
-        {
-            Inject(container, template, (Action<T?>)consumer, false);
-        }
-
-        public static void Inject<T, Template>(this IContainer<T, Template> container, Template template, Action<T?> consumer, bool allowNull = true)
-            where T : class
-        {
-            container.Instantiate(template);
-
+            void activate()
+            {
+                var instance = container.Instantiate(template);
+                consumer?.Invoke(instance);
+            }
             if (!container.IsInitialized)
             {
-                void onInitialized(IList<(Template Template, T Instance)> initInstances)
+                void onInitialized()
                 {
-                    foreach (var kv in initInstances)
-                    {
-                        if (EqualityComparer<Template>.Default.Equals(kv.Template, template))
-                        {
-                            consumer.Invoke(kv.Instance);
-                        }
-                    }
                     container.OnInitialized -= onInitialized;
+                    activate();
                 }
                 container.OnInitialized += onInitialized;
             }
             else
             {
-                consumer.Invoke(allowNull ? container.InstanceOrNull : container.Instance);
+                activate();
             }
         }
     }

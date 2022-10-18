@@ -2,6 +2,7 @@
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Models
 {
-    internal class TestVM0 : ReactiveObject, ITestVM0, IDisposable, IContainerEvents
+    internal class TestVM0 : ReactiveObject, ITestVM0, IDisposable, IContainerRelations, IContainerInstantiation
     {
         // Designer only
         public TestVM0()
@@ -32,34 +33,36 @@ namespace FitsRatingTool.GuiApp.Models
 
             var a = new ITestVM1.Args();
 
-            /*var testVm1Container1 = testVm1ContainerF();
+            var testVm1Container1 = testVm1ContainerF();
 
             a.name = "I1";
             //testVm1Container1.Instantiate(a);
 
+            //testVm1Container1.ToSingletonWithObservable().Subscribe(vm => MyVm = vm);
+
             a = new ITestVM1.Args();
             a.name = "I2";
-            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
+            testVm1Container1/*.ToSingleton()*/.Inject(a, (vm) => Debug.WriteLine("Injected: " + vm));
 
             a = new ITestVM1.Args();
             a.name = "I4";
-            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
-            //testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Assigned: " + vm));
+            testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Injected: " + vm));
+            testVm1Container1.Inject(a, (vm) => Debug.WriteLine("Injected: " + vm));
             //initContainers(testVm1Container1);
 
-            testVm1Container1.WhenChanged.Subscribe(vm => TestVm1 = vm!);*/
+            //testVm1Container1.WhenChanged.Subscribe(vm => TestVm1 = vm!);
 
             testVm1Container2 = testVm1ContainerF();
             //testVm1Container2 = testVm1Container;
 
             a = new ITestVM1.Args();
             a.name = "I3";
-            testVm1Container2.Instantiate(a);
-            testVm1Container2.Instantiate(a);
-            testVm1Container2.Instantiate(a);
+            testVm1Container2.Inject(a);
+            testVm1Container2.Inject(a);
+            testVm1Container2.Inject(a);
             //testVm1Container2.Inject(a, vm => testVm1Container2.Remove(vm));
 
-            testVm1Container2.WhenChanged.Subscribe(vm => TestVm1 = vm!);
+            testVm1Container2.ToSingletonWithObservable().Subscribe(vm => TestVm1 = vm!);
         }
 
         [MemberNotNull(nameof(TestVm1))]
@@ -77,7 +80,7 @@ namespace FitsRatingTool.GuiApp.Models
             //testVm1Container2.Instantiate(a);
 
             //testVm1Container2.Remove(TestVm1);
-            
+
             TestVm1?.DoSomething();
 
             /*testVm2Container.Instantiate(new ITestVM2.Args());
@@ -89,22 +92,22 @@ namespace FitsRatingTool.GuiApp.Models
             Debug.WriteLine("TestVM0 Dispose");
         }
 
-        void IContainerEvents.OnAdded(object dependency)
+        void IContainerRelations.OnAdded(object dependency)
         {
             Debug.WriteLine("TestVM0 OnAdded: " + dependency);
         }
 
-        void IContainerEvents.OnRemoved(object dependency)
+        void IContainerRelations.OnRemoved(object dependency)
         {
             Debug.WriteLine("TestVM0 OnRemoved: " + dependency);
         }
 
-        void IContainerEvents.OnAddedTo(object dependee)
+        void IContainerRelations.OnAddedTo(object dependee)
         {
             Debug.WriteLine("TestVM0 OnAddedTo: " + dependee);
         }
 
-        void IContainerEvents.OnInstantiated()
+        void IContainerInstantiation.OnInstantiated()
         {
             Debug.WriteLine("TestVM0 OnInstantiated");
         }

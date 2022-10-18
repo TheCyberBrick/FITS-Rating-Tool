@@ -18,39 +18,44 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public interface IContainer<T, Template> : INotifyPropertyChanged, INotifyPropertyChanging
+    public interface IContainer<T, Template> : IReadOnlyContainer<T>
+        where T : class
+    {
+        IContainer<T, Template> ToSingleton();
+
+        IObservable<T?> ToSingletonWithObservable();
+
+        T Instantiate(Template template);
+
+        void Destroy(T instance);
+
+        void Destroy();
+    }
+
+    public interface IReadOnlyContainer<T> : IReadOnlyCollection<T>, INotifyPropertyChanged, INotifyPropertyChanging, INotifyCollectionChanged
         where T : class
     {
         bool IsInitialized { get; }
 
-        IContainer<T, Template> Instantiate(Template template);
+        event Action OnInitialized;
 
-        void Remove(T instance);
-
-        void Clear();
-
-        T Instance { get; }
-
-        T? InstanceOrNull { get; }
-
-        IObservable<T?> WhenChanged { get; }
-
-        event Action<IList<(Template Template, T Instance)>> OnInitialized;
+        bool IsSingleton { get; }
     }
 
     public interface IRegistrar<T, Template>
         where T : class
     {
-        object ClassScope { get; }
+        object ClassScopeName { get; }
 
         [DoesNotReturn]
-        void RegisterAndReturn<TImpl>(object? scope = null, ConstructorInfo? constructor = null) where TImpl : class, T;
+        void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null) where TImpl : class, T;
     }
 
     [AttributeUsage(AttributeTargets.Constructor)]
@@ -58,21 +63,24 @@ namespace FitsRatingTool.GuiApp.Services
     {
     }
 
-    public interface IContainerEvents
+    public interface IContainerInstantiation
+    {
+        void OnInstantiated();
+    }
+
+    public interface IContainerRelations
     {
         void OnAdded(object dependency);
 
         void OnRemoved(object dependency);
 
         void OnAddedTo(object dependee);
-
-        void OnInstantiated();
     }
 
     public interface IContainerLifecycle
     {
         void Initialize(IContainerLifecycle? parent, object? dependee);
 
-        void Clear(bool dispose);
+        void Destroy(bool dispose);
     }
 }

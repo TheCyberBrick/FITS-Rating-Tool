@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Models
 {
-    internal interface ITestVM0
+    public interface ITestVM0
     {
         public class Args
         {

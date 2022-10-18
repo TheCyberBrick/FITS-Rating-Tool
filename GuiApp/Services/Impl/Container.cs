@@ -19,8 +19,10 @@
 using DryIoc;
 using ReactiveUI;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -34,12 +36,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private IContainerLifecycle? parent;
         private object? dependee;
 
+        private bool _isSingleton;
+        public bool IsSingleton
+        {
+            get => _isSingleton;
+            private set => this.RaiseAndSetIfChanged(ref _isSingleton, value);
+        }
 
-        private T? _instance;
-
-        public T Instance => _instance ?? throw new InvalidOperationException("Instance is null");
-
-        public T? InstanceOrNull => _instance;
+        public int Count => instance2Scope.Count;
 
 
         private bool _initialized;
@@ -47,17 +51,19 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public bool IsInitialized
         {
             get => _initialized;
-            set => this.RaiseAndSetIfChanged(ref _initialized, value);
+            private set => this.RaiseAndSetIfChanged(ref _initialized, value);
         }
 
-        public IObservable<T?> WhenChanged => this;
+        public IObservable<T?> WhenAny => this;
 
-        private Action<IList<(Template Template, T Instance)>>? _onInitialized;
-        public event Action<IList<(Template Template, T Instance)>> OnInitialized
+        private Action? _onInitialized;
+        public event Action OnInitialized
         {
             add => _onInitialized += value;
             remove => _onInitialized -= value;
         }
+
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
 
         private readonly Dictionary<IResolverContext, T> scope2Instance = new();
@@ -65,7 +71,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> scope2Dependencies = new();
         private readonly HashSet<IResolverContext> scopes = new();
 
-        private readonly List<Template> templates = new();
         private readonly List<IObserver<T?>> observers = new();
 
         private bool disposed;
@@ -137,6 +142,36 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
+        public IContainer<T, Template> ToSingleton()
+        {
+            ChangeToSingleton();
+            return this;
+        }
+
+        public IObservable<T?> ToSingletonWithObservable()
+        {
+            ChangeToSingleton();
+            return this;
+        }
+
+        private void ChangeToSingleton()
+        {
+            lock (this)
+            {
+                CheckDisposed();
+
+                if (!IsSingleton)
+                {
+                    if (IsInitialized)
+                    {
+                        throw new InvalidOperationException("Cannot change container to singleton after initialization");
+                    }
+
+                    IsSingleton = true;
+                }
+            }
+        }
+
         private void OnDependencyInjected(IContainerLifecycle lifecycle, IResolverContext scope)
         {
             lock (this)
@@ -171,162 +206,129 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 IsInitialized = true;
 
-                List<(Template Template, T Instance)> initInstances = new();
-
-                try
-                {
-                    foreach (var template in templates)
-                    {
-                        initInstances.Add((template, InstantiateImmediate(template)));
-                    }
-                }
-                finally
-                {
-                    templates.Clear();
-                }
-
-                _onInitialized?.Invoke(initInstances);
+                _onInitialized?.Invoke();
             }
         }
 
         private static void NotifyEventListenersOnAdded(object dependee, object dependency)
         {
             // Notify dependency about being added to dependee
-            (dependency as IContainerEvents)?.OnAddedTo(dependee);
+            (dependency as IContainerRelations)?.OnAddedTo(dependee);
 
             // Notify dependee about added dependency
-            (dependee as IContainerEvents)?.OnAdded(dependency);
+            (dependee as IContainerRelations)?.OnAdded(dependency);
         }
 
-        public IContainer<T, Template> Instantiate(Template template)
+        public T Instantiate(Template template)
         {
-            CheckDisposed();
-
             lock (this)
             {
+                CheckDisposed();
+
                 if (!IsInitialized)
                 {
-                    templates.Add(template);
+                    throw new InvalidOperationException("Cannot instantiate before container is initialized");
                 }
                 else
                 {
-                    InstantiateImmediate(template);
-                }
-            }
-
-            return this;
-        }
-
-        private T InstantiateImmediate(Template template)
-        {
-            // TODO Clear property?
-            return InstantiateImmediate(template, false);
-        }
-
-        private T InstantiateImmediate(Template template, bool clear)
-        {
-            if (clear)
-            {
-                Clear();
-            }
-
-            // Open a new scope with the scope previously
-            // passed by T to the registrar
-            var newScope = container.OpenScope(scopeName);
-            scopes.Add(newScope);
-
-            T? newInstance = null;
-            try
-            {
-                // Create a new instance
-                newInstance = newScope.Resolve<Func<Template, T>>().Invoke(template);
-
-                // Initialize injected dependencies
-                foreach (var dependencies in scope2Dependencies.Values)
-                {
-                    foreach (var dependency in dependencies)
+                    if (IsSingleton)
                     {
-                        dependency.Initialize(this, newInstance);
+                        Destroy();
+                    }
+
+                    // Open a new scope with the scope previously
+                    // passed by T to the registrar
+                    var newScope = container.OpenScope(scopeName);
+                    scopes.Add(newScope);
+
+                    T? newInstance = null;
+                    try
+                    {
+                        // Create a new instance
+                        newInstance = newScope.Resolve<Func<Template, T>>().Invoke(template);
+
+                        // Initialize injected dependencies
+                        foreach (var dependencies in scope2Dependencies.Values)
+                        {
+                            foreach (var dependency in dependencies)
+                            {
+                                dependency.Initialize(this, newInstance);
+                            }
+                        }
+
+                        this.RaisePropertyChanging(nameof(Count));
+
+                        scope2Instance.Add(newScope, newInstance);
+                        instance2Scope.Add(newInstance, newScope);
+
+                        this.RaisePropertyChanged(nameof(Count));
+
+                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newInstance));
+
+                        if (dependee != null)
+                        {
+                            NotifyEventListenersOnAdded(dependee: dependee, dependency: newInstance);
+                        }
+
+                        // Notify observers about added dependency
+                        foreach (var observer in observers)
+                        {
+                            observer.OnNext(newInstance);
+                        }
+
+                        // Notify instance about completed instantiation
+                        (newInstance as IContainerInstantiation)?.OnInstantiated();
+
+                        return newInstance;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (newInstance != null)
+                        {
+                            Destroy(newInstance);
+
+                            if (scopes.Remove(newScope))
+                            {
+                                newScope.Dispose();
+                            }
+                        }
+
+                        foreach (var observer in observers)
+                        {
+                            observer.OnError(ex);
+                        }
+
+                        throw;
                     }
                 }
-
-                // TODO Notify 
-                scope2Instance.Add(newScope, newInstance);
-                instance2Scope.Add(newInstance, newScope);
-
-                this.RaisePropertyChanging(nameof(Instance));
-                this.RaisePropertyChanging(nameof(InstanceOrNull));
-                _instance = newInstance;
-                this.RaisePropertyChanged(nameof(Instance));
-                this.RaisePropertyChanged(nameof(InstanceOrNull));
-
-                if (dependee != null)
-                {
-                    NotifyEventListenersOnAdded(dependee: dependee, dependency: newInstance);
-                }
-
-                // Notify observers about added dependency
-                foreach (var observer in observers)
-                {
-                    observer.OnNext(newInstance);
-                }
-
-                // Notify instance about completed instantiation
-                (newInstance as IContainerEvents)?.OnInstantiated();
-
-                return newInstance;
-            }
-            catch (Exception ex)
-            {
-                if (newInstance != null)
-                {
-                    Remove(newInstance);
-
-                    if (scopes.Remove(newScope))
-                    {
-                        newScope.Dispose();
-                    }
-                }
-
-                foreach (var observer in observers)
-                {
-                    observer.OnError(ex);
-                }
-
-                throw;
             }
         }
 
-        public void Remove(T instance)
+        public void Destroy(T instance)
         {
-            CheckDisposed();
-
             lock (this)
             {
+                CheckDisposed();
+
                 if (instance2Scope.TryGetValue(instance, out var scope))
                 {
                     var dependencies = scope2Dependencies.TryRemove(scope, out var v) ? v : Enumerable.Empty<IContainerLifecycle>();
                     foreach (var dependency in dependencies)
                     {
-                        dependency.Clear(true);
+                        dependency.Destroy(true);
                     }
 
-                    // TODO Notify
+                    this.RaisePropertyChanging(nameof(Count));
+
                     scope2Instance.Remove(scope);
                     instance2Scope.Remove(instance);
 
-                    // TODO Which next instance to pick?
-                    if (_instance == instance)
-                    {
-                        this.RaisePropertyChanging(nameof(Instance));
-                        this.RaisePropertyChanging(nameof(InstanceOrNull));
-                        _instance = instance2Scope.Keys.FirstOrDefault();
-                        this.RaisePropertyChanged(nameof(Instance));
-                        this.RaisePropertyChanged(nameof(InstanceOrNull));
-                    }
+                    this.RaisePropertyChanged(nameof(Count));
+
+                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, instance));
 
                     // Notify parent's instance about removed dependency
-                    (dependee as IContainerEvents)?.OnRemoved(instance);
+                    (dependee as IContainerRelations)?.OnRemoved(instance);
 
                     // Notify observers about removed dependency
                     foreach (var observer in observers)
@@ -342,18 +344,16 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public void Clear()
+        public void Destroy()
         {
-            ((IContainerLifecycle)this).Clear(false);
+            ((IContainerLifecycle)this).Destroy(false);
         }
 
-        void IContainerLifecycle.Clear(bool dispose)
+        void IContainerLifecycle.Destroy(bool dispose)
         {
             lock (this)
             {
                 CheckDisposed();
-
-                templates.Clear();
 
                 // Prevent initialization of new dependencies
                 // if the container is being disposed
@@ -367,30 +367,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     foreach (var dependency in dependencies)
                     {
-                        dependency.Clear(true);
+                        dependency.Destroy(true);
                     }
                 }
                 scope2Dependencies.Clear();
 
                 var oldInstances = new List<T>(scope2Instance.Values);
 
-                // TODO Notify
+                this.RaisePropertyChanging(nameof(Count));
+
                 scope2Instance.Clear();
                 instance2Scope.Clear();
 
-                if (_instance != null)
-                {
-                    this.RaisePropertyChanging(nameof(Instance));
-                    this.RaisePropertyChanging(nameof(InstanceOrNull));
-                    _instance = null;
-                    this.RaisePropertyChanged(nameof(Instance));
-                    this.RaisePropertyChanged(nameof(InstanceOrNull));
-                }
+                this.RaisePropertyChanged(nameof(Count));
+
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 foreach (var instance in oldInstances)
                 {
                     // Notify parent's instance about removed dependency
-                    (dependee as IContainerEvents)?.OnRemoved(instance);
+                    (dependee as IContainerRelations)?.OnRemoved(instance);
 
                     // Notify observers about removed dependency
                     foreach (var observer in observers)
@@ -426,13 +422,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public IDisposable Subscribe(IObserver<T?> observer)
+        IDisposable IObservable<T?>.Subscribe(IObserver<T?> observer)
         {
             lock (this)
             {
                 CheckDisposed();
                 observers.Add(observer);
-                observer.OnNext(InstanceOrNull);
+                observer.OnNext(this.FirstOrDefault());
             }
             return Disposable.Create(() =>
             {
@@ -441,6 +437,16 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     observers.Remove(observer);
                 }
             });
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return instance2Scope.Keys.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)instance2Scope.Keys).GetEnumerator();
         }
 
         private class Registrar : IRegistrar<T, Template>
@@ -452,10 +458,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 this.container = container;
             }
 
-            public object ClassScope => ResolutionScopeName.Of<T>();
+            public object ClassScopeName => ResolutionScopeName.Of<T>();
 
             [DoesNotReturn]
-            public void RegisterAndReturn<TImpl>(object? scope = null, ConstructorInfo? constructor = null)
+            public void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null)
                 where TImpl : class, T
             {
                 // Register implementation with appropriate reuse and factory
@@ -495,7 +501,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     }
                 }
 
-                throw new RegistrationCompletion(typeof(TImpl), scope);
+                throw new RegistrationCompletion(typeof(TImpl), scopeName);
             }
         }
 
@@ -505,10 +511,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             public object? ScopeName { get; }
 
-            public RegistrationCompletion(Type registeredType, object? scope)
+            public RegistrationCompletion(Type registeredType, object? scopeName)
             {
                 RegisteredType = registeredType;
-                ScopeName = scope;
+                ScopeName = scopeName;
             }
         }
 

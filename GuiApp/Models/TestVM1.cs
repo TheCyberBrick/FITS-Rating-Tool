@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Models
 {
-    internal class TestVM1 : ITestVM1, IDisposable, IContainerEvents
+    internal class TestVM1 : ITestVM1, IDisposable, IContainerRelations, IContainerInstantiation
     {
         private static long idCt = 0;
 
@@ -37,7 +37,7 @@ namespace FitsRatingTool.GuiApp.Models
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") created");
             this.manager = manager;
             this.svc = svc;
-            this.testVm2Container = testVm2Container;
+            this.testVm2Container = testVm2Container.ToSingleton();
         }
 
         public void DoSomething()
@@ -49,12 +49,12 @@ namespace FitsRatingTool.GuiApp.Models
             a.name = "123";
             testVm2Container.Instantiate(a);
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") 2: " + someValue + " " + manager);
-            testVm2Container.Instance.DoSomething();
+            testVm2Container.GetAny().DoSomething();
 
             a.name = "456";
             testVm2Container.Instantiate(a);
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") 3: " + someValue + " " + manager);
-            testVm2Container.Instance.DoSomething();
+            testVm2Container.GetAny().DoSomething();
 
             svc.Run("TestVM1 (" + id + ", " + someValue + ") 4");
         }
@@ -64,22 +64,22 @@ namespace FitsRatingTool.GuiApp.Models
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") Dispose");
         }
 
-        void IContainerEvents.OnAdded(object dependency)
+        void IContainerRelations.OnAdded(object dependency)
         {
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnAdded: " + dependency);
         }
 
-        void IContainerEvents.OnRemoved(object dependency)
+        void IContainerRelations.OnRemoved(object dependency)
         {
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnRemoved: " + dependency);
         }
 
-        void IContainerEvents.OnAddedTo(object dependee)
+        void IContainerRelations.OnAddedTo(object dependee)
         {
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnAddedTo: " + dependee);
         }
 
-        void IContainerEvents.OnInstantiated()
+        void IContainerInstantiation.OnInstantiated()
         {
             Debug.WriteLine("TestVM1 (" + id + ", " + someValue + ") OnInstantiated");
         }
