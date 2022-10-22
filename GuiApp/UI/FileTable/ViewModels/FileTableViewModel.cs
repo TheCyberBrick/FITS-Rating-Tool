@@ -35,21 +35,10 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
 {
     public class FileTableViewModel : ViewModelBase, IFileTableViewModel
     {
-        public class Factory : IFileTableViewModel.IFactory
+        public FileTableViewModel(IRegistrar<IFileTableViewModel, IFileTableViewModel.Of> reg)
         {
-            private readonly IFitsImageManager manager;
-
-            public Factory(IFitsImageManager manager)
-            {
-                this.manager = manager;
-            }
-
-            public IFileTableViewModel Create()
-            {
-                return new FileTableViewModel(manager);
-            }
+            reg.RegisterAndReturn<FileTableViewModel>();
         }
-
 
 
         public AvaloniaList<IFileTableViewModel.Record> Records { get; } = new();
@@ -66,7 +55,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
 
         private readonly IFitsImageManager manager;
 
-        public FileTableViewModel(IFitsImageManager manager)
+        private FileTableViewModel(IFileTableViewModel.Of args, IFitsImageManager manager)
         {
             this.manager = manager;
 

@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageSectionViewerViewModel;
@@ -24,21 +25,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageCornerViewerViewModel : ViewModelBase, IFitsImageCornerViewerViewModel
     {
-        public class Factory : IFitsImageCornerViewerViewModel.IFactory
+        public FitsImageCornerViewerViewModel(IRegistrar<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> reg)
         {
-            private readonly IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory;
-
-            public Factory(IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory)
-            {
-                this.fitsImageSectionFactory = fitsImageSectionFactory;
-            }
-
-            public IFitsImageCornerViewerViewModel Create(IFitsImageViewerViewModel viewer)
-            {
-                return new FitsImageCornerViewerViewModel(viewer, fitsImageSectionFactory);
-            }
+            reg.RegisterAndReturn<FitsImageCornerViewerViewModel>();
         }
-
 
         public IFitsImageViewerViewModel Viewer { get; }
 
@@ -112,25 +102,28 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             set => this.RaiseAndSetIfChanged(ref _percentage, Math.Max(Math.Min(value, 1.0), 0.0001));
         }
 
-        private FitsImageCornerViewerViewModel(IFitsImageViewerViewModel viewer, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory)
+        private FitsImageCornerViewerViewModel(IFitsImageCornerViewerViewModel.OfViewer args,
+            IContainer<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> fitsImageSectionContainer)
         {
-            Viewer = viewer;
+            Viewer = args.Viewer;
 
             this.WhenAnyValue(x => x.Viewer.FitsImage)
                 .Subscribe(x =>
                 {
                     if (x != null)
                     {
-                        TopSection = fitsImageSectionFactory.Create(x);
-                        RightSection = fitsImageSectionFactory.Create(x);
-                        BottomSection = fitsImageSectionFactory.Create(x);
-                        LeftSection = fitsImageSectionFactory.Create(x);
+                        fitsImageSectionContainer.Destroy();
 
-                        TopLeftSection = fitsImageSectionFactory.Create(x);
-                        TopRightSection = fitsImageSectionFactory.Create(x);
-                        BottomLeftSection = fitsImageSectionFactory.Create(x);
-                        BottomRightSection = fitsImageSectionFactory.Create(x);
-                        CenterSection = fitsImageSectionFactory.Create(x);
+                        TopSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        RightSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        BottomSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        LeftSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+
+                        TopLeftSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        TopRightSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        BottomLeftSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        BottomRightSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
+                        CenterSection = fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(x));
 
                         UpdateSections();
                     }

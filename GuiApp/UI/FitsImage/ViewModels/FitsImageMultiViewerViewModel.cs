@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -27,19 +28,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageMultiViewerViewModel : ViewModelBase, IFitsImageMultiViewerViewModel
     {
-        public class Factory : IFactory
+        public FitsImageMultiViewerViewModel(IRegistrar<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> reg)
         {
-            private readonly IFitsImageViewerViewModel.IFactory fitsImageViewerFactory;
-
-            public Factory(IFitsImageViewerViewModel.IFactory fitsImageViewerFactory)
-            {
-                this.fitsImageViewerFactory = fitsImageViewerFactory;
-            }
-
-            public IFitsImageMultiViewerViewModel Create()
-            {
-                return new FitsImageMultiViewerViewModel(fitsImageViewerFactory);
-            }
+            reg.RegisterAndReturn<FitsImageMultiViewerViewModel>();
         }
 
 
@@ -131,19 +122,18 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         }
 
 
-
-        private readonly IFitsImageViewerViewModel.IFactory fitsImageViewerFactory;
+        private readonly IContainer<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerContainer;
 
         // Designer only
         public FitsImageMultiViewerViewModel()
         {
-            fitsImageViewerFactory = null!;
+            fitsImageViewerContainer = null!;
             Instances.Add(new Instance(null!, true));
         }
 
-        public FitsImageMultiViewerViewModel(IFitsImageViewerViewModel.IFactory fitsImageViewerFactory)
+        private FitsImageMultiViewerViewModel(IFitsImageMultiViewerViewModel.Of args, IContainer<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerContainer)
         {
-            this.fitsImageViewerFactory = fitsImageViewerFactory;
+            this.fitsImageViewerContainer = fitsImageViewerContainer;
 
             this.WhenAnyValue(x => x.SelectedInstance!.Viewer.FitsImage).Subscribe(image => FitsImage = image);
             this.WhenAnyValue(x => x.SelectedInstance!.Viewer.File).Subscribe(file => File = file);
@@ -211,7 +201,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private Instance AddNewInstance(IFitsImageViewModel? image = null, string? imageFile = null, bool setOwner = false)
         {
-            var newViewer = fitsImageViewerFactory.Create();
+            var newViewer = fitsImageViewerContainer.Instantiate(new IFitsImageViewerViewModel.Of());
 
             newViewer.InnerOverlayFactory = InnerOverlayFactory;
             newViewer.OuterOverlayFactory = OuterOverlayFactory;
@@ -331,12 +321,14 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             await viewer.UnloadAsync();
 
-            viewer.Dispose();
+            fitsImageViewerContainer.Destroy(viewer);
 
-            if (image != null && requiresDisposal)
+            // TODO Temp
+            // Probably not necessary?
+            /*if (image != null && requiresDisposal)
             {
                 image.Dispose();
-            }
+            }*/
         }
 
         private Instance? FindInstance(IFitsImageViewModel image)

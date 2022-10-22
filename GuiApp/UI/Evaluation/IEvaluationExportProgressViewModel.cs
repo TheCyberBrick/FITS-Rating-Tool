@@ -66,10 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
     public interface IEvaluationExportProgressViewModel : IProgressViewModel<ExportResult, ExportResult, EvaluationExportProgress>
     {
-        public interface IFactory
-        {
-            IEvaluationExportProgressViewModel Create(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator);
-        }
+        public record OfExporter(string ExporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel ExporterConfigurator);
 
         int NumberOfFiles { get; }
 

@@ -20,9 +20,6 @@ namespace FitsRatingTool.GuiApp.UI.Exporters
 {
     public interface ICSVExporterConfiguratorViewModel : IBaseExporterConfiguratorViewModel
     {
-        public interface IFactory
-        {
-            public ICSVExporterConfiguratorViewModel Create();
-        }
+        public record Of();
     }
 }

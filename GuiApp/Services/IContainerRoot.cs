@@ -23,6 +23,8 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IContainerRoot<T, Template>
         where T : class
     {
+        IDisposable Initialize(out IContainer<T, Template> container);
+
         IDisposable Instantiate(Template template, out IContainer<T, Template> container);
     }
 }

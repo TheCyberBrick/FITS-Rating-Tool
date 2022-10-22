@@ -31,21 +31,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     public class VoyagerExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<int>, IVoyagerExporterConfiguratorViewModel
     {
-        public class Factory : IVoyagerExporterConfiguratorViewModel.IFactory
+        public VoyagerExporterConfiguratorViewModel(IRegistrar<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of> reg)
         {
-            private IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory;
-            private IAppConfig appConfig;
-
-            public Factory(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IAppConfig appConfig)
-            {
-                this.voyagerEvaluationExporterFactory = voyagerEvaluationExporterFactory;
-                this.appConfig = appConfig;
-            }
-
-            public IVoyagerExporterConfiguratorViewModel Create()
-            {
-                return new VoyagerExporterConfiguratorViewModel(voyagerEvaluationExporterFactory, appConfig);
-            }
+            reg.RegisterAndReturn<VoyagerExporterConfiguratorViewModel>();
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension? FileExtension => null;
@@ -89,7 +77,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         private readonly IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory;
 
-        public VoyagerExporterConfiguratorViewModel(IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IAppConfig appConfig)
+        private VoyagerExporterConfiguratorViewModel(IVoyagerExporterConfiguratorViewModel.Of args, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IAppConfig appConfig)
         {
             this.voyagerEvaluationExporterFactory = voyagerEvaluationExporterFactory;
 

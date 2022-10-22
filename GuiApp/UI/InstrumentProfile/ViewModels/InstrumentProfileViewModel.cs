@@ -30,24 +30,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
     public class InstrumentProfileViewModel : ViewModelBase, IInstrumentProfileViewModel
     {
-        public class Factory : IInstrumentProfileViewModel.IFactory
+        public InstrumentProfileViewModel(IRegistrar<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> reg)
         {
-            private readonly IInstrumentProfileManager instrumentProfileManager;
-
-            public Factory(IInstrumentProfileManager instrumentProfileManager)
-            {
-                this.instrumentProfileManager = instrumentProfileManager;
-            }
-
-            public IInstrumentProfileViewModel Create()
-            {
-                return new InstrumentProfileViewModel(instrumentProfileManager, null);
-            }
-
-            public IInstrumentProfileViewModel Create(IReadOnlyInstrumentProfile profile)
-            {
-                return new InstrumentProfileViewModel(instrumentProfileManager, profile);
-            }
+            reg.RegisterAndReturn<InstrumentProfileViewModel>();
         }
 
         private class ConstantViewModel : ViewModelBase, IInstrumentProfileViewModel.IConstantViewModel
@@ -245,13 +230,13 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
 
-        private InstrumentProfileViewModel(IInstrumentProfileManager instrumentProfileManager, IReadOnlyInstrumentProfile? profile)
+        private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager)
         {
             this.instrumentProfileManager = instrumentProfileManager;
 
-            IsNew = profile == null;
+            IsNew = args.Profile == null;
 
-            SourceProfile = profile;
+            SourceProfile = args.Profile;
 
             AddConstant = ReactiveCommand.Create(() =>
             {
@@ -263,7 +248,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 ResetToSourceProfile();
             }, Observable.CombineLatest(Observable.Return(!IsNew), this.WhenAnyValue(x => x.IsModified), (a, b) => a && b));
 
-            var isIdAvailable = this.WhenAnyValue(x => x.Id, x => (!IsNew && x == profile?.Id) || !instrumentProfileManager.Contains(x));
+            var isIdAvailable = this.WhenAnyValue(x => x.Id, x => (!IsNew && x == args.Profile?.Id) || !instrumentProfileManager.Contains(x));
             _isIdAvailable = isIdAvailable.ToProperty(this, x => x.IsIdAvailable);
 
             var isIdValidated = this.WhenAnyValue(x => x.Id, ValidateId);
@@ -295,9 +280,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 ValidateConstants();
             };
 
-            if (profile != null)
+            if (args.Profile != null)
             {
-                LoadFromProfile(profile);
+                LoadFromProfile(args.Profile);
             }
 
             ValidateConstants();

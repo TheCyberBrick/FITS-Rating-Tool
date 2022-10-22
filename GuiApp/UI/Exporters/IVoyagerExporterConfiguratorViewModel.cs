@@ -24,10 +24,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters
 {
     public interface IVoyagerExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
     {
-        public interface IFactory
-        {
-            public IVoyagerExporterConfiguratorViewModel Create();
-        }
+        public record Of();
 
         string ApplicationServerHostname { get; set; }
 

@@ -16,14 +16,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Services;
+using System;
 
-namespace FitsRatingTool.GuiApp.UI.Exporters
+namespace FitsRatingTool.GuiApp.Services
 {
-    public interface IFitsHeaderExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
+    public interface IInstantiatorFactory<T, Template> : IDisposable
+        where T : class
     {
-        public record Of();
+        IInstantiator<T, Template> Create(Func<Template?> templateFactory);
 
-        string Keyword { get; set; }
+        IInstantiator<T, Template> Create(Template template);
+    }
+
+    public interface IInstantiator<T, Template>
+        where T : class
+    {
+        bool IsExpired { get; }
+
+        T Instantiate(Func<Template, T> factory);
     }
 }

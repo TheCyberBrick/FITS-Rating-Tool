@@ -30,21 +30,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     public class FileDeleterExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileDeleterExporterConfiguratorViewModel
     {
-        public class Factory : IFileDeleterExporterConfiguratorViewModel.IFactory
+        public FileDeleterExporterConfiguratorViewModel(IRegistrar<IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of> reg)
         {
-            private IFileDeleterExporterFactory fileDeleterExporterFactory;
-            private readonly IFitsImageManager fitsImageManager;
-
-            public Factory(IFileDeleterExporterFactory fileDeleterExporterFactory, IFitsImageManager fitsImageManager)
-            {
-                this.fileDeleterExporterFactory = fileDeleterExporterFactory;
-                this.fitsImageManager = fitsImageManager;
-            }
-
-            public IFileDeleterExporterConfiguratorViewModel Create()
-            {
-                return new FileDeleterExporterConfiguratorViewModel(fileDeleterExporterFactory, fitsImageManager);
-            }
+            reg.RegisterAndReturn<FileDeleterExporterConfiguratorViewModel>();
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension? FileExtension => null;
@@ -58,7 +46,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         private readonly IFileDeleterExporterFactory fileDeleterExporterFactory;
         private readonly IFitsImageManager fitsImageManager;
 
-        public FileDeleterExporterConfiguratorViewModel(IFileDeleterExporterFactory fileDeleterExporterFactory, IFitsImageManager fitsImageManager)
+        private FileDeleterExporterConfiguratorViewModel(IFileDeleterExporterConfiguratorViewModel.Of args, IFileDeleterExporterFactory fileDeleterExporterFactory, IFitsImageManager fitsImageManager)
         {
             this.fileDeleterExporterFactory = fileDeleterExporterFactory;
             this.fitsImageManager = fitsImageManager;

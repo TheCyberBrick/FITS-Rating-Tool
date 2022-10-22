@@ -30,27 +30,13 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
     public class InstrumentProfileConfiguratorViewModel : ViewModelBase, IInstrumentProfileConfiguratorViewModel
     {
-        public class Factory : IInstrumentProfileConfiguratorViewModel.IFactory
+        public InstrumentProfileConfiguratorViewModel(IRegistrar<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> reg)
         {
-            private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
-            private readonly IInstrumentProfileViewModel.IFactory instrumentProfileFactory;
-            private readonly IInstrumentProfileManager instrumentProfileManager;
-
-            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileFactory, IInstrumentProfileManager instrumentProfileManager)
-            {
-                this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
-                this.instrumentProfileFactory = instrumentProfileFactory;
-                this.instrumentProfileManager = instrumentProfileManager;
-            }
-
-            public IInstrumentProfileConfiguratorViewModel Create()
-            {
-                return new InstrumentProfileConfiguratorViewModel(instrumentProfileSelectorFactory, instrumentProfileFactory, instrumentProfileManager);
-            }
+            reg.RegisterAndReturn<InstrumentProfileConfiguratorViewModel>();
         }
 
 
-        public IInstrumentProfileSelectorViewModel Selector { get; }
+        public IInstrumentProfileSelectorViewModel Selector { get; private set; } = null!;
 
         private readonly ObservableAsPropertyHelper<bool> _hasProfile;
         public bool HasProfile => _hasProfile.Value;
@@ -82,9 +68,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
 
 
-        private InstrumentProfileConfiguratorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileViewModel.IFactory instrumentProfileFactory, IInstrumentProfileManager instrumentProfileManager)
+        private InstrumentProfileConfiguratorViewModel(IInstrumentProfileConfiguratorViewModel.Of args,
+            IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
+            IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer,
+            IInstrumentProfileManager instrumentProfileManager)
         {
-            Selector = instrumentProfileSelectorFactory.Create();
+            instrumentProfileSelectorContainer.ToSingleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm => Selector = vm);
+
+            instrumentProfileContainer.ToSingleton();
 
             var hasProfile = this.WhenAnyValue(x => x.Selector.SelectedProfile, (IInstrumentProfileViewModel? x) => x != null);
             _hasProfile = hasProfile.ToProperty(this, x => x.HasProfile);
@@ -123,7 +114,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 if (discard)
                 {
                     Selector.SelectedProfile = null;
-                    Selector.SelectedProfile = instrumentProfileFactory.Create();
+                    Selector.SelectedProfile = instrumentProfileContainer.Instantiate(new IInstrumentProfileViewModel.OfProfile(null));
                 }
             });
 

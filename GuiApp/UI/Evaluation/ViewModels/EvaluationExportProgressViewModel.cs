@@ -35,24 +35,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
     public class EvaluationExportProgressViewModel : SimpleProgressViewModel<ExportResult, EvaluationExportProgress>, IEvaluationExportProgressViewModel
     {
-        public class Factory : IEvaluationExportProgressViewModel.IFactory
+        public EvaluationExportProgressViewModel(IRegistrar<IEvaluationExportProgressViewModel, IEvaluationExportProgressViewModel.OfExporter> reg)
         {
-            private readonly IFitsImageManager fitsImageManager;
-            private readonly IEvaluationManager evaluationManager;
-            private readonly IEvaluationService evaluationService;
-
-            public Factory(IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService)
-            {
-                this.fitsImageManager = fitsImageManager;
-                this.evaluationManager = evaluationManager;
-                this.evaluationService = evaluationService;
-            }
-
-            public IEvaluationExportProgressViewModel Create(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator)
-            {
-                return new EvaluationExportProgressViewModel(exporterId, exporterConfigurator, fitsImageManager, evaluationManager, evaluationService);
-            }
+            reg.RegisterAndReturn<EvaluationExportProgressViewModel>();
         }
+
 
         private class Context : EvaluationExporterContext
         {
@@ -112,10 +99,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationManager evaluationManager;
         private readonly IEvaluationService evaluationService;
 
-        private EvaluationExportProgressViewModel(string exporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator, IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService) : base(null)
+        private EvaluationExportProgressViewModel(IEvaluationExportProgressViewModel.OfExporter args, IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService) : base(null)
         {
-            this.exporterId = exporterId;
-            this.exporterConfigurator = exporterConfigurator;
+            this.exporterId = args.ExporterId;
+            this.exporterConfigurator = args.ExporterConfigurator;
             this.fitsImageManager = fitsImageManager;
             this.evaluationManager = evaluationManager;
             this.evaluationService = evaluationService;

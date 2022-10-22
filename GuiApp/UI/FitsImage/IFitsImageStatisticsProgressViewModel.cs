@@ -35,21 +35,18 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
     public interface IFitsImageStatisticsProgressViewModel : IProgressViewModel<PhotometryStatistics?, IFitsImageStatisticsViewModel, FitsImageStatisticsProgress>
     {
-        public interface IFactory
-        {
-            public delegate Func<Task<PhotometryStatistics?>> AsyncTaskFunc(IFitsImage.PhotometryCallback callback);
+        public delegate Func<Task<PhotometryStatistics?>> AsyncTaskFunc(IFitsImage.PhotometryCallback callback);
 
-            IFitsImageStatisticsProgressViewModel Create(AsyncTaskFunc taskFunc);
-        }
+        public record OfTaskFunc(AsyncTaskFunc TaskFunc);
 
-        public int NumberOfObjects { get; }
+        int NumberOfObjects { get; }
 
-        public int CurrentObject { get; }
+        int CurrentObject { get; }
 
-        public int NumberOfStars { get; }
+        int NumberOfStars { get; }
 
-        public float ProgressValue { get; }
+        float ProgressValue { get; }
 
-        public string Phase { get; }
+        string Phase { get; }
     }
 }

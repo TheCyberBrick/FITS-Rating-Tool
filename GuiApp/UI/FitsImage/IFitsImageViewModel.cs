@@ -28,16 +28,11 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public interface IFitsImageViewModel : IFitsImageMetadata, IDisposable
+    public interface IFitsImageViewModel : IFitsImageMetadata
     {
-        public interface IFactory
-        {
-            public IFitsImageViewModel Create(string file);
+        public record OfFile(string File, long? MaxInputSize = null, int? MaxWidth = 0, int? MaxHeight = 0);
 
-            public IFitsImageViewModel Create(string file, long maxInputSize, int maxWidth, int maxHeight);
-
-            public IFitsImageViewModel Create(IFitsImage image);
-        }
+        public record OfImage(IFitsImage Image);
 
         IFitsImageViewerViewModel? Owner { get; set; }
 

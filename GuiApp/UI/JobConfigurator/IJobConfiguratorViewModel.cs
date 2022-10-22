@@ -29,15 +29,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator
 {
     public interface IJobConfiguratorViewModel
     {
-        public interface IFactory
-        {
-            IJobConfiguratorViewModel Create();
-        }
-
+        public record Of();
 
 
         IEvaluationFormulaViewModel EvaluationFormula { get; }
-
 
 
         IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }

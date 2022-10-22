@@ -25,12 +25,9 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public interface IFitsImageViewerViewModel : IDisposable
+    public interface IFitsImageViewerViewModel
     {
-        public interface IFactory
-        {
-            public IFitsImageViewerViewModel Create();
-        }
+        public record Of();
 
         public interface IOverlayFactory
         {

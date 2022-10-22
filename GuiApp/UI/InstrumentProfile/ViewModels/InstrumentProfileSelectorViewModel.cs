@@ -26,21 +26,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
     public class InstrumentProfileSelectorViewModel : ViewModelBase, IInstrumentProfileSelectorViewModel
     {
-        public class Factory : IInstrumentProfileSelectorViewModel.IFactory
+        public InstrumentProfileSelectorViewModel(IRegistrar<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> reg)
         {
-            private readonly IInstrumentProfileManager instrumentProfileManager;
-            private readonly IInstrumentProfileViewModel.IFactory instrumentProfileFactory;
-
-            public Factory(IInstrumentProfileManager instrumentProfileManager, IInstrumentProfileViewModel.IFactory instrumentProfileFactory)
-            {
-                this.instrumentProfileManager = instrumentProfileManager;
-                this.instrumentProfileFactory = instrumentProfileFactory;
-            }
-
-            public IInstrumentProfileSelectorViewModel Create()
-            {
-                return new InstrumentProfileSelectorViewModel(instrumentProfileManager, instrumentProfileFactory);
-            }
+            reg.RegisterAndReturn<InstrumentProfileSelectorViewModel>();
         }
 
         private bool _isReadOnly;
@@ -71,31 +59,37 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
-        private readonly IInstrumentProfileViewModel.IFactory instrumentProfileFactory;
+        private readonly IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer;
 
-        private InstrumentProfileSelectorViewModel(IInstrumentProfileManager instrumentProfileManager, IInstrumentProfileViewModel.IFactory instrumentProfileFactory)
+        private InstrumentProfileSelectorViewModel(IInstrumentProfileSelectorViewModel.Of args, IInstrumentProfileManager instrumentProfileManager,
+            IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer)
         {
             this.instrumentProfileManager = instrumentProfileManager;
-            this.instrumentProfileFactory = instrumentProfileFactory;
+            this.instrumentProfileContainer = instrumentProfileContainer;
+
+            instrumentProfileContainer.BindTo(_profiles);
 
             Profiles = new ReadOnlyObservableCollection<IInstrumentProfileViewModel>(_profiles);
 
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
+        }
+
+        protected override void OnInstantiated()
+        {
             foreach (var id in instrumentProfileManager.ProfileIds)
             {
                 var profile = instrumentProfileManager.Get(id)?.Profile;
 
                 if (profile != null)
                 {
-                    _profiles.Add(CreateProfileVM(profile));
+                    CreateProfileVM(profile);
                 }
             }
-
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
         }
 
         private IInstrumentProfileViewModel CreateProfileVM(IReadOnlyInstrumentProfile profile)
         {
-            var vm = instrumentProfileFactory.Create(profile);
+            var vm = instrumentProfileContainer.Instantiate(new IInstrumentProfileViewModel.OfProfile(profile));
             vm.IsReadOnly = IsReadOnly;
             return vm;
         }
@@ -103,7 +97,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private void OnRecordChanged(object? sender, IInstrumentProfileManager.RecordChangedEventArgs e)
         {
             IInstrumentProfileViewModel? profile = null;
-            foreach (var p in _profiles)
+            foreach (var p in instrumentProfileContainer)
             {
                 if (p.SourceProfile?.Id == e.ProfileId)
                 {
@@ -116,7 +110,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             {
                 if (profile != null)
                 {
-                    _profiles.Remove(profile);
+                    instrumentProfileContainer.Destroy(profile);
 
                     if (SelectedProfile == profile)
                     {
@@ -135,7 +129,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                     var newProfile = instrumentProfileManager.Get(e.ProfileId)?.Profile;
                     if (newProfile != null)
                     {
-                        _profiles.Add(CreateProfileVM(newProfile));
+                        CreateProfileVM(newProfile);
                     }
                 }
             }
@@ -143,7 +137,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         public IInstrumentProfileViewModel? FindById(string profileId)
         {
-            foreach (var profile in _profiles)
+            foreach (var profile in instrumentProfileContainer)
             {
                 if (profile.Id == profileId)
                 {

@@ -23,12 +23,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImageStatisticsViewModel : IFitsImageStatistics
     {
-        public interface IFactory
-        {
-            IFitsImageStatisticsViewModel Create(PhotometryStatistics statistics, int stars);
+        public record OfStatistics(PhotometryStatistics Statistics, int Stars);
 
-            IFitsImageStatisticsViewModel Create(IFitsImageStatisticsViewModel other, int stars);
-        }
+        public record OfOther(IFitsImageStatisticsViewModel Other, int Stars);
 
         double Rating { get; set; }
 

@@ -16,27 +16,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using System.Collections.Generic;
 
 namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 {
     public class AppConfigCategoryViewModel : IAppConfigCategoryViewModel
     {
-        public class Factory : IAppConfigCategoryViewModel.IFactory
+        public AppConfigCategoryViewModel(IRegistrar<IAppConfigCategoryViewModel, IAppConfigCategoryViewModel.OfName> reg)
         {
-            public IAppConfigCategoryViewModel Create(string name)
-            {
-                return new AppConfigCategoryViewModel(name);
-            }
+            reg.RegisterAndReturn<AppConfigCategoryViewModel>();
         }
 
         public string Name { get; }
 
         public List<ISettingViewModel> Settings { get; } = new List<ISettingViewModel>();
 
-        public AppConfigCategoryViewModel(string name)
+        public AppConfigCategoryViewModel(IAppConfigCategoryViewModel.OfName args)
         {
-            Name = name;
+            Name = args.Name;
         }
     }
 }

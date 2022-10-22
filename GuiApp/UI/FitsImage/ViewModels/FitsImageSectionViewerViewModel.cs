@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageSectionViewerViewModel;
 
@@ -23,14 +24,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageSectionViewerViewModel : ViewModelBase, IFitsImageSectionViewerViewModel
     {
-        public class Factory : IFitsImageSectionViewerViewModel.IFactory
+        public FitsImageSectionViewerViewModel(IRegistrar<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> reg)
         {
-            public IFitsImageSectionViewerViewModel Create(IFitsImageViewModel image)
-            {
-                return new FitsImageSectionViewerViewModel(image);
-            }
+            reg.RegisterAndReturn<FitsImageSectionViewerViewModel>();
         }
-
 
         public IFitsImageViewModel Image { get; }
 
@@ -41,9 +38,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             set => this.RaiseAndSetIfChanged(ref _section, value);
         }
 
-        private FitsImageSectionViewerViewModel(IFitsImageViewModel image)
+        private FitsImageSectionViewerViewModel(IFitsImageSectionViewerViewModel.OfImage args)
         {
-            Image = image;
+            Image = args.Image;
         }
     }
 }

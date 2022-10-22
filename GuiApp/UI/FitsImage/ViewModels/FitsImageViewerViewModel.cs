@@ -34,38 +34,17 @@ using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.Utils;
+using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageViewerViewModel : ViewModelBase, IFitsImageViewerViewModel
     {
-        public class Factory : IFitsImageViewerViewModel.IFactory
+        public FitsImageViewerViewModel(IRegistrar<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> reg)
         {
-            private readonly IFitsImageManager manager;
-            private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-            private readonly IFitsImageSectionViewerViewModel.IFactory fitsImageSectionViewerFactory;
-            private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-            private readonly IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory;
-            private readonly IStarSampler starSampler;
-            private readonly IAppConfig appConfig;
-
-            public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionViewerFactory,
-                IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
-            {
-                this.manager = manager;
-                this.fitsImageFactory = fitsImageFactory;
-                this.fitsImageSectionViewerFactory = fitsImageSectionViewerFactory;
-                this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
-                this.fitsImageHistogramFactory = fitsImageHistogramFactory;
-                this.starSampler = starSampler;
-                this.appConfig = appConfig;
-            }
-
-            public IFitsImageViewerViewModel Create()
-            {
-                return new FitsImageViewerViewModel(manager, fitsImageFactory, fitsImageSectionViewerFactory, fitsImageStatisticsFactory, fitsImageHistogramFactory, starSampler, appConfig);
-            }
+            reg.RegisterAndReturn<FitsImageViewerViewModel>();
         }
+
 
         private IDisposable? fitsImageObserverDisposable = null;
 
@@ -363,20 +342,28 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly List<CancellationTokenSource> loadingCts = new();
 
         private readonly IFitsImageManager manager;
-        private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-        private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-        private readonly IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory;
+        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
+        private readonly IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageHistogramContainer;
+        private readonly IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageStretchedHistogramContainer;
         private readonly IStarSampler starSampler;
 
 
-        private FitsImageViewerViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageSectionViewerViewModel.IFactory fitsImageSectionFactory,
-            IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IFitsImageHistogramViewModel.IFactory fitsImageHistogramFactory, IStarSampler starSampler, IAppConfig appConfig)
+        private FitsImageViewerViewModel(IFitsImageViewerViewModel.Of args, IFitsImageManager manager, IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
+            IContainer<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> fitsImageSectionContainer,
+            IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageHistogramContainer,
+            IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageStretchedHistogramContainer,
+            IStarSampler starSampler, IAppConfig appConfig)
         {
             this.manager = manager;
-            this.fitsImageFactory = fitsImageFactory;
-            this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
-            this.fitsImageHistogramFactory = fitsImageHistogramFactory;
+            this.fitsImageContainer = fitsImageContainer;
+            this.fitsImageHistogramContainer = fitsImageHistogramContainer;
+            this.fitsImageStretchedHistogramContainer = fitsImageStretchedHistogramContainer;
             this.starSampler = starSampler;
+
+            fitsImageSectionContainer.ToSingletonWithObservable().Subscribe(vm => PeekViewer = vm);
+
+            fitsImageHistogramContainer.ToSingletonWithObservable().Subscribe(vm => Histogram = vm);
+            fitsImageStretchedHistogramContainer.ToSingletonWithObservable().Subscribe(vm => StretchedHistogram = vm);
 
             MaxInputSize = appConfig.MaxImageSize;
             MaxWidth = appConfig.MaxImageWidth;
@@ -427,11 +414,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (x && FitsImage != null)
                 {
-                    PeekViewer = fitsImageSectionFactory.Create(FitsImage);
+                    fitsImageSectionContainer.Instantiate(new IFitsImageSectionViewerViewModel.OfImage(FitsImage));
                 }
                 else
                 {
-                    PeekViewer = null;
+                    fitsImageSectionContainer.Destroy();
                 }
             });
 
@@ -529,7 +516,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                                 }
 
                                                 // Update stars count of statistics
-                                                Statistics = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                                Statistics = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                                 record.Statistics = Statistics;
 
                                                 record.IsOutdated = false;
@@ -604,7 +591,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                             record.Photometry = photometry;
 
                                             // Update stars count of statistics
-                                            stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                            stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                             Statistics = stats;
                                             record.Statistics = Statistics;
 
@@ -791,7 +778,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                         photometry = await i.CalculatePhotometry.Execute();
 
                                         // Update stars count of statistics
-                                        stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                        stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                     }
                                 }
 
@@ -877,7 +864,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                             newImage = await Task.Run(() =>
                             {
-                                var i = fitsImageFactory.Create(file, MaxInputSize, MaxWidth, MaxHeight);
+                                var i = fitsImageContainer.Instantiate(new IFitsImageViewModel.OfFile(file, MaxInputSize, MaxWidth, MaxHeight));
                                 i.Owner = this;
                                 return i;
                             });
@@ -916,7 +903,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                         if (newImage != null)
                         {
-                            await AddImageDisposableAsync(newImage, newImage);
+                            await AddImageDisposableAsync(newImage, fitsImageContainer.DestroyWithDisposable(newImage));
                         }
                     }
                 }
@@ -1024,11 +1011,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                             {
                                 if (x != null)
                                 {
-                                    Histogram = fitsImageHistogramFactory.Create(x, true, 0.01f);
+                                    fitsImageHistogramContainer.Instantiate(new IFitsImageHistogramViewModel.OfData(x, true, 0.01f));
                                 }
                                 else
                                 {
-                                    Histogram = null;
+                                    fitsImageHistogramContainer.Destroy();
                                 }
                             }
                         })
@@ -1042,11 +1029,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                             {
                                 if (x != null)
                                 {
-                                    StretchedHistogram = fitsImageHistogramFactory.Create(x, false, 0.01f);
+                                    fitsImageStretchedHistogramContainer.Instantiate(new IFitsImageHistogramViewModel.OfData(x, false, 0.01f));
                                 }
                                 else
                                 {
-                                    StretchedHistogram = null;
+                                    fitsImageStretchedHistogramContainer.Destroy();
                                 }
                             }
                         })
@@ -1055,7 +1042,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 // Adding the image as disposable here even if it may not have
                 // been loaded by the viewer, because the viewer checks the owner
                 // before the actual disposal
-                await AddImageDisposableAsync(image, image);
+                await AddImageDisposableAsync(image, fitsImageContainer.DestroyWithDisposable(image));
             }
             else
             {
@@ -1095,7 +1082,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                     {
                                         Photometry.Clear();
                                         if (ShowPhotometry) SetShownPhotometry(photometry);
-                                        Statistics = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                        Statistics = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                     }
                                     return Unit.Default;
                                 }
@@ -1129,7 +1116,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                                 record.Photometry = photometry;
 
                                                 // Update stars count of statistics
-                                                stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                                stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                                 Statistics = stats;
                                                 record.Statistics = stats;
 

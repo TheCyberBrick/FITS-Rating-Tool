@@ -37,28 +37,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
     public class EvaluationFormulaViewModel : ViewModelBase, IEvaluationFormulaViewModel
     {
-        public class Factory : IEvaluationFormulaViewModel.IFactory
+        public EvaluationFormulaViewModel(IRegistrar<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> reg)
         {
-            private readonly IFitsImageManager manager;
-            private readonly IEvaluationService evaluationService;
-            private readonly IEvaluationManager evaluationManager;
-            private readonly IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory;
-            private readonly IGroupingManager groupingManager;
-
-            public Factory(IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-                IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory, IGroupingManager groupingManager)
-            {
-                this.manager = manager;
-                this.evaluationService = evaluationService;
-                this.evaluationManager = evaluationManager;
-                this.groupingConfiguratorFactory = groupingConfiguratorFactory;
-                this.groupingManager = groupingManager;
-            }
-
-            public IEvaluationFormulaViewModel Create()
-            {
-                return new EvaluationFormulaViewModel(manager, evaluationService, evaluationManager, groupingConfiguratorFactory, groupingManager);
-            }
+            reg.RegisterAndReturn<EvaluationFormulaViewModel>();
         }
 
 
@@ -124,7 +105,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         public AvaloniaList<string> GroupKeys { get; } = new() { "All" };
 
-        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
 
@@ -134,8 +115,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationManager evaluationManager;
         private readonly IGroupingManager groupingManager;
 
-        private EvaluationFormulaViewModel(IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-            IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory, IGroupingManager groupingManager)
+        private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IGroupingManager groupingManager)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
@@ -151,8 +132,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 defaultGroupingConfiguration = new GroupingConfiguration(true, true, false, false, false, false, 0, null);
             }
 
-            GroupingConfigurator = groupingConfiguratorFactory.Create(defaultGroupingConfiguration);
-            evaluationManager.CurrentGroupingConfiguration = GroupingConfigurator.GroupingConfiguration;
+            groupingConfiguratorContainer.ToSingleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
+            {
+                GroupingConfigurator = vm;
+                evaluationManager.CurrentGroupingConfiguration = vm.GroupingConfiguration;
+            });
 
             var currentFormula = evaluationManager.CurrentFormula;
 

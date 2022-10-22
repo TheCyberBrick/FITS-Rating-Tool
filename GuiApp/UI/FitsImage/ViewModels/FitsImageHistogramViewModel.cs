@@ -17,52 +17,52 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using FitsRatingTool.GuiApp.Models;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageHistogramViewModel : ViewModelBase, IFitsImageHistogramViewModel
     {
-        public class Factory : IFitsImageHistogramViewModel.IFactory
+        public FitsImageHistogramViewModel(IRegistrar<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> reg)
         {
-            public IFitsImageHistogramViewModel Create(IEnumerable<HistogramBucket> buckets)
-            {
-                return new FitsImageHistogramViewModel(buckets);
-            }
-
-            public IFitsImageHistogramViewModel Create(uint[] histogram, bool log = false, float pedestal = 0)
-            {
-                return new FitsImageHistogramViewModel(histogram, log, pedestal);
-            }
+            reg.RegisterAndReturn<FitsImageHistogramViewModel>();
         }
+
+        public FitsImageHistogramViewModel(IRegistrar<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfBuckets> reg)
+        {
+            reg.RegisterAndReturn<FitsImageHistogramViewModel>();
+        }
+
 
         public ObservableCollection<HistogramBucket> Items { get; } = new();
 
-        private FitsImageHistogramViewModel(IEnumerable<HistogramBucket> buckets)
+        // TODO Temp
+        public FitsImageHistogramViewModel(IFitsImageHistogramViewModel.OfBuckets args)
         {
             using (DelayChangeNotifications())
             {
-                foreach (var bucket in buckets)
+                foreach (var bucket in args.Buckets)
                 {
                     Items.Add(bucket);
                 }
             }
         }
 
-        private FitsImageHistogramViewModel(uint[] histogram, bool log = false, float pedestal = 0.0f)
+        // TODO Temp
+        public FitsImageHistogramViewModel(IFitsImageHistogramViewModel.OfData args)
         {
             using (DelayChangeNotifications())
             {
-                if (log)
+                if (args.Log)
                 {
-                    double scaledPedestal = Math.Log(histogram.Max()) * pedestal;
-                    for (int i = 0; i < histogram.Length; ++i)
+                    double scaledPedestal = Math.Log(args.Histogram.Max()) * args.Pedestal;
+                    for (int i = 0; i < args.Histogram.Length; ++i)
                     {
-                        double value = Math.Log(histogram[i]);
-                        if (histogram[i] > 0 && value < scaledPedestal)
+                        double value = Math.Log(args.Histogram[i]);
+                        if (args.Histogram[i] > 0 && value < scaledPedestal)
                         {
                             value = scaledPedestal;
                         }
@@ -71,10 +71,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 }
                 else
                 {
-                    double scaledPedestal = histogram.Max() * pedestal;
-                    for (int i = 0; i < histogram.Length; ++i)
+                    double scaledPedestal = args.Histogram.Max() * args.Pedestal;
+                    for (int i = 0; i < args.Histogram.Length; ++i)
                     {
-                        uint value = histogram[i];
+                        uint value = args.Histogram[i];
                         if (value > 0 && value < scaledPedestal)
                         {
                             value = (uint)Math.Ceiling(scaledPedestal);

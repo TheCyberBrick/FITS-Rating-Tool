@@ -25,10 +25,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 {
     public interface IAppViewerOverlayViewModel : IFitsImageViewerViewModel.IOverlay
     {
-        public interface IFactory : IFitsImageViewerViewModel.IOverlayFactory
-        {
-            new IAppViewerOverlayViewModel Create(IFitsImageViewerViewModel viewer);
-        }
+        public record OfViewer(IFitsImageViewerViewModel Viewer);
 
         long FileId { get; }
 

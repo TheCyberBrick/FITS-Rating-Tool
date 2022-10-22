@@ -32,21 +32,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageLoadProgressViewModel : SimpleProgressViewModel<List<IFitsImageViewModel>, FitsImageLoadProgress>, IFitsImageLoadProgressViewModel
     {
-        public class Factory : IFitsImageLoadProgressViewModel.IFactory
+        public FitsImageLoadProgressViewModel(IRegistrar<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> reg)
         {
-            private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-            private readonly IAppConfig appConfig;
-
-            public Factory(IFitsImageViewModel.IFactory fitsImageFactory, IAppConfig appConfig)
-            {
-                this.fitsImageFactory = fitsImageFactory;
-                this.appConfig = appConfig;
-            }
-
-            public IFitsImageLoadProgressViewModel Create(IEnumerable<string> files, Action<IFitsImageViewModel>? consumer)
-            {
-                return new FitsImageLoadProgressViewModel(fitsImageFactory, appConfig, files, consumer);
-            }
+            reg.RegisterAndReturn<FitsImageLoadProgressViewModel>();
         }
 
 
@@ -89,19 +77,19 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
 
 
-        private readonly IFitsImageViewModel.IFactory fitsImageFactory;
         private readonly IAppConfig appConfig;
 
         private readonly List<CancellationTokenSource> loadingCts = new();
         private readonly List<string> files;
         private readonly Action<IFitsImageViewModel>? consumer;
+        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> container;
 
-        private FitsImageLoadProgressViewModel(IFitsImageViewModel.IFactory fitsImageFactory, IAppConfig appConfig, IEnumerable<string> files, Action<IFitsImageViewModel>? consumer) : base(null)
+        private FitsImageLoadProgressViewModel(IFitsImageLoadProgressViewModel.OfFiles args, IAppConfig appConfig) : base(null)
         {
-            this.fitsImageFactory = fitsImageFactory;
             this.appConfig = appConfig;
-            this.files = new List<string>(files);
-            this.consumer = consumer;
+            this.files = new List<string>(args.Files);
+            this.consumer = args.Consumer;
+            this.container = args.Container;
         }
 
         protected override Func<Task<Result<List<IFitsImageViewModel>>>> CreateTask(ProgressSynchronizationContext synchronizationContext)
@@ -159,7 +147,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                 // Limit I/O to loading one image at a time for sequential reads
                                 using (await ioThrottle.EnterAsync(ct))
                                 {
-                                    image = fitsImageFactory.Create(file, appConfig.MaxImageSize, appConfig.MaxThumbnailWidth, appConfig.MaxThumbnailHeight);
+                                    image = container.Instantiate(new IFitsImageViewModel.OfFile(file, appConfig.MaxImageSize, appConfig.MaxThumbnailWidth, appConfig.MaxThumbnailHeight));
                                 }
                                 image.PreserveColorBalance = false;
                                 await image.UpdateOrCreateBitmapAsync(true, ct);

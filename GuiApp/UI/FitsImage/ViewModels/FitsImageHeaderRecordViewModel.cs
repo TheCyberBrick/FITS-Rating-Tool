@@ -17,24 +17,23 @@
 */
 
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageHeaderRecordViewModel : ViewModelBase, IFitsImageHeaderRecordViewModel
     {
-        public class Factory : IFitsImageHeaderRecordViewModel.IFactory
+        public FitsImageHeaderRecordViewModel(IRegistrar<IFitsImageHeaderRecordViewModel, IFitsImageHeaderRecordViewModel.OfRecord> reg)
         {
-            public IFitsImageHeaderRecordViewModel Create(FitsImageHeaderRecord record)
-            {
-                return new FitsImageHeaderRecordViewModel(record);
-            }
+            reg.RegisterAndReturn<FitsImageHeaderRecordViewModel>();
         }
 
         private readonly FitsImageHeaderRecord record;
 
-        private FitsImageHeaderRecordViewModel(FitsImageHeaderRecord record)
+        // TODO Temp
+        public FitsImageHeaderRecordViewModel(IFitsImageHeaderRecordViewModel.OfRecord args)
         {
-            this.record = record;
+            this.record = args.Record;
         }
 
         public string Keyword { get => record.Keyword; }

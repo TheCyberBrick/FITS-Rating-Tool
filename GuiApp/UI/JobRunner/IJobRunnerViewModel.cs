@@ -23,10 +23,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner
 {
     public interface IJobRunnerViewModel
     {
-        public interface IFactory
-        {
-            IJobRunnerViewModel Create();
-        }
+        public record Of();
 
 
         string JobConfigFile { get; set; }

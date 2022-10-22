@@ -31,21 +31,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     public class FileMoverExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileMoverExporterConfiguratorViewModel
     {
-        public class Factory : IFileMoverExporterConfiguratorViewModel.IFactory
+        public FileMoverExporterConfiguratorViewModel(IRegistrar<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of> reg)
         {
-            private IFileMoverExporterFactory fileMoverExporterFactory;
-            private readonly IFitsImageManager fitsImageManager;
-
-            public Factory(IFileMoverExporterFactory fileMoverExporterFactory, IFitsImageManager fitsImageManager)
-            {
-                this.fileMoverExporterFactory = fileMoverExporterFactory;
-                this.fitsImageManager = fitsImageManager;
-            }
-
-            public IFileMoverExporterConfiguratorViewModel Create()
-            {
-                return new FileMoverExporterConfiguratorViewModel(fileMoverExporterFactory, fitsImageManager);
-            }
+            reg.RegisterAndReturn<FileMoverExporterConfiguratorViewModel>();
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension? FileExtension => null;
@@ -78,7 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
         private readonly IFileMoverExporterFactory fileMoverExporterFactory;
         private readonly IFitsImageManager fitsImageManager;
 
-        public FileMoverExporterConfiguratorViewModel(IFileMoverExporterFactory fileMoverExporterFactory, IFitsImageManager fitsImageManager)
+        private FileMoverExporterConfiguratorViewModel(IFileMoverExporterConfiguratorViewModel.Of args, IFileMoverExporterFactory fileMoverExporterFactory, IFitsImageManager fitsImageManager)
         {
             this.fileMoverExporterFactory = fileMoverExporterFactory;
             this.fitsImageManager = fitsImageManager;

@@ -38,7 +38,7 @@ namespace FitsRatingTool.GuiApp.Models
             return null;
         }
 
-        public static IFitsImage? FindImage(this IFitsImageManager.IRecord record, Predicate<IFitsImage> predicate = null)
+        public static IFitsImage? FindImage(this IFitsImageManager.IRecord record, Predicate<IFitsImage> predicate)
         {
             foreach (var container in record.ImageContainers)
             {

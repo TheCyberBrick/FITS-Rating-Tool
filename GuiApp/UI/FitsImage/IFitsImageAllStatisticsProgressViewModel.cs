@@ -40,10 +40,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
     public interface IFitsImageAllStatisticsProgressViewModel : IProgressViewModel<Dictionary<string, IFitsImageStatisticsViewModel?>, Dictionary<string, IFitsImageStatisticsViewModel?>, FitsImageAllStatisticsProgress>
     {
-        public interface IFactory
-        {
-            IFitsImageAllStatisticsProgressViewModel Create(IEnumerable<string> images, bool useRepository);
-        }
+        public record OfFiles(IEnumerable<string> Files, bool UseRepository);
 
         int NumberOfImages { get; }
 

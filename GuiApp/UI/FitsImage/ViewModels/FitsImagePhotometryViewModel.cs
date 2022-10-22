@@ -17,32 +17,24 @@
 */
 
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImagePhotometryViewModel : ViewModelBase, IFitsImagePhotometryViewModel
     {
-        public class Factory : IFitsImagePhotometryViewModel.IFactory
+        public FitsImagePhotometryViewModel(IRegistrar<IFitsImagePhotometryViewModel, IFitsImagePhotometryViewModel.OfPhotometry> reg)
         {
-            private readonly IFitsImagePSFViewModel.IFactory fitsImagePSFFactory;
-
-            public Factory(IFitsImagePSFViewModel.IFactory fitsImagePSFFactory)
-            {
-                this.fitsImagePSFFactory = fitsImagePSFFactory;
-            }
-
-            public IFitsImagePhotometryViewModel Create(PhotometryObject obj)
-            {
-                return new FitsImagePhotometryViewModel(fitsImagePSFFactory, obj);
-            }
+            reg.RegisterAndReturn<FitsImagePhotometryViewModel>();   
         }
 
         private readonly PhotometryObject obj;
 
-        private FitsImagePhotometryViewModel(IFitsImagePSFViewModel.IFactory fitsImagePSFFactory, PhotometryObject obj)
+        // TODO Temp
+        public FitsImagePhotometryViewModel(IFitsImagePhotometryViewModel.OfPhotometry args)
         {
-            this.obj = obj;
-            PSF = fitsImagePSFFactory.Create(obj.psf);
+            this.obj = args.Photometry;
+            PSF = new FitsImagePSFViewModel(new IFitsImagePSFViewModel.OfPSF(args.Photometry.psf));
         }
 
         public int CatalogIndex { get => obj.catalog_index; }

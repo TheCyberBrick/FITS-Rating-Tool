@@ -25,17 +25,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.UI.Evaluation;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
     public class JobGroupingConfiguratorViewModel : ViewModelBase, IJobGroupingConfiguratorViewModel
     {
-        public class Factory : IJobGroupingConfiguratorViewModel.IFactory
+        public JobGroupingConfiguratorViewModel(IRegistrar<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> reg)
         {
-            public IJobGroupingConfiguratorViewModel Create(GroupingConfiguration? configuration = null)
-            {
-                return new JobGroupingConfiguratorViewModel(configuration);
-            }
+            reg.RegisterAndReturn<JobGroupingConfiguratorViewModel>();
         }
 
         private class GroupingFitsKeywordViewModel : ReactiveObject, IJobGroupingConfiguratorViewModel.IGroupingFitsKeywordViewModel
@@ -134,22 +132,22 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         /*
          * Designer only ctor
          */
-        public JobGroupingConfiguratorViewModel() : this(null) { }
+        public JobGroupingConfiguratorViewModel() : this(new IJobGroupingConfiguratorViewModel.OfConfiguration()) { }
 
-        private JobGroupingConfiguratorViewModel(GroupingConfiguration? configuration)
+        private JobGroupingConfiguratorViewModel(IJobGroupingConfiguratorViewModel.OfConfiguration args)
         {
-            if (configuration != null)
+            if (args.Configuration != null)
             {
-                IsGroupedByObject = configuration.IsGroupedByObject;
-                IsGroupedByFilter = configuration.IsGroupedByFilter;
-                IsGroupedByExposureTime = configuration.IsGroupedByExposureTime;
-                IsGroupedByGainAndOffset = configuration.IsGroupedByGainAndOffset;
-                IsGroupedByParentDir = configuration.IsGroupedByParentDir;
-                IsGroupedByFitsKeyword = configuration.IsGroupedByFitsKeyword;
-                GroupingParentDirs = configuration.GroupingParentDirs;
-                if (configuration.GroupingFitsKeywords != null)
+                IsGroupedByObject = args.Configuration.IsGroupedByObject;
+                IsGroupedByFilter = args.Configuration.IsGroupedByFilter;
+                IsGroupedByExposureTime = args.Configuration.IsGroupedByExposureTime;
+                IsGroupedByGainAndOffset = args.Configuration.IsGroupedByGainAndOffset;
+                IsGroupedByParentDir = args.Configuration.IsGroupedByParentDir;
+                IsGroupedByFitsKeyword = args.Configuration.IsGroupedByFitsKeyword;
+                GroupingParentDirs = args.Configuration.GroupingParentDirs;
+                if (args.Configuration.GroupingFitsKeywords != null)
                 {
-                    foreach (var keyword in configuration.GroupingFitsKeywords)
+                    foreach (var keyword in args.Configuration.GroupingFitsKeywords)
                     {
                         AddGroupingFitsKeyword(keyword);
                     }

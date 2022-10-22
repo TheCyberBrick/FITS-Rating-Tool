@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Diagnostics;
@@ -26,21 +27,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 {
     public class JobRunnerViewModel : ViewModelBase, IJobRunnerViewModel
     {
-        public class Factory : IJobRunnerViewModel.IFactory
+        public JobRunnerViewModel(IRegistrar<IJobRunnerViewModel, IJobRunnerViewModel.Of> reg)
         {
-            private readonly IJobRunnerProgressViewModel.IFactory jobRunnerProgressFactory;
-
-            public Factory(IJobRunnerProgressViewModel.IFactory jobRunnerProgressFactory)
-            {
-                this.jobRunnerProgressFactory = jobRunnerProgressFactory;
-            }
-
-            public IJobRunnerViewModel Create()
-            {
-                return new JobRunnerViewModel(jobRunnerProgressFactory);
-            }
+            reg.RegisterAndReturn<JobRunnerViewModel>();
         }
-
 
 
         private string _jobConfigFile = "";
@@ -94,8 +84,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
 
 
-        private JobRunnerViewModel(IJobRunnerProgressViewModel.IFactory jobRunnerProgressFactory)
+        private JobRunnerViewModel(IJobRunnerViewModel.Of args, IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressContainer)
         {
+            jobRunnerProgressContainer.ToSingletonWithObservable().Subscribe(x => Progress = x);
+
             var canRun = this.WhenAnyValue(x => x.JobConfigFile, x => x.Path, (a, b) => a.Length > 0 && b.Length > 0);
 
             canRun.Subscribe(x =>
@@ -104,11 +96,11 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                 {
                     if (x)
                     {
-                        Progress = jobRunnerProgressFactory.Create(JobConfigFile, Path);
+                        jobRunnerProgressContainer.Instantiate(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path));
                     }
                     else
                     {
-                        Progress = null;
+                        jobRunnerProgressContainer.Destroy();
                     }
                 }
             });
@@ -153,7 +145,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                         }
                     }
 
-                    Progress = jobRunnerProgressFactory.Create(JobConfigFile, Path);
+                    jobRunnerProgressContainer.Instantiate(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path));
                 }
                 finally
                 {
@@ -161,7 +153,8 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                 }
             }, canRun);
 
-            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Create(JobConfigFile, Path), canRun);
+            // TODO Temp
+            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressContainer.Instantiate(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
 
             RunWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {

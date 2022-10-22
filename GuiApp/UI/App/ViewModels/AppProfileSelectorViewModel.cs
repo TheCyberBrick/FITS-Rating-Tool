@@ -29,26 +29,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
     public class AppProfileSelectorViewModel : ViewModelBase, IAppProfileSelectorViewModel
     {
-        public class Factory : IAppProfileSelectorViewModel.IFactory
+        public AppProfileSelectorViewModel(IRegistrar<IAppProfileSelectorViewModel, IAppProfileSelectorViewModel.Of> reg)
         {
-            private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
-            private readonly IInstrumentProfileManager instrumentProfileManager;
-            private readonly IAppConfig appConfig;
-
-            public Factory(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
-            {
-                this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
-                this.instrumentProfileManager = instrumentProfileManager;
-                this.appConfig = appConfig;
-            }
-
-            public IAppProfileSelectorViewModel Create()
-            {
-                return new AppProfileSelectorViewModel(instrumentProfileSelectorFactory, instrumentProfileManager, appConfig);
-            }
+            reg.RegisterAndReturn<AppProfileSelectorViewModel>();
         }
 
-        public IInstrumentProfileSelectorViewModel Selector { get; }
+
+        public IInstrumentProfileSelectorViewModel Selector { get; private set; } = null!;
 
         public ReactiveCommand<IReadOnlyInstrumentProfile?, bool> ChangeProfile { get; }
 
@@ -59,17 +46,22 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private string? prevSelectedProfileId = null;
 
 
-        public AppProfileSelectorViewModel(IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory, IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
+        private AppProfileSelectorViewModel(IAppProfileSelectorViewModel.Of args,
+            IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
+            IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
         {
-            Selector = instrumentProfileSelectorFactory.Create();
-            Selector.IsReadOnly = true;
-
-            var initiallySelectedProfileId = instrumentProfileManager.CurrentProfile?.Id;
-            if (initiallySelectedProfileId != null)
+            instrumentProfileSelectorContainer.ToSingleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm =>
             {
-                Selector.SelectById(initiallySelectedProfileId);
-            }
-            prevSelectedProfileId = Selector.SelectedProfile?.Id;
+                Selector = vm;
+                Selector.IsReadOnly = true;
+
+                var initiallySelectedProfileId = instrumentProfileManager.CurrentProfile?.Id;
+                if (initiallySelectedProfileId != null)
+                {
+                    Selector.SelectById(initiallySelectedProfileId);
+                }
+                prevSelectedProfileId = Selector.SelectedProfile?.Id;
+            });
 
             ChangeProfile = ReactiveCommand.CreateFromTask<IReadOnlyInstrumentProfile?, bool>(async profile =>
             {

@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using static FitsRatingTool.Common.Models.FitsImage.IFitsImageStatistics;
@@ -25,68 +26,68 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageStatisticsViewModel : ViewModelBase, IFitsImageStatisticsViewModel
     {
-        public class Factory : IFitsImageStatisticsViewModel.IFactory
+        public FitsImageStatisticsViewModel(IRegistrar<IFitsImageStatisticsViewModel, IFitsImageStatisticsViewModel.OfStatistics> reg)
         {
-            public IFitsImageStatisticsViewModel Create(PhotometryStatistics statistics, int stars)
-            {
-                return new FitsImageStatisticsViewModel(statistics, stars);
-            }
-
-            public IFitsImageStatisticsViewModel Create(IFitsImageStatisticsViewModel other, int stars)
-            {
-                return new FitsImageStatisticsViewModel(other, stars);
-            }
+            reg.RegisterAndReturn<FitsImageStatisticsViewModel>();
         }
+
+        public FitsImageStatisticsViewModel(IRegistrar<IFitsImageStatisticsViewModel, IFitsImageStatisticsViewModel.OfOther> reg)
+        {
+            reg.RegisterAndReturn<FitsImageStatisticsViewModel>();
+        }
+
 
         private readonly PhotometryStatistics statistics;
 
-        private FitsImageStatisticsViewModel(PhotometryStatistics statistics, int stars)
+        // TODO Temp
+        public FitsImageStatisticsViewModel(IFitsImageStatisticsViewModel.OfStatistics args)
         {
-            this.statistics = statistics;
-            Stars = stars;
+            statistics = args.Statistics;
+            Stars = args.Stars;
         }
 
-        private FitsImageStatisticsViewModel(IFitsImageStatisticsViewModel other, int stars)
+        // TODO Temp
+        public FitsImageStatisticsViewModel(IFitsImageStatisticsViewModel.OfOther args)
         {
             statistics = new()
             {
-                median = other.Median,
-                median_mad = other.MedianMAD,
+                median = args.Other.Median,
+                median_mad = args.Other.MedianMAD,
 
-                noise = other.Noise,
-                noise_ratio = other.NoiseRatio,
+                noise = args.Other.Noise,
+                noise_ratio = args.Other.NoiseRatio,
 
-                eccentricity_max = other.EccentricityMax,
-                eccentricity_min = other.EccentricityMin,
-                eccentricity_mean = other.EccentricityMean,
-                eccentricity_median = other.EccentricityMedian,
-                eccentricity_mad = other.EccentricityMAD,
+                eccentricity_max = args.Other.EccentricityMax,
+                eccentricity_min = args.Other.EccentricityMin,
+                eccentricity_mean = args.Other.EccentricityMean,
+                eccentricity_median = args.Other.EccentricityMedian,
+                eccentricity_mad = args.Other.EccentricityMAD,
 
-                snr_max = other.SNRMax,
-                snr_min = other.SNRMin,
-                snr_mean = other.SNRMean,
-                snr_median = other.SNRMedian,
-                snr_mad = other.SNRMAD,
+                snr_max = args.Other.SNRMax,
+                snr_min = args.Other.SNRMin,
+                snr_mean = args.Other.SNRMean,
+                snr_median = args.Other.SNRMedian,
+                snr_mad = args.Other.SNRMAD,
 
-                fwhm_max = other.FWHMMax,
-                fwhm_min = other.FWHMMin,
-                fwhm_mean = other.FWHMMean,
-                fwhm_median = other.FWHMMedian,
-                fwhm_mad = other.FWHMMAD,
+                fwhm_max = args.Other.FWHMMax,
+                fwhm_min = args.Other.FWHMMin,
+                fwhm_mean = args.Other.FWHMMean,
+                fwhm_median = args.Other.FWHMMedian,
+                fwhm_mad = args.Other.FWHMMAD,
 
-                hfr_max = other.HFRMax,
-                hfr_min = other.HFRMin,
-                hfr_mean = other.HFRMean,
-                hfr_median = other.HFRMedian,
-                hfr_mad = other.HFRMAD,
+                hfr_max = args.Other.HFRMax,
+                hfr_min = args.Other.HFRMin,
+                hfr_mean = args.Other.HFRMean,
+                hfr_median = args.Other.HFRMedian,
+                hfr_mad = args.Other.HFRMAD,
 
-                residual_max = other.ResidualMax,
-                residual_mean = other.ResidualMean,
-                residual_median = other.ResidualMedian,
-                residual_min = other.ResidualMin,
-                residual_mad = other.ResidualMAD
+                residual_max = args.Other.ResidualMax,
+                residual_mean = args.Other.ResidualMean,
+                residual_median = args.Other.ResidualMedian,
+                residual_min = args.Other.ResidualMin,
+                residual_mad = args.Other.ResidualMAD
             };
-            Stars = stars;
+            Stars = args.Stars;
         }
 
         public bool GetValue(MeasurementType? measurement, out double value)

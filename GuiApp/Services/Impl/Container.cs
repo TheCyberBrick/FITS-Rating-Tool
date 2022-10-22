@@ -304,7 +304,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public void Destroy(T instance)
+        public bool Destroy(T instance)
         {
             lock (this)
             {
@@ -340,8 +340,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     // the created instances
                     scope.Dispose();
                     scopes.Remove(scope);
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
         public void Destroy()

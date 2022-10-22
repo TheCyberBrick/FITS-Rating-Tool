@@ -36,21 +36,9 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 {
     public class JobRunnerProgressViewModel : SimpleProgressViewModel<JobResult, BatchEvaluationProgressTracker.ProgressState>, IJobRunnerProgressViewModel
     {
-        public class Factory : IJobRunnerProgressViewModel.IFactory
+        public JobRunnerProgressViewModel(IRegistrar<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> reg)
         {
-            private readonly IStandaloneEvaluationService standaloneEvaluationService;
-            private readonly IExporterConfiguratorManager exporterConfiguratorManager;
-
-            public Factory(IStandaloneEvaluationService standaloneEvaluationService, IExporterConfiguratorManager exporterConfiguratorManager)
-            {
-                this.standaloneEvaluationService = standaloneEvaluationService;
-                this.exporterConfiguratorManager = exporterConfiguratorManager;
-            }
-
-            public IJobRunnerProgressViewModel Create(string jobConfigFile, string path)
-            {
-                return new JobRunnerProgressViewModel(jobConfigFile, path, standaloneEvaluationService, exporterConfiguratorManager);
-            }
+            reg.RegisterAndReturn<JobRunnerProgressViewModel>();
         }
 
         private int _numberOfFiles;
@@ -105,10 +93,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
         private readonly IStandaloneEvaluationService standaloneEvaluationService;
 
-        private JobRunnerProgressViewModel(string jobConfigFile, string path, IStandaloneEvaluationService standaloneEvaluationService, IExporterConfiguratorManager exporterConfiguratorManager)
+        private JobRunnerProgressViewModel(IJobRunnerProgressViewModel.OfJob args, IStandaloneEvaluationService standaloneEvaluationService, IExporterConfiguratorManager exporterConfiguratorManager)
         {
-            this.jobConfigFile = jobConfigFile;
-            this.path = path;
+            jobConfigFile = args.JobConfigFile;
+            path = args.Path;
             this.standaloneEvaluationService = standaloneEvaluationService;
 
             foreach (var pair in exporterConfiguratorManager.Factories)

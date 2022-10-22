@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImagePhotometryViewModel
     {
-        public interface IFactory
-        {
-            IFitsImagePhotometryViewModel Create(PhotometryObject obj);
-        }
+        public record OfPhotometry(PhotometryObject Photometry);
 
         int CatalogIndex { get; }
 

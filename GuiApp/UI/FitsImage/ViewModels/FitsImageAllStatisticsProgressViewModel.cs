@@ -31,26 +31,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageAllStatisticsProgressViewModel : SimpleProgressViewModel<Dictionary<string, IFitsImageStatisticsViewModel?>, FitsImageAllStatisticsProgress>, IFitsImageAllStatisticsProgressViewModel
     {
-        public class Factory : IFitsImageAllStatisticsProgressViewModel.IFactory
+        public FitsImageAllStatisticsProgressViewModel(IRegistrar<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles> reg)
         {
-            private readonly IFitsImageManager manager;
-            private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-            private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-            private readonly IAppConfig appConfig;
-
-            public Factory(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, IAppConfig appConfig)
-            {
-                this.manager = manager;
-                this.fitsImageFactory = fitsImageFactory;
-                this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
-                this.appConfig = appConfig;
-            }
-
-            public IFitsImageAllStatisticsProgressViewModel Create(IEnumerable<string> images, bool useRepository)
-            {
-                return new FitsImageAllStatisticsProgressViewModel(manager, fitsImageFactory, fitsImageStatisticsFactory, appConfig, useRepository, images);
-            }
+            reg.RegisterAndReturn<FitsImageAllStatisticsProgressViewModel>();
         }
+
 
         private int _numberOfImages;
         public int NumberOfImages
@@ -124,21 +109,19 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private IFitsImageStatisticsProgressViewModel? currentProgressViewModel = null;
 
         private readonly IFitsImageManager manager;
-        private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-        private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
+        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IAppConfig appConfig;
 
         private readonly bool useRepository;
 
-        private FitsImageAllStatisticsProgressViewModel(IFitsImageManager manager, IFitsImageViewModel.IFactory fitsImageFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-            IAppConfig appConfig, bool useRepository, IEnumerable<string> images) : base(null)
+        private FitsImageAllStatisticsProgressViewModel(IFitsImageAllStatisticsProgressViewModel.OfFiles args, IFitsImageManager manager,
+            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer, IAppConfig appConfig) : base(null)
         {
             this.manager = manager;
-            this.fitsImageFactory = fitsImageFactory;
-            this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
+            this.fitsImageContainer = fitsImageContainer;
             this.appConfig = appConfig;
-            this.useRepository = useRepository;
-            this.images.AddRange(images);
+            this.useRepository = args.UseRepository;
+            this.images.AddRange(args.Files);
         }
 
         protected override Func<Task<Result<Dictionary<string, IFitsImageStatisticsViewModel?>>>> CreateTask(ProgressSynchronizationContext synchronizationContext)
@@ -171,7 +154,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         }
                     }
 
-                    var imagevm = await Task.Run(() => fitsImageFactory.Create(image, appConfig.MaxImageSize, appConfig.MaxImageWidth, appConfig.MaxImageHeight));
+                    var imagevm = await Task.Run(() => fitsImageContainer.Instantiate(new IFitsImageViewModel.OfFile(image, appConfig.MaxImageSize, appConfig.MaxImageWidth, appConfig.MaxImageHeight)));
 
                     try
                     {
@@ -224,7 +207,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                                             record.Photometry = photometry;
 
                                             // Update stars count of statistics
-                                            stats = fitsImageStatisticsFactory.Create(stats, photometry.Count());
+                                            stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
                                         }
 
                                         record.Statistics = stats;
@@ -237,7 +220,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                     }
                     finally
                     {
-                        imagevm.Dispose();
+                        fitsImageContainer.Destroy(imagevm);
                     }
 
                     iimage++;

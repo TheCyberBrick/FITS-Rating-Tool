@@ -23,10 +23,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
     public interface IEvaluationExporterViewModel
     {
-        public interface IFactory
-        {
-            IEvaluationExporterViewModel Create();
-        }
+        public record Of();
 
         IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; }
 

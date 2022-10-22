@@ -38,28 +38,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
     public class EvaluationTableViewModel : ViewModelBase, IEvaluationTableViewModel
     {
-        public class Factory : IEvaluationTableViewModel.IFactory
+        public EvaluationTableViewModel(IRegistrar<IEvaluationTableViewModel, IEvaluationTableViewModel.Of> reg)
         {
-            private readonly IFitsImageManager manager;
-            private readonly IGroupingManager groupingManager;
-            private readonly IEvaluationManager evaluationManager;
-            private readonly IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory;
-            private readonly IEvaluationExporterViewModel.IFactory evaluationExporterFactory;
-
-            public Factory(IFitsImageManager manager, IGroupingManager groupingManager, IEvaluationManager evaluationManager,
-                IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory, IEvaluationExporterViewModel.IFactory evaluationExporterFactory)
-            {
-                this.manager = manager;
-                this.groupingManager = groupingManager;
-                this.evaluationManager = evaluationManager;
-                this.groupingConfiguratorFactory = groupingConfiguratorFactory;
-                this.evaluationExporterFactory = evaluationExporterFactory;
-            }
-
-            public IEvaluationTableViewModel Create()
-            {
-                return new EvaluationTableViewModel(manager, groupingManager, evaluationManager, groupingConfiguratorFactory, evaluationExporterFactory);
-            }
+            reg.RegisterAndReturn<EvaluationTableViewModel>();
         }
 
 
@@ -213,7 +194,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedGroupKey, value);
         }
 
-        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
         public ReactiveCommand<Unit, IEvaluationExporterViewModel> ShowEvaluationExporter { get; }
@@ -230,8 +211,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationManager evaluationManager;
 
 
-        public EvaluationTableViewModel(IFitsImageManager manager, IGroupingManager groupingManager, IEvaluationManager evaluationManager,
-            IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory, IEvaluationExporterViewModel.IFactory evaluationExporterFactory)
+        private EvaluationTableViewModel(IEvaluationTableViewModel.Of args, IFitsImageManager manager, IGroupingManager groupingManager, IEvaluationManager evaluationManager,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
+            IContainer<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterContainer)
         {
             this.manager = manager;
             this.groupingManager = groupingManager;
@@ -244,8 +226,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 defaultGroupingConfiguration = new GroupingConfiguration(true, false, false, false, false, false, 0, null);
             }
 
-            GroupingConfigurator = groupingConfiguratorFactory.Create(defaultGroupingConfiguration);
-            evaluationManager.CurrentFilterGroupingConfiguration = GroupingConfigurator.GroupingConfiguration;
+            groupingConfiguratorContainer.ToSingleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
+            {
+                GroupingConfigurator = vm;
+                evaluationManager.CurrentFilterGroupingConfiguration = vm.GroupingConfiguration;
+            });
 
             var currentGroupKey = evaluationManager.CurrentFilterGroupKey;
 
@@ -301,7 +286,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
 
-            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Create());
+            // TODO Temp
+            evaluationExporterContainer.ToSingleton();
+            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterContainer.Instantiate(new IEvaluationExporterViewModel.Of()));
 
             RemoveRecords = ReactiveCommand.CreateFromTask<IEnumerable>(async enumerable =>
             {

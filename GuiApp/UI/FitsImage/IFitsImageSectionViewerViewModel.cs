@@ -80,10 +80,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             }
         }
 
-        public interface IFactory
-        {
-            IFitsImageSectionViewerViewModel Create(IFitsImageViewModel image);
-        }
+        public record OfImage(IFitsImageViewModel Image);
 
         IFitsImageViewModel Image { get; }
 

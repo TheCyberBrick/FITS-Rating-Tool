@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig
 {
     public interface IAppConfigCategoryViewModel
     {
-        public interface IFactory
-        {
-            IAppConfigCategoryViewModel Create(string name);
-        }
+        public record OfName(string Name);
 
         string Name { get; }
 

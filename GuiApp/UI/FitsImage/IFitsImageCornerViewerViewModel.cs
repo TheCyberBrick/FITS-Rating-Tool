@@ -20,10 +20,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImageCornerViewerViewModel
     {
-        public interface IFactory
-        {
-            IFitsImageCornerViewerViewModel Create(IFitsImageViewerViewModel viewer);
-        }
+        public record OfViewer(IFitsImageViewerViewModel Viewer);
 
         IFitsImageViewerViewModel? Viewer { get; }
 

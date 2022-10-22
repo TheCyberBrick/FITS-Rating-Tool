@@ -67,10 +67,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner
 
     public interface IJobRunnerProgressViewModel : IProgressViewModel<JobResult, JobResult, BatchEvaluationProgressTracker.ProgressState>
     {
-        public interface IFactory
-        {
-            IJobRunnerProgressViewModel Create(string jobConfigFile, string path);
-        }
+        public record OfJob(string JobConfigFile, string Path);
 
         int NumberOfFiles { get; }
 

@@ -25,10 +25,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
     public interface IJobGroupingConfiguratorViewModel
     {
-        public interface IFactory
-        {
-            public IJobGroupingConfiguratorViewModel Create(GroupingConfiguration? configuration = null);
-        }
+        public record OfConfiguration(GroupingConfiguration? Configuration = null);
 
         bool IsGroupedByObject { get; set; }
 

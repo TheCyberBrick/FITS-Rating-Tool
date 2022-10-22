@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImageHeaderRecordViewModel : IFitsImageHeaderRecord
     {
-        public interface IFactory
-        {
-            IFitsImageHeaderRecordViewModel Create(FitsImageHeaderRecord record);
-        }
+        public record OfRecord(FitsImageHeaderRecord Record);
 
         // Data grid sorting only seems to work if all
         // properties are explicitly declared in the

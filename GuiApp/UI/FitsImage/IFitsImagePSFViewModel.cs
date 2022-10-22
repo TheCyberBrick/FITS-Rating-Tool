@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImagePSFViewModel
     {
-        public interface IFactory
-        {
-            IFitsImagePSFViewModel Create(PhotometryObject.PSF psf);
-        }
+        public record OfPSF(PhotometryObject.PSF PSF);
 
         double X { get; }
         double Y { get; }

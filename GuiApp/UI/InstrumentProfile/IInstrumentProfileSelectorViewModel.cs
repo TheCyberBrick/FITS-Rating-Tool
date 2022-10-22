@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 {
     public interface IInstrumentProfileSelectorViewModel
     {
-        public interface IFactory
-        {
-            IInstrumentProfileSelectorViewModel Create();
-        }
+        public record Of();
 
         bool IsReadOnly { get; set; }
 

@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Services;
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Diagnostics;
@@ -27,27 +28,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
     public class EvaluationExporterViewModel : IEvaluationExporterViewModel
     {
-        public class Factory : IEvaluationExporterViewModel.IFactory
+        public EvaluationExporterViewModel(IRegistrar<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> reg)
         {
-            private readonly IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory;
-            private readonly IJobConfigFactory jobConfigFactory;
-            private readonly IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory;
-
-            public Factory(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigFactory jobConfigFactory, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
-            {
-                this.evaluationExporterConfiguratorFactory = evaluationExporterConfiguratorFactory;
-                this.jobConfigFactory = jobConfigFactory;
-                this.evaluationExportProgressFactory = evaluationExportProgressFactory;
-            }
-
-            public IEvaluationExporterViewModel Create()
-            {
-                return new EvaluationExporterViewModel(evaluationExporterConfiguratorFactory, jobConfigFactory, evaluationExportProgressFactory);
-            }
+            reg.RegisterAndReturn<EvaluationExporterViewModel>();
         }
 
 
-        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; }
+        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; private set; } = null!;
 
         public ReactiveCommand<Unit, IEvaluationExportProgressViewModel> ExportWithProgress { get; }
 
@@ -59,14 +46,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
 
 
-        private EvaluationExporterViewModel(IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory, IJobConfigFactory jobConfigFactory, IEvaluationExportProgressViewModel.IFactory evaluationExportProgressFactory)
+        private EvaluationExporterViewModel(IEvaluationExporterViewModel.Of args,
+            IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer,
+            IJobConfigFactory jobConfigFactory,
+            IContainer<IEvaluationExportProgressViewModel, IEvaluationExportProgressViewModel.OfExporter> evaluationExportProgressContainer)
         {
             var canExport = Observable.CombineLatest(
                 this.WhenAnyValue(x => x.EvaluationExporterConfigurator.ExporterConfigurator),
                 this.WhenAnyValue(x => x.EvaluationExporterConfigurator.ExporterConfigurator!.IsValid).Prepend(false).DefaultIfEmpty(false),
                 (a, b) => a != null && b);
 
-            EvaluationExporterConfigurator = evaluationExporterConfiguratorFactory.Create();
+            evaluationExporterConfiguratorContainer.ToSingleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm => EvaluationExporterConfigurator = vm);
+
+            evaluationExportProgressContainer.ToSingleton();
 
             ExportWithProgress = ReactiveCommand.Create(() =>
             {
@@ -74,7 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 var configurator = EvaluationExporterConfigurator.ExporterConfigurator;
                 if (id != null && configurator != null && configurator.IsValid)
                 {
-                    return evaluationExportProgressFactory.Create(id, configurator);
+                    return evaluationExportProgressContainer.Instantiate(new IEvaluationExportProgressViewModel.OfExporter(id, configurator));
                 }
 
                 throw new InvalidOperationException("Configurator is null or invalid");

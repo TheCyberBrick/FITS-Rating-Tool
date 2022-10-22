@@ -26,7 +26,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Collections;
-using Avalonia.Utilities;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using ReactiveUI;
@@ -40,31 +39,9 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
     public class JobConfiguratorViewModel : ViewModelBase, IJobConfiguratorViewModel
     {
-        public class Factory : IFactory
+        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> reg)
         {
-            private readonly IEvaluationManager evaluationManager;
-            private readonly IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory;
-            private readonly IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory;
-            private readonly IJobConfigFactory jobConfigFactory;
-            private readonly IGroupingManager groupingManager;
-            private readonly IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory;
-
-            public Factory(IEvaluationManager evaluationManager, IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory,
-                IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
-                IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory)
-            {
-                this.evaluationManager = evaluationManager;
-                this.groupingConfiguratorFactory = groupingConfiguratorFactory;
-                this.evaluationFormulaFactory = evaluationFormulaFactory;
-                this.jobConfigFactory = jobConfigFactory;
-                this.groupingManager = groupingManager;
-                this.evaluationExporterConfiguratorFactory = evaluationExporterConfiguratorFactory;
-            }
-
-            public IJobConfiguratorViewModel Create()
-            {
-                return new JobConfiguratorViewModel(evaluationManager, groupingConfiguratorFactory, evaluationFormulaFactory, jobConfigFactory, groupingManager, evaluationExporterConfiguratorFactory);
-            }
+            reg.RegisterAndReturn<JobConfiguratorViewModel>();
         }
 
         private class GroupingFilterViewModel : ReactiveObject, IGroupingFilterViewModel
@@ -134,12 +111,12 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
 
 
-        public IEvaluationFormulaViewModel EvaluationFormula { get; }
+        public IEvaluationFormulaViewModel EvaluationFormula { get; private set; } = null!;
 
 
 
 
-        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
         private bool _groupingKeysRequired;
         public bool GroupingKeysRequired
@@ -232,7 +209,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
 
 
-        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; }
+        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; private set; } = null!;
 
 
 
@@ -256,15 +233,19 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         private readonly IGroupingManager groupingManager;
 
 
-        private JobConfiguratorViewModel(IEvaluationManager evaluationManager, IJobGroupingConfiguratorViewModel.IFactory groupingConfiguratorFactory,
-            IEvaluationFormulaViewModel.IFactory evaluationFormulaFactory, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
-            IEvaluationExporterConfiguratorViewModel.IFactory evaluationExporterConfiguratorFactory)
+        private JobConfiguratorViewModel(IJobConfiguratorViewModel.Of args, IEvaluationManager evaluationManager,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
+            IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
+            IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.groupingManager = groupingManager;
 
-            EvaluationExporterConfigurator = evaluationExporterConfiguratorFactory.Create();
-            EvaluationExporterConfigurator.ConfigurationChanged += (s, e) => UpdateJobConfig();
+            evaluationExporterConfiguratorContainer.ToSingleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm =>
+            {
+                EvaluationExporterConfigurator = vm;
+                EvaluationExporterConfigurator.ConfigurationChanged += (s, e) => UpdateJobConfig();
+            });
 
             SelectOutputLogsPathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -282,10 +263,13 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 defaultGroupingConfiguration = new GroupingConfiguration(true, true, false, false, false, false, 0, null);
             }
 
-            GroupingConfigurator = groupingConfiguratorFactory.Create(defaultGroupingConfiguration);
+            groupingConfiguratorContainer.ToSingleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm => GroupingConfigurator = vm);
 
-            EvaluationFormula = evaluationFormulaFactory.Create();
-            EvaluationFormula.RatingFormula = evaluationManager.CurrentFormula;
+            evaluationFormulaContainer.ToSingleton().Inject(new IEvaluationFormulaViewModel.Of(), vm =>
+            {
+                EvaluationFormula = vm;
+                EvaluationFormula.RatingFormula = evaluationManager.CurrentFormula;
+            });
 
             this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Subscribe(x => UpdateJobConfig());
             this.WhenAnyValue(x => x.EvaluationFormula.RatingFormula).Subscribe(x => UpdateJobConfig());

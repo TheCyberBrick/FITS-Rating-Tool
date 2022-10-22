@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
@@ -31,19 +32,16 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
     public interface IFitsImageLoadProgressViewModel : IProgressViewModel<List<IFitsImageViewModel>, List<IFitsImageViewModel>, FitsImageLoadProgress>
     {
-        public interface IFactory
-        {
-            IFitsImageLoadProgressViewModel Create(IEnumerable<string> files, Action<IFitsImageViewModel>? consumer);
-        }
+        public record OfFiles(IEnumerable<string> Files, IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> Container, Action<IFitsImageViewModel>? Consumer);
 
-        public int NumberOfFiles { get; }
+        int NumberOfFiles { get; }
 
-        public int CurrentFile { get; }
+        int CurrentFile { get; }
 
-        public string CurrentFilePath { get; }
+        string CurrentFilePath { get; }
 
-        public string CurrentFileName { get; }
+        string CurrentFileName { get; }
 
-        public float ProgressValue { get; }
+        float ProgressValue { get; }
     }
 }

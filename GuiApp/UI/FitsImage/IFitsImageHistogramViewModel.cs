@@ -16,24 +16,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Models;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImageHistogramViewModel
     {
-        public interface IFactory
-        {
-            public IFitsImageHistogramViewModel Create(IEnumerable<HistogramBucket> buckets);
+        public record OfData(uint[] Histogram, bool Log = false, float Pedestal = 0.0f);
 
-            public IFitsImageHistogramViewModel Create(uint[] histogram, bool log = false, float pedestal = 0.0f);
-        }
+        public record OfBuckets(IEnumerable<HistogramBucket> Buckets);
 
         public ObservableCollection<HistogramBucket> Items { get; }
     }

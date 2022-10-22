@@ -25,10 +25,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 {
     public interface IAppProfileSelectorViewModel
     {
-        public interface IFactory
-        {
-            IAppProfileSelectorViewModel Create();
-        }
+        public record Of();
 
         IInstrumentProfileSelectorViewModel Selector { get; }
 

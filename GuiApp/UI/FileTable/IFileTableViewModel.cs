@@ -30,10 +30,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable
 {
     public interface IFileTableViewModel
     {
-        public interface IFactory
-        {
-            IFileTableViewModel Create();
-        }
+        public record Of();
 
         public class Record
         {

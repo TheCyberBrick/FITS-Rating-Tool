@@ -26,10 +26,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
     public interface IFitsImageMultiViewerViewModel : IDisposable
     {
-        public interface IFactory
-        {
-            IFitsImageMultiViewerViewModel Create();
-        }
+        public record Of();
 
         public class ViewerEventArgs : EventArgs
         {

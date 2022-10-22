@@ -16,17 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.ObjectModel;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public interface IFitsImageSelectorViewModel : IDisposable
+    public interface IFitsImageSelectorViewModel
     {
-        public interface IFactory
-        {
-            IFitsImageSelectorViewModel Create();
-        }
+        public record Of();
 
         ObservableCollection<string> Files { get; }
 

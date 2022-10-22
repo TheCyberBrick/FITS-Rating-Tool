@@ -22,10 +22,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters
 {
     public interface IFileDeleterExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
     {
-        public interface IFactory
-        {
-            public IFileDeleterExporterConfiguratorViewModel Create();
-        }
+        public record Of();
 
         bool IsMinRatingThresholdEnabled { get; set; }
 

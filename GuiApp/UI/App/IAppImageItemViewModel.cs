@@ -24,10 +24,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 {
     public interface IAppImageItemViewModel
     {
-        public interface IFactory
-        {
-            IAppImageItemViewModel Create(long id, IFitsImageViewModel image);
-        }
+        public record OfImage(long Id, IFitsImageViewModel Image);
 
         long Id { get; }
 

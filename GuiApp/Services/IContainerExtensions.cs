@@ -18,7 +18,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.Services
 {
@@ -56,6 +58,44 @@ namespace FitsRatingTool.GuiApp.Services
             {
                 activate();
             }
+        }
+
+        public static IDisposable BindTo<T, Template>(this IContainer<T, Template> container, ICollection<T> collection)
+            where T : class
+        {
+            void onCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+            {
+
+                if (e.Action == NotifyCollectionChangedAction.Reset)
+                {
+                    collection.Clear();
+                }
+                else if ((e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace) && e.OldItems != null)
+                {
+                    foreach (var item in e.OldItems)
+                    {
+                        collection.Remove((T)item);
+                    }
+                }
+
+                if ((e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Replace || e.Action == NotifyCollectionChangedAction.Reset) && e.NewItems != null)
+                {
+                    foreach (var item in e.NewItems)
+                    {
+                        collection.Add((T)item);
+                    }
+                }
+            }
+
+            container.CollectionChanged += onCollectionChanged;
+
+            return Disposable.Create(() => container.CollectionChanged -= onCollectionChanged);
+        }
+
+        public static IDisposable DestroyWithDisposable<T, Template>(this IContainer<T, Template> container, T instance)
+            where T : class
+        {
+            return Disposable.Create(() => container.Destroy(instance));
         }
     }
 }

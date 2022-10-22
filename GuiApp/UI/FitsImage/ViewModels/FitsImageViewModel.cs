@@ -35,46 +35,16 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
-    public class FitsImageViewModel : ViewModelBase, IFitsImageViewModel, IFitsImageContainer
+    public class FitsImageViewModel : ViewModelBase, IFitsImageViewModel, IFitsImageContainer, IDisposable
     {
-        public class Factory : IFitsImageViewModel.IFactory
+        public FitsImageViewModel(IRegistrar<IFitsImageViewModel, IFitsImageViewModel.OfFile> reg)
         {
-            private readonly IFitsImageLoader imageLoader;
-            private readonly IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory;
-            private readonly IFitsImageManager fitsImageManager;
-            private readonly IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory;
-            private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-            private readonly IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory;
-            private readonly IAppConfig appConfig;
+            reg.RegisterAndReturn<FitsImageViewModel>();
+        }
 
-            public Factory(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
-                IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-                IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IAppConfig appConfig)
-            {
-                this.imageLoader = imageLoader;
-                this.fitsImageHeaderRecordFactory = fitsImageHeaderRecordFactory;
-                this.fitsImageManager = fitsImageManager;
-                this.fitsImageStatisticsProgressFactory = fitsImageStatisticsProgressFactory;
-                this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
-                this.fitsImagePhotometryFactory = fitsImagePhotometryFactory;
-                this.appConfig = appConfig;
-            }
-
-            public IFitsImageViewModel Create(string file)
-            {
-                return Create(file, appConfig.MaxImageSize, appConfig.MaxImageWidth, appConfig.MaxImageHeight);
-            }
-
-            public IFitsImageViewModel Create(string file, long maxInputSize = -1, int maxWidth = -1, int maxHeight = -1)
-            {
-                return new FitsImageViewModel(imageLoader, fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file,
-                    maxInputSize < 0 ? appConfig.MaxImageSize : maxInputSize, maxWidth < 0 ? appConfig.MaxImageWidth : maxWidth, maxHeight < 0 ? appConfig.MaxImageHeight : maxHeight);
-            }
-
-            public IFitsImageViewModel Create(IFitsImage image)
-            {
-                return new FitsImageViewModel(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image);
-            }
+        public FitsImageViewModel(IRegistrar<IFitsImageViewModel, IFitsImageViewModel.OfImage> reg)
+        {
+            reg.RegisterAndReturn<FitsImageViewModel>();
         }
 
 
@@ -263,15 +233,14 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
 
 
-        private readonly IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory;
         private readonly IFitsImageManager fitsImageManager;
 
-        private FitsImageViewModel(IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
-            IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-            IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file)
+        private FitsImageViewModel(string file, IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer)
         {
-            this.fitsImageHeaderRecordFactory = fitsImageHeaderRecordFactory;
             this.fitsImageManager = fitsImageManager;
+
+            fitsImageStatisticsProgressContainer.ToSingleton();
 
             fitsImage = null!; // Set in other constructors
             fitsImageRef = null!;
@@ -291,7 +260,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (IsImageDataValid)
                 {
-                    return fitsImageStatisticsFactory.Create(await Task.Run(() =>
+                    return (IFitsImageStatisticsViewModel)new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfStatistics(await Task.Run(() =>
                     {
                         if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {
@@ -300,7 +269,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                             fitsImage.GetStatistics(out stats);
                         }
                         return stats;
-                    }), 0);
+                    }), 0));
                 }
                 return null;
             });
@@ -309,7 +278,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (IsImageDataValid)
                 {
-                    return fitsImageStatisticsProgressFactory.Create(callback => () => Task.Run(() =>
+                    // TODO Temp
+                    return fitsImageStatisticsProgressContainer.Instantiate(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
                     {
                         if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {
@@ -318,7 +288,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                             fitsImage.GetStatistics(out stats);
                         }
                         return (PhotometryStatistics?)stats;
-                    }));
+                    })));
                 }
                 return null;
             });
@@ -348,7 +318,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         return photometry ?? Array.Empty<PhotometryObject>();
                     }))
                     {
-                        list.Add(fitsImagePhotometryFactory.Create(photometry));
+                        list.Add(new FitsImagePhotometryViewModel(new IFitsImagePhotometryViewModel.OfPhotometry(photometry)));
                     }
                     return (IEnumerable<IFitsImagePhotometryViewModel>)list;
                 }
@@ -356,42 +326,41 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             });
         }
 
-        private FitsImageViewModel(IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
-            IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-            IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, IFitsImage image)
-            : this(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, image.File)
+        private FitsImageViewModel(IFitsImageViewModel.OfImage args, IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer)
+            : this(args.Image.File, fitsImageManager, fitsImageStatisticsProgressContainer)
         {
-            fitsImage = image;
-            fitsImageRef = image.Ref();
+            fitsImage = args.Image;
+            fitsImageRef = args.Image.Ref();
 
-            if (!image.IsImageDataValid)
+            if (!args.Image.IsImageDataValid)
             {
                 throw new Exception("Invalid FITS image data");
             }
 
             IsImageDataValid = true;
 
-            Histogram = image.Histogram;
+            Histogram = args.Image.Histogram;
 
             Init();
         }
 
-        private FitsImageViewModel(IFitsImageLoader imageLoader, IFitsImageHeaderRecordViewModel.IFactory fitsImageHeaderRecordFactory, IFitsImageManager fitsImageManager,
-            IFitsImageStatisticsProgressViewModel.IFactory fitsImageStatisticsProgressFactory, IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory,
-            IFitsImagePhotometryViewModel.IFactory fitsImagePhotometryFactory, string file, long maxInputSize, int maxWidth, int maxHeight)
-            : this(fitsImageHeaderRecordFactory, fitsImageManager, fitsImageStatisticsProgressFactory, fitsImageStatisticsFactory, fitsImagePhotometryFactory, file)
+        private FitsImageViewModel(IFitsImageViewModel.OfFile args, IFitsImageLoader imageLoader, IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
+            IAppConfig appConfig)
+            : this(args.File, fitsImageManager, fitsImageStatisticsProgressContainer)
         {
-            fitsImage = imageLoader.LoadFit(file, maxInputSize, maxWidth, maxHeight)!;
+            fitsImage = imageLoader.LoadFit(args.File, args.MaxInputSize ?? appConfig.MaxImageSize, args.MaxWidth ?? appConfig.MaxImageWidth, args.MaxHeight ?? appConfig.MaxImageHeight)!;
             if (fitsImage == null)
             {
-                throw new Exception($"Failed loading FITS '{file}'");
+                throw new Exception($"Failed loading FITS '{args.File}'");
             }
 
             fitsImageRef = fitsImage.Ref();
 
             if (!fitsImage.LoadImageData(loaderParameters))
             {
-                throw new Exception($"Failed loading FITS '{file}': Invalid image data");
+                throw new Exception($"Failed loading FITS '{args.File}': Invalid image data");
             }
 
             IsImageDataValid = fitsImage.IsImageDataValid;
@@ -412,7 +381,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             foreach (var record in fitsImage.Header.Values)
             {
-                _header.Add(fitsImageHeaderRecordFactory.Create(record));
+                _header.Add(new FitsImageHeaderRecordViewModel(new IFitsImageHeaderRecordViewModel.OfRecord(record)));
             }
 
             fitsImage.ComputeStretch(out var stretch);

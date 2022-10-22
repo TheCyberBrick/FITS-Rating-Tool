@@ -28,10 +28,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
     public interface IEvaluationTableViewModel
     {
-        public interface IFactory
-        {
-            IEvaluationTableViewModel Create();
-        }
+        public record Of();
 
         #region +++ Records +++
         public class Record : ReactiveObject

@@ -31,20 +31,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.containerFactory = containerFactory;
         }
 
-        public IDisposable Instantiate(Template template, out IContainer<T, Template> container)
+        public IDisposable Initialize(out IContainer<T, Template> container)
         {
             container = containerFactory.Invoke();
 
             if (container is IContainerLifecycle lifecycle)
             {
                 lifecycle.Initialize(null, null);
-                container.Instantiate(template);
                 return Disposable.Create(() => lifecycle.Destroy(true));
             }
             else
             {
                 throw new InvalidOperationException($"Container does not implement {nameof(IContainerLifecycle)}");
             }
+        }
+
+        public IDisposable Instantiate(Template template, out IContainer<T, Template> container)
+        {
+            var disposable = Initialize(out container);
+            container.Instantiate(template);
+            return disposable;
         }
     }
 

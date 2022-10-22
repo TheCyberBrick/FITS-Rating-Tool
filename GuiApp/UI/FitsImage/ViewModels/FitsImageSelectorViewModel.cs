@@ -29,21 +29,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageSelectorViewModel : ViewModelBase, IFitsImageSelectorViewModel
     {
-        public class Factory : IFitsImageSelectorViewModel.IFactory
+        public FitsImageSelectorViewModel(IRegistrar<IFitsImageSelectorViewModel, IFitsImageSelectorViewModel.Of> reg)
         {
-            private readonly IFitsImageManager fitsImageManager;
-            private readonly IFitsImageViewModel.IFactory fitsImageFactory;
-
-            public Factory(IFitsImageManager fitsImageManager, IFitsImageViewModel.IFactory fitsImageFactory)
-            {
-                this.fitsImageManager = fitsImageManager;
-                this.fitsImageFactory = fitsImageFactory;
-            }
-
-            public IFitsImageSelectorViewModel Create()
-            {
-                return new FitsImageSelectorViewModel(fitsImageManager, fitsImageFactory);
-            }
+            reg.RegisterAndReturn<FitsImageSelectorViewModel>();
         }
 
         public ObservableCollection<string> Files { get; } = new();
@@ -68,12 +56,15 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private string? prevSelectedFile;
 
         private readonly IFitsImageManager fitsImageManager;
-        private readonly IFitsImageViewModel.IFactory fitsImageFactory;
+        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
 
-        private FitsImageSelectorViewModel(IFitsImageManager fitsImageManager, IFitsImageViewModel.IFactory fitsImageFactory)
+        private FitsImageSelectorViewModel(IFitsImageSelectorViewModel.Of args, IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer)
         {
             this.fitsImageManager = fitsImageManager;
-            this.fitsImageFactory = fitsImageFactory;
+            this.fitsImageContainer = fitsImageContainer.ToSingleton();
+
+            fitsImageContainer.ToSingletonWithObservable().Subscribe(vm => SelectedImage = vm);
 
             this.WhenAnyValue(x => x.SelectedFile).Subscribe(file =>
             {
@@ -165,27 +156,20 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             if (selectedFile == null)
             {
-                DisposeSelectedImage();
+                fitsImageContainer.Destroy();
             }
-            else if (selectedImage == null)
+            else if (selectedImage == null || selectedImage.File != selectedFile)
             {
-                SelectedImage = CreateImage(selectedFile);
+                var image = FindImage(selectedFile);
+                if (image != null)
+                {
+                    fitsImageContainer.Instantiate(new IFitsImageViewModel.OfImage(image));
+                }
+                else
+                {
+                    fitsImageContainer.Destroy();
+                }
             }
-            else if (selectedImage.File != selectedFile)
-            {
-                DisposeSelectedImage();
-                SelectedImage = CreateImage(selectedFile);
-            }
-        }
-
-        private IFitsImageViewModel? CreateImage(string file)
-        {
-            var image = FindImage(file);
-            if (image != null)
-            {
-                return fitsImageFactory.Create(image);
-            }
-            return null;
         }
 
         private IFitsImage? FindImage(string file)
@@ -196,18 +180,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 return record.FindImage(file, i => i.OutDim.Width == i.ImageWidth && i.OutDim.Height == i.ImageHeight);
             }
             return null;
-        }
-
-        private void DisposeSelectedImage()
-        {
-            var selectedImage = SelectedImage;
-            SelectedImage = null;
-            selectedImage?.Dispose();
-        }
-
-        public void Dispose()
-        {
-            DisposeSelectedImage();
         }
     }
 }

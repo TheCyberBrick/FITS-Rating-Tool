@@ -19,6 +19,7 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
+using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
@@ -27,19 +28,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     public class CSVExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel
     {
-        public class Factory : ICSVExporterConfiguratorViewModel.IFactory
+        public CSVExporterConfiguratorViewModel(IRegistrar<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of> reg)
         {
-            private readonly ICSVEvaluationExporterFactory csvEvaluationExporterFactory;
-
-            public Factory(ICSVEvaluationExporterFactory csvEvaluationExporterFactory)
-            {
-                this.csvEvaluationExporterFactory = csvEvaluationExporterFactory;
-            }
-
-            public ICSVExporterConfiguratorViewModel Create()
-            {
-                return new CSVExporterConfiguratorViewModel(csvEvaluationExporterFactory);
-            }
+            reg.RegisterAndReturn<CSVExporterConfiguratorViewModel>();
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension FileExtension { get; } = new IBaseExporterConfiguratorViewModel.FileExtension("CSV", "csv");
@@ -47,7 +38,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         private readonly ICSVEvaluationExporterFactory csvEvaluationExporterFactory;
 
-        private CSVExporterConfiguratorViewModel(ICSVEvaluationExporterFactory csvEvaluationExporterFactory)
+        private CSVExporterConfiguratorViewModel(ICSVExporterConfiguratorViewModel.Of args, ICSVEvaluationExporterFactory csvEvaluationExporterFactory)
         {
             this.csvEvaluationExporterFactory = csvEvaluationExporterFactory;
             Path = "export.csv";

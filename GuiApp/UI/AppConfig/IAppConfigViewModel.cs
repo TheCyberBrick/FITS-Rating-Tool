@@ -24,10 +24,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig
 {
     public interface IAppConfigViewModel
     {
-        public interface IFactory
-        {
-            IAppConfigViewModel Create();
-        }
+        public record Of();
 
         List<IAppConfigCategoryViewModel> Categories { get; }
 

@@ -24,10 +24,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
     public interface IEvaluationFormulaViewModel
     {
-        public interface IFactory
-        {
-            IEvaluationFormulaViewModel Create();
-        }
+        public record Of();
 
         string? RatingFormula { get; set; }
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -17,38 +17,15 @@
 */
 
 using FitsRatingTool.GuiApp.Services;
-using ReactiveUI;
 
-namespace FitsRatingTool.GuiApp.UI
+namespace FitsRatingTool.GuiApp.Models
 {
-    public class ViewModelBase : ReactiveObject, IActivatableViewModel, IContainerInstantiation, IContainerRelations
+    public static class IInstantiatorExtensions
     {
-        public ViewModelActivator Activator { get; }
-
-        public ViewModelBase()
+        public static T Instantiate<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> container)
+            where T : class
         {
-            Activator = new ViewModelActivator();
-        }
-
-        void IContainerInstantiation.OnInstantiated()
-        {
-            OnInstantiated();
-        }
-
-        protected virtual void OnInstantiated()
-        {
-        }
-
-        void IContainerRelations.OnAdded(object dependency)
-        {
-        }
-
-        void IContainerRelations.OnRemoved(object dependency)
-        {
-        }
-
-        void IContainerRelations.OnAddedTo(object dependee)
-        {
+            return instantiator.Instantiate(container.Instantiate);
         }
     }
 }

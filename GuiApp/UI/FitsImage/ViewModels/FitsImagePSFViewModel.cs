@@ -17,24 +17,23 @@
 */
 
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImagePSFViewModel : ViewModelBase, IFitsImagePSFViewModel
     {
-        public class Factory : IFitsImagePSFViewModel.IFactory
+        public FitsImagePSFViewModel(IRegistrar<IFitsImagePSFViewModel, IFitsImagePSFViewModel.OfPSF> reg)
         {
-            public IFitsImagePSFViewModel Create(PhotometryObject.PSF psf)
-            {
-                return new FitsImagePSFViewModel(psf);
-            }
+            reg.RegisterAndReturn<FitsImagePSFViewModel>();
         }
 
         private readonly PhotometryObject.PSF psf;
 
-        private FitsImagePSFViewModel(PhotometryObject.PSF psf)
+        // TODO Temp
+        public FitsImagePSFViewModel(IFitsImagePSFViewModel.OfPSF args)
         {
-            this.psf = psf;
+            this.psf = args.PSF;
         }
 
         public double X { get => psf.x + 0.5; }

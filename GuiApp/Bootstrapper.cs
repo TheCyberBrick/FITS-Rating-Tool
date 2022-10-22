@@ -62,7 +62,7 @@ namespace FitsRatingTool.GuiApp
             RegisterViews(container);
             RegisterExporters(container);
 
-            Test(container);
+            //Test(container);
 
             return container;
         }
@@ -106,6 +106,7 @@ namespace FitsRatingTool.GuiApp
             // App
             container.Register(typeof(IContainer<,>), typeof(Container<,>));
             container.Register(typeof(IContainerRoot<,>), typeof(ContainerRoot<,>));
+            container.Register(typeof(IInstantiatorFactory<,>), typeof(InstantiatorFactory<,>), setup: Setup.With(allowDisposableTransient: true));
             container.Register<IWindowManager, WindowManager>(Reuse.Singleton);
             container.Register<IFitsImageManager, FitsImageManager>(Reuse.Singleton);
             container.Register<IVoyagerIntegration, VoyagerIntegration>(Reuse.Singleton);
@@ -122,52 +123,54 @@ namespace FitsRatingTool.GuiApp
 
         private static void RegisterViewModels(Container container)
         {
+            // TODO Temp
+
             container.Register<IAppViewModel, AppViewModel>(Reuse.Singleton, made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
-            container.Register<IAppProfileSelectorViewModel.IFactory, AppProfileSelectorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IAppViewerOverlayViewModel.IFactory, AppViewerOverlayViewModel.Factory>(Reuse.Singleton);
-            container.Register<IAppImageItemViewModel.IFactory, AppImageItemViewModel.Factory>(Reuse.Singleton);
+            container.Register<IAppProfileSelectorViewModel, AppProfileSelectorViewModel>();
+            container.Register<IAppViewerOverlayViewModel, AppViewerOverlayViewModel>();
+            container.Register<IAppImageItemViewModel, AppImageItemViewModel>();
 
-            container.Register<IFitsImageAllStatisticsProgressViewModel.IFactory, FitsImageAllStatisticsProgressViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageHeaderRecordViewModel.IFactory, FitsImageHeaderRecordViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageHistogramViewModel.IFactory, FitsImageHistogramViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImagePhotometryViewModel.IFactory, FitsImagePhotometryViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImagePSFViewModel.IFactory, FitsImagePSFViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageStatisticsProgressViewModel.IFactory, FitsImageStatisticsProgressViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageStatisticsViewModel.IFactory, FitsImageStatisticsViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageViewerViewModel.IFactory, FitsImageViewerViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageMultiViewerViewModel.IFactory, FitsImageMultiViewerViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageViewModel.IFactory, FitsImageViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageLoadProgressViewModel.IFactory, FitsImageLoadProgressViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageSectionViewerViewModel.IFactory, FitsImageSectionViewerViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsImageCornerViewerViewModel.IFactory, FitsImageCornerViewerViewModel.Factory>(Reuse.Singleton);
+            container.Register<IFitsImageAllStatisticsProgressViewModel, FitsImageAllStatisticsProgressViewModel>();
+            container.Register<IFitsImageHeaderRecordViewModel, FitsImageHeaderRecordViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IFitsImageHistogramViewModel, FitsImageHistogramViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IFitsImagePhotometryViewModel, FitsImagePhotometryViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IFitsImagePSFViewModel, FitsImagePSFViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IFitsImageStatisticsProgressViewModel, FitsImageStatisticsProgressViewModel>();
+            container.Register<IFitsImageStatisticsViewModel, FitsImageStatisticsViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IFitsImageViewerViewModel, FitsImageViewerViewModel>();
+            container.Register<IFitsImageMultiViewerViewModel, FitsImageMultiViewerViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
+            container.Register<IFitsImageViewModel, FitsImageViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
+            container.Register<IFitsImageLoadProgressViewModel, FitsImageLoadProgressViewModel>();
+            container.Register<IFitsImageSectionViewerViewModel, FitsImageSectionViewerViewModel>();
+            container.Register<IFitsImageCornerViewerViewModel, FitsImageCornerViewerViewModel>();
 
-            container.Register<IEvaluationTableViewModel.IFactory, EvaluationTableViewModel.Factory>(Reuse.Singleton);
-            container.Register<IEvaluationFormulaViewModel.IFactory, EvaluationFormulaViewModel.Factory>(Reuse.Singleton);
-            container.Register<IEvaluationExporterConfiguratorViewModel.IFactory, EvaluationExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IEvaluationExporterViewModel.IFactory, EvaluationExporterViewModel.Factory>(Reuse.Singleton);
-            container.Register<IEvaluationExportProgressViewModel.IFactory, EvaluationExportProgressViewModel.Factory>(Reuse.Singleton);
+            container.Register<IEvaluationTableViewModel, EvaluationTableViewModel>();
+            container.Register<IEvaluationFormulaViewModel, EvaluationFormulaViewModel>();
+            container.Register<IEvaluationExporterConfiguratorViewModel, EvaluationExporterConfiguratorViewModel>();
+            container.Register<IEvaluationExporterViewModel, EvaluationExporterViewModel>();
+            container.Register<IEvaluationExportProgressViewModel, EvaluationExportProgressViewModel>();
 
-            container.Register<IJobGroupingConfiguratorViewModel.IFactory, JobGroupingConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IJobConfiguratorViewModel.IFactory, JobConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IJobRunnerViewModel.IFactory, JobRunnerViewModel.Factory>(Reuse.Singleton);
-            container.Register<IJobRunnerProgressViewModel.IFactory, JobRunnerProgressViewModel.Factory>(Reuse.Singleton);
+            container.Register<IJobGroupingConfiguratorViewModel, JobGroupingConfiguratorViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IJobConfiguratorViewModel, JobConfiguratorViewModel>();
+            container.Register<IJobRunnerViewModel, JobRunnerViewModel>();
+            container.Register<IJobRunnerProgressViewModel, JobRunnerProgressViewModel>();
 
-            container.Register<ICSVExporterConfiguratorViewModel.IFactory, CSVExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFitsHeaderExporterConfiguratorViewModel.IFactory, FitsHeaderExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IVoyagerExporterConfiguratorViewModel.IFactory, VoyagerExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFileDeleterExporterConfiguratorViewModel.IFactory, FileDeleterExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IFileMoverExporterConfiguratorViewModel.IFactory, FileMoverExporterConfiguratorViewModel.Factory>(Reuse.Singleton);
+            container.Register<ICSVExporterConfiguratorViewModel, CSVExporterConfiguratorViewModel>();
+            container.Register<IFitsHeaderExporterConfiguratorViewModel, FitsHeaderExporterConfiguratorViewModel>();
+            container.Register<IVoyagerExporterConfiguratorViewModel, VoyagerExporterConfiguratorViewModel>();
+            container.Register<IFileDeleterExporterConfiguratorViewModel, FileDeleterExporterConfiguratorViewModel>();
+            container.Register<IFileMoverExporterConfiguratorViewModel, FileMoverExporterConfiguratorViewModel>();
 
-            container.Register<IFileTableViewModel.IFactory, FileTableViewModel.Factory>(Reuse.Singleton);
+            container.Register<IFileTableViewModel, FileTableViewModel>();
 
-            container.Register<IAppConfigViewModel.IFactory, AppConfigViewModel.Factory>(Reuse.Singleton);
-            container.Register<IAppConfigCategoryViewModel.IFactory, AppConfigCategoryViewModel.Factory>(Reuse.Singleton);
+            container.Register<IAppConfigViewModel, AppConfigViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IAppConfigCategoryViewModel, AppConfigCategoryViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
 
-            container.Register<IInstrumentProfileViewModel.IFactory, InstrumentProfileViewModel.Factory>(Reuse.Singleton);
-            container.Register<IInstrumentProfileSelectorViewModel.IFactory, InstrumentProfileSelectorViewModel.Factory>(Reuse.Singleton);
-            container.Register<IInstrumentProfileConfiguratorViewModel.IFactory, InstrumentProfileConfiguratorViewModel.Factory>(Reuse.Singleton);
+            container.Register<IInstrumentProfileViewModel, InstrumentProfileViewModel>();
+            container.Register<IInstrumentProfileSelectorViewModel, InstrumentProfileSelectorViewModel>();
+            container.Register<IInstrumentProfileConfiguratorViewModel, InstrumentProfileConfiguratorViewModel>();
 
-            container.Register<IImageAnalysisViewModel.IFactory, ImageAnalysisViewModel.Factory>(Reuse.Singleton);
+            container.Register<IImageAnalysisViewModel, ImageAnalysisViewModel>();
         }
 
         private static void RegisterViews(Container container)

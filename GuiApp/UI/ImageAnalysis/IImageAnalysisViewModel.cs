@@ -23,10 +23,7 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis
 {
     public interface IImageAnalysisViewModel
     {
-        public interface IFactory
-        {
-            IImageAnalysisViewModel Create(string file);
-        }
+        public record OfFile(string File);
 
         string File { get; }
 

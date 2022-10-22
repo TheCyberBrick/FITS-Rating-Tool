@@ -34,11 +34,11 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             set => this.RaiseAndSetIfChanged(ref _instrumentProfileSelector, value);
         }
 
-        public InstrumentProfileSettingViewModel(string name, Func<string> getter, Action<string> setter, IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory) : base(name)
+        public InstrumentProfileSettingViewModel(string name, Func<string> getter, Action<string> setter, Func<IInstrumentProfileSelectorViewModel> instrumentProfileSelectorFactory) : base(name)
         {
             Setting = new ConfigSetting<string>(getter, setter);
 
-            _instrumentProfileSelector = instrumentProfileSelectorFactory.Create();
+            _instrumentProfileSelector = instrumentProfileSelectorFactory.Invoke();
             _instrumentProfileSelector.SelectedProfile = null;
 
             var currentId = Setting.Value as string;

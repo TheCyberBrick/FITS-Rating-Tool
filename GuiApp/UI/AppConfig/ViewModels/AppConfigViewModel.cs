@@ -26,28 +26,11 @@ using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 {
-    public class AppConfigViewModel : IAppConfigViewModel
+    public class AppConfigViewModel : ViewModelBase, IAppConfigViewModel
     {
-        public class Factory : IAppConfigViewModel.IFactory
+        public AppConfigViewModel(IRegistrar<IAppConfigViewModel, IAppConfigViewModel.Of> reg)
         {
-            private readonly IAppConfig appConfig;
-            private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
-            private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
-            private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
-
-            public Factory(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory,
-                IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory)
-            {
-                this.appConfig = appConfig;
-                this.appConfigCategoryFactory = appConfigCategoryFactory;
-                this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
-                this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
-            }
-
-            public IAppConfigViewModel Create()
-            {
-                return new AppConfigViewModel(appConfig, appConfigCategoryFactory, jobGroupingConfiguratorFactory, instrumentProfileSelectorFactory);
-            }
+            reg.RegisterAndReturn<AppConfigViewModel>();
         }
 
 
@@ -61,9 +44,9 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
 
         private readonly IAppConfig appConfig;
-        private readonly IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory;
-        private readonly IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory;
-        private readonly IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory;
+        private readonly IContainer<IAppConfigCategoryViewModel, IAppConfigCategoryViewModel.OfName> appConfigCategoryContainer;
+        private readonly IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> jobGroupingConfiguratorContainer;
+        private readonly IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer;
 
         // Designer only
 #pragma warning disable CS8618
@@ -72,7 +55,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             bool b = false;
             string s = "";
 
-            var category1 = new AppConfigCategoryViewModel("Test 1");
+            var category1 = new AppConfigCategoryViewModel(new IAppConfigCategoryViewModel.OfName("Test 1"));
             category1.Settings.Add(new BoolSettingViewModel("Boolean", () => b, v => b = v));
             category1.Settings.Add(new StringSettingViewModel("String", () => s, v => s = v));
             category1.Settings.Add(new StringSettingViewModel("Password", () => s, v => s = v, true));
@@ -80,26 +63,32 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             category1.Settings.Add(new PathSettingViewModel("Directory", () => s, v => s = v, PathType.Directory));
             Categories.Add(category1);
 
-            Categories.Add(new AppConfigCategoryViewModel("Test 2"));
+            Categories.Add(new AppConfigCategoryViewModel(new IAppConfigCategoryViewModel.OfName("Test 2")));
         }
 #pragma warning restore CS8618
 
-        public AppConfigViewModel(IAppConfig appConfig, IAppConfigCategoryViewModel.IFactory appConfigCategoryFactory, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory,
-            IInstrumentProfileSelectorViewModel.IFactory instrumentProfileSelectorFactory)
+        private AppConfigViewModel(IAppConfigViewModel.Of args, IAppConfig appConfig, IContainer<IAppConfigCategoryViewModel, IAppConfigCategoryViewModel.OfName> appConfigCategoryContainer,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> jobGroupingConfiguratorContainer,
+            IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer)
         {
             this.appConfig = appConfig;
-            this.appConfigCategoryFactory = appConfigCategoryFactory;
-            this.jobGroupingConfiguratorFactory = jobGroupingConfiguratorFactory;
-            this.instrumentProfileSelectorFactory = instrumentProfileSelectorFactory;
+            this.appConfigCategoryContainer = appConfigCategoryContainer;
+            this.jobGroupingConfiguratorContainer = jobGroupingConfiguratorContainer;
+            this.instrumentProfileSelectorContainer = instrumentProfileSelectorContainer;
 
-            Categories.Add(CreateGeneralCategory());
-            Categories.Add(CreateImagesCategory());
-            Categories.Add(CreateEvaluationCategory());
-            Categories.Add(CreateVoyagerCategory());
+            appConfigCategoryContainer.BindTo(Categories);
 
             Apply = ReactiveCommand.Create(CommitAll);
             SaveAndExit = ReactiveCommand.Create(CommitAll);
             Cancel = ReactiveCommand.Create(() => { });
+        }
+
+        protected override void OnInstantiated()
+        {
+            CreateGeneralCategory();
+            CreateImagesCategory();
+            CreateEvaluationCategory();
+            CreateVoyagerCategory();
         }
 
         private void CommitAll()
@@ -116,9 +105,9 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
         private IAppConfigCategoryViewModel CreateGeneralCategory()
         {
-            var category = appConfigCategoryFactory.Create("General");
+            var category = appConfigCategoryContainer.Instantiate(new IAppConfigCategoryViewModel.OfName("General"));
 
-            category.Settings.Add(new InstrumentProfileSettingViewModel("Default Profile", () => appConfig.DefaultInstrumentProfileId, v => appConfig.DefaultInstrumentProfileId = v, instrumentProfileSelectorFactory)
+            category.Settings.Add(new InstrumentProfileSettingViewModel("Default Profile", () => appConfig.DefaultInstrumentProfileId, v => appConfig.DefaultInstrumentProfileId = v, () => instrumentProfileSelectorContainer.Instantiate(new IInstrumentProfileSelectorViewModel.Of()))
             {
                 Description = "Profile that should be used by default."
             });
@@ -137,7 +126,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
         private IAppConfigCategoryViewModel CreateImagesCategory()
         {
-            var category = appConfigCategoryFactory.Create("Images");
+            var category = appConfigCategoryContainer.Instantiate(new IAppConfigCategoryViewModel.OfName("Images"));
 
             category.Settings.Add(new BoolSettingViewModel("Keep Image Data Loaded", () => appConfig.KeepImageDataLoaded, v => appConfig.KeepImageDataLoaded = v)
             {
@@ -177,13 +166,13 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
         private IAppConfigCategoryViewModel CreateEvaluationCategory()
         {
-            var category = appConfigCategoryFactory.Create("Evaluation");
+            var category = appConfigCategoryContainer.Instantiate(new IAppConfigCategoryViewModel.OfName("Evaluation"));
 
             category.Settings.Add(new PathSettingViewModel("Default Evaluation Formula", () => appConfig.DefaultEvaluationFormulaPath, v => appConfig.DefaultEvaluationFormulaPath = v, PathType.File, new List<string>() { "txt" })
             {
                 Description = "Path to a text file containing the evaluation formula that should be used by default."
             });
-            category.Settings.Add(new GroupingConfigurationSettingViewModel("Default Evaluation Grouping", () => appConfig.DefaultEvaluationGrouping, v => appConfig.DefaultEvaluationGrouping = v, jobGroupingConfiguratorFactory)
+            category.Settings.Add(new GroupingConfigurationSettingViewModel("Default Evaluation Grouping", () => appConfig.DefaultEvaluationGrouping, v => appConfig.DefaultEvaluationGrouping = v, conf => jobGroupingConfiguratorContainer.Instantiate(new IJobGroupingConfiguratorViewModel.OfConfiguration(conf)))
             {
                 Description = "Evaluation grouping used by default."
             });
@@ -193,7 +182,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 
         private IAppConfigCategoryViewModel CreateVoyagerCategory()
         {
-            var category = appConfigCategoryFactory.Create("Voyager");
+            var category = appConfigCategoryContainer.Instantiate(new IAppConfigCategoryViewModel.OfName("Voyager"));
 
             category.Settings.Add(new BoolSettingViewModel("Enable Voyager Integration", () => appConfig.VoyagerIntegrationEnabled, v => appConfig.VoyagerIntegrationEnabled = v)
             {

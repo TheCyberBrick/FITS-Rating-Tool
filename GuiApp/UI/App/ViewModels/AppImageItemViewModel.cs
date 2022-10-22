@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using ReactiveUI;
 using System.Reactive;
@@ -24,13 +25,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
     public class AppImageItemViewModel : ViewModelBase, IAppImageItemViewModel
     {
-        public class Factory : IAppImageItemViewModel.IFactory
+        public AppImageItemViewModel(IRegistrar<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> reg)
         {
-            public IAppImageItemViewModel Create(long id, IFitsImageViewModel image)
-            {
-                return new AppImageItemViewModel(id, image);
-            }
+            reg.RegisterAndReturn<AppImageItemViewModel>();
         }
+
 
         public long Id { get; }
 
@@ -48,10 +47,10 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public ReactiveCommand<Unit, Unit> Remove { get; }
 
 
-        public AppImageItemViewModel(long id, IFitsImageViewModel image)
+        private AppImageItemViewModel(IAppImageItemViewModel.OfImage args)
         {
-            Id = id;
-            Image = image;
+            Id = args.Id;
+            Image = args.Image;
             Remove = ReactiveCommand.Create(() => { });
         }
     }

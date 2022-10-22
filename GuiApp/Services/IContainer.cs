@@ -34,7 +34,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         T Instantiate(Template template);
 
-        void Destroy(T instance);
+        bool Destroy(T instance);
 
         void Destroy();
     }

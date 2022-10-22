@@ -22,24 +22,15 @@ using System;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using FitsRatingTool.FitsLoader.Models;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
     public class FitsImageStatisticsProgressViewModel : CallbackProgressViewModel<IFitsImage.PhotometryCallback, PhotometryStatistics?, IFitsImageStatisticsViewModel, FitsImageStatisticsProgress>, IFitsImageStatisticsProgressViewModel
     {
-        public class Factory : IFitsImageStatisticsProgressViewModel.IFactory
+        public FitsImageStatisticsProgressViewModel(IRegistrar<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> reg)
         {
-            private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-
-            public Factory(IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory)
-            {
-                this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
-            }
-
-            public IFitsImageStatisticsProgressViewModel Create(IFitsImageStatisticsProgressViewModel.IFactory.AsyncTaskFunc taskFunc)
-            {
-                return new FitsImageStatisticsProgressViewModel(fitsImageStatisticsFactory, callback => taskFunc.Invoke(callback));
-            }
+            reg.RegisterAndReturn<FitsImageStatisticsProgressViewModel>();
         }
 
         private int _numberOfObjects;
@@ -77,11 +68,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _phase, value);
         }
 
-        private readonly IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory;
-
-        private FitsImageStatisticsProgressViewModel(IFitsImageStatisticsViewModel.IFactory fitsImageStatisticsFactory, AsyncTaskFunc taskFunc) : base(taskFunc)
+        private FitsImageStatisticsProgressViewModel(IFitsImageStatisticsProgressViewModel.OfTaskFunc args, AsyncTaskFunc taskFunc) : base(callback => args.TaskFunc.Invoke(callback))
         {
-            this.fitsImageStatisticsFactory = fitsImageStatisticsFactory;
         }
 
         protected override void OnProgressChanged(FitsImageStatisticsProgress value)
@@ -154,7 +142,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         {
             if (result.HasValue)
             {
-                return Task.FromResult<IFitsImageStatisticsViewModel?>(fitsImageStatisticsFactory.Create(result.Value, 0));
+                return Task.FromResult<IFitsImageStatisticsViewModel?>(new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfStatistics(result.Value, 0)));
             }
             return Task.FromResult<IFitsImageStatisticsViewModel?>(null);
         }

@@ -33,23 +33,9 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
 {
     public class ImageAnalysisViewModel : ViewModelBase, IImageAnalysisViewModel
     {
-        public class Factory : IImageAnalysisViewModel.IFactory
+        public ImageAnalysisViewModel(IRegistrar<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> reg)
         {
-            private readonly IFitsImageManager fitsImageManager;
-            private readonly IStarSampler starSampler;
-            private readonly IImageAnalysisManager imageAnalysisManager;
-
-            public Factory(IFitsImageManager fitsImageManager, IStarSampler starSampler, IImageAnalysisManager imageAnalysisManager)
-            {
-                this.fitsImageManager = fitsImageManager;
-                this.starSampler = starSampler;
-                this.imageAnalysisManager = imageAnalysisManager;
-            }
-
-            public IImageAnalysisViewModel Create(string file)
-            {
-                return new ImageAnalysisViewModel(file, fitsImageManager, starSampler, imageAnalysisManager);
-            }
+            reg.RegisterAndReturn<ImageAnalysisViewModel>();
         }
 
 
@@ -166,14 +152,14 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
         private readonly IStarSampler starSampler;
         private readonly IImageAnalysisManager imageAnalysisManager;
 
-        private ImageAnalysisViewModel(string file, IFitsImageManager fitsImageManager, IStarSampler starSampler, IImageAnalysisManager imageAnalysisManager)
+        private ImageAnalysisViewModel(IImageAnalysisViewModel.OfFile args, IFitsImageManager fitsImageManager, IStarSampler starSampler, IImageAnalysisManager imageAnalysisManager)
         {
             this.fitsImageManager = fitsImageManager;
             this.starSampler = starSampler;
             this.imageAnalysisManager = imageAnalysisManager;
 
-            File = file;
-            FileName = Path.GetFileName(file);
+            File = args.File;
+            FileName = Path.GetFileName(args.File);
 
             LoadParameters();
 

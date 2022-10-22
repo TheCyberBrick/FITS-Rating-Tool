@@ -19,6 +19,7 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
+using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
@@ -28,19 +29,9 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     public class FitsHeaderExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel
     {
-        public class Factory : IFitsHeaderExporterConfiguratorViewModel.IFactory
+        public FitsHeaderExporterConfiguratorViewModel(IRegistrar<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> reg)
         {
-            private readonly IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory;
-
-            public Factory(IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory)
-            {
-                this.fitsHeaderEvaluationExporterFactory = fitsHeaderEvaluationExporterFactory;
-            }
-
-            public IFitsHeaderExporterConfiguratorViewModel Create()
-            {
-                return new FitsHeaderExporterConfiguratorViewModel(fitsHeaderEvaluationExporterFactory);
-            }
+            reg.RegisterAndReturn<FitsHeaderExporterConfiguratorViewModel>();
         }
 
         public override IBaseExporterConfiguratorViewModel.FileExtension? FileExtension => null;
@@ -61,7 +52,7 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         private readonly IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory;
 
-        public FitsHeaderExporterConfiguratorViewModel(IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory) : base()
+        private FitsHeaderExporterConfiguratorViewModel(IFitsHeaderExporterConfiguratorViewModel.Of args, IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory) : base()
         {
             this.fitsHeaderEvaluationExporterFactory = fitsHeaderEvaluationExporterFactory;
 

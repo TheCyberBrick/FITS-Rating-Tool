@@ -28,19 +28,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
     public class EvaluationExporterConfiguratorViewModel : ViewModelBase, IEvaluationExporterConfiguratorViewModel
     {
-        public class Factory : IFactory
+        public EvaluationExporterConfiguratorViewModel(IRegistrar<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> reg)
         {
-            private readonly IExporterConfiguratorManager exporterConfiguratorManager;
-
-            public Factory(IExporterConfiguratorManager exporterConfiguratorManager)
-            {
-                this.exporterConfiguratorManager = exporterConfiguratorManager;
-            }
-
-            public IEvaluationExporterConfiguratorViewModel Create()
-            {
-                return new EvaluationExporterConfiguratorViewModel(exporterConfiguratorManager);
-            }
+            reg.RegisterAndReturn<EvaluationExporterConfiguratorViewModel>();
         }
 
 
@@ -69,7 +59,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
 
-        private EvaluationExporterConfiguratorViewModel(IExporterConfiguratorManager exporterConfiguratorManager)
+        private EvaluationExporterConfiguratorViewModel(IEvaluationExporterConfiguratorViewModel.Of args, IExporterConfiguratorManager exporterConfiguratorManager)
         {
             var exporterConfiguratorFactories = new List<ExporterConfiguratorFactory>();
             foreach (var pair in exporterConfiguratorManager.Factories)

@@ -34,11 +34,11 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             set => this.RaiseAndSetIfChanged(ref _jobGroupingConfigurator, value);
         }
 
-        public GroupingConfigurationSettingViewModel(string name, Func<GroupingConfiguration> getter, Action<GroupingConfiguration> setter, IJobGroupingConfiguratorViewModel.IFactory jobGroupingConfiguratorFactory) : base(name)
+        public GroupingConfigurationSettingViewModel(string name, Func<GroupingConfiguration> getter, Action<GroupingConfiguration> setter, Func<GroupingConfiguration, IJobGroupingConfiguratorViewModel> jobGroupingConfiguratorFactory) : base(name)
         {
             Setting = new ConfigSetting<GroupingConfiguration>(getter, setter);
 
-            _jobGroupingConfigurator = jobGroupingConfiguratorFactory.Create(Setting.Value as GroupingConfiguration);
+            _jobGroupingConfigurator = jobGroupingConfiguratorFactory.Invoke((GroupingConfiguration)Setting.Value!);
 
             this.WhenAnyValue(x => x.JobGroupingConfigurator.GroupingConfiguration)
                 .Subscribe(x => Setting.Value = x);
