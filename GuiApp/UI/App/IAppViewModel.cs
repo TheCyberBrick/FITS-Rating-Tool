@@ -34,6 +34,8 @@ namespace FitsRatingTool.GuiApp.UI.App
 {
     public interface IAppViewModel
     {
+        public record Of();
+
         #region +++ Misc +++
         ReactiveCommand<Unit, IFileTableViewModel> ShowFileTable { get; }
 

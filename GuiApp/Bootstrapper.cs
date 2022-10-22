@@ -77,9 +77,9 @@ namespace FitsRatingTool.GuiApp
 
             //var c0 = new FitsRatingTool.GuiApp.Models.Container<ITestVM0, ITestVM0.Args>(container);
 
-            var d = container.Resolve<IContainerRoot<ITestVM0, ITestVM0.Args>>().Instantiate(new ITestVM0.Args(), out var c0);
+            var d = container.Resolve<IContainerRoot<ITestVM0, ITestVM0.Args>>().Instantiate(new ITestVM0.Args(), out var c0, out var t0);
 
-            c0.GetAny().Test();
+            t0.Test();
 
             d.Dispose();
         }
@@ -125,7 +125,7 @@ namespace FitsRatingTool.GuiApp
         {
             // TODO Temp
 
-            container.Register<IAppViewModel, AppViewModel>(Reuse.Singleton, made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IAppViewModel, AppViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
             container.Register<IAppProfileSelectorViewModel, AppProfileSelectorViewModel>();
             container.Register<IAppViewerOverlayViewModel, AppViewerOverlayViewModel>();
             container.Register<IAppImageItemViewModel, AppImageItemViewModel>();

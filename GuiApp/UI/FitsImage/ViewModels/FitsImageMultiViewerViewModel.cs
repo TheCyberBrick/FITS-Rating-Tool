@@ -134,7 +134,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageMultiViewerViewModel(IFitsImageMultiViewerViewModel.Of args, IContainer<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerContainer)
         {
             this.fitsImageViewerContainer = fitsImageViewerContainer;
+        }
 
+        protected override void OnInstantiated()
+        {
             this.WhenAnyValue(x => x.SelectedInstance!.Viewer.FitsImage).Subscribe(image => FitsImage = image);
             this.WhenAnyValue(x => x.SelectedInstance!.Viewer.File).Subscribe(file => File = file);
 

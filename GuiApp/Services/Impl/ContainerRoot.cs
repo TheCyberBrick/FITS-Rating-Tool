@@ -46,10 +46,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public IDisposable Instantiate(Template template, out IContainer<T, Template> container)
+        public IDisposable Instantiate(Template template, out IContainer<T, Template> container, out T instance)
         {
             var disposable = Initialize(out container);
-            container.Instantiate(template);
+            instance = container.Instantiate(template);
             return disposable;
         }
     }

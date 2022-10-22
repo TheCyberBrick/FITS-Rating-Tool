@@ -227,7 +227,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 if (!IsInitialized)
                 {
-                    throw new InvalidOperationException("Cannot instantiate before container is initialized");
+                    throw new InvalidOperationException($"Cannot instantiate before container ({typeof(T).FullName}, {typeof(Template).FullName}) is initialized");
                 }
                 else
                 {

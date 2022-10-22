@@ -25,6 +25,6 @@ namespace FitsRatingTool.GuiApp.Services
     {
         IDisposable Initialize(out IContainer<T, Template> container);
 
-        IDisposable Instantiate(Template template, out IContainer<T, Template> container);
+        IDisposable Instantiate(Template template, out IContainer<T, Template> container, out T instance);
     }
 }

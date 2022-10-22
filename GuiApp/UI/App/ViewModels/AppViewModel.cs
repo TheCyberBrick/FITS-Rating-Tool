@@ -46,6 +46,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
     public class AppViewModel : ViewModelBase, IAppViewModel
     {
+        public AppViewModel(IRegistrar<IAppViewModel, IAppViewModel.Of> reg)
+        {
+            reg.RegisterAndReturn<AppViewModel>();
+        }
+
         public ReactiveCommand<Unit, IFileTableViewModel> ShowFileTable { get; }
 
         public ReactiveCommand<Unit, Unit> HideFileTable { get; }
@@ -190,7 +195,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 #pragma warning restore CS8618
 
-        public AppViewModel(IFitsImageManager manager,
+        private AppViewModel(IAppViewModel.Of args,
+            IFitsImageManager manager,
             IContainer<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> multiImageViewerContainer,
             IContainer<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> imageLoadProgressContainer,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
@@ -492,6 +498,23 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             DecreaseThumbnailScale = ReactiveCommand.Create<float>(s => ThumbnailScale = Math.Max(0.1f, ThumbnailScale - Math.Max(0.0f, s)));
 
 
+            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+
+            WeakEventHandlerManager.Subscribe<IOpenFileEventManager, IOpenFileEventManager.OpenFileEventArgs, AppViewModel>(openFileEventManager, nameof(openFileEventManager.OnOpenFile), OnOpenFile);
+
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueChangedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValueChanged), OnConfigChanged);
+            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
+
+            RxApp.MainThreadScheduler.Schedule(Initialize);
+
+            if (openFileEventManager.LaunchFilePath != null)
+            {
+                OnOpenFile(this, new IOpenFileEventManager.OpenFileEventArgs(openFileEventManager.LaunchFilePath));
+            }
+        }
+
+        protected override void OnInstantiated()
+        {
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>
             {
                 if (item != null)
@@ -524,20 +547,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     item.Scale = ThumbnailScale;
                 }
             });
-
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
-
-            WeakEventHandlerManager.Subscribe<IOpenFileEventManager, IOpenFileEventManager.OpenFileEventArgs, AppViewModel>(openFileEventManager, nameof(openFileEventManager.OnOpenFile), OnOpenFile);
-
-            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueChangedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValueChanged), OnConfigChanged);
-            WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
-
-            RxApp.MainThreadScheduler.Schedule(Initialize);
-
-            if (openFileEventManager.LaunchFilePath != null)
-            {
-                OnOpenFile(this, new IOpenFileEventManager.OpenFileEventArgs(openFileEventManager.LaunchFilePath));
-            }
         }
 
         private async Task ApplySettingsAsync()
