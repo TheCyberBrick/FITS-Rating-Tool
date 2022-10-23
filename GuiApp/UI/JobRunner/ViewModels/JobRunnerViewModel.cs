@@ -74,7 +74,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         public ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        public ReactiveCommand<Unit, IJobRunnerProgressViewModel> RunWithProgress { get; }
+        public ReactiveCommand<Unit, IInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 
@@ -84,7 +84,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
 
 
-        private JobRunnerViewModel(IJobRunnerViewModel.Of args, IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressContainer)
+        private JobRunnerViewModel(IJobRunnerViewModel.Of args,
+            IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressContainer,
+            IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressTempContainer,
+            IInstantiatorFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
         {
             jobRunnerProgressContainer.ToSingletonWithObservable().Subscribe(x => Progress = x);
 
@@ -153,30 +156,32 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                 }
             }, canRun);
 
-            // TODO Temp
-            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressContainer.Instantiate(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
+            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Create(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
 
             RunWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var vm = await RunWithProgress.Execute();
-                if (vm != null)
+                var instantiator = await RunWithProgress.Execute();
+                if (instantiator != null)
                 {
-                    var result = await RunProgressDialog.Handle(vm);
+                    await instantiator.DoAsync(jobRunnerProgressTempContainer, async vm =>
+                    {
+                        var result = await RunProgressDialog.Handle(vm);
 
-                    if (result.Error != null)
-                    {
-                        Debug.WriteLine(result.Error.Message);
-                        Debug.WriteLine(result.Error.StackTrace);
-                    }
+                        if (result.Error != null)
+                        {
+                            Debug.WriteLine(result.Error.Message);
+                            Debug.WriteLine(result.Error.StackTrace);
+                        }
 
-                    try
-                    {
-                        await RunResultDialog.Handle(result);
-                    }
-                    catch (UnhandledInteractionException<JobResult, Unit>)
-                    {
-                        // OK, result dialog is optional
-                    }
+                        try
+                        {
+                            await RunResultDialog.Handle(result);
+                        }
+                        catch (UnhandledInteractionException<JobResult, Unit>)
+                        {
+                            // OK, result dialog is optional
+                        }
+                    });
                 }
             }, canRun);
         }

@@ -26,6 +26,7 @@ using FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels;
 using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
 using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
 using Avalonia;
+using System;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.Windows
 {
@@ -46,6 +47,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.Windows
                     d.Add(ViewModel.SelectCachePathOpenFolderDialog.RegisterHandler(ShowOpenFolderDialogAsync));
                     d.Add(ViewModel.SaveJobConfigSaveFileDialog.RegisterHandler(ShowSaveFileDialogAsync));
                     d.Add(ViewModel.SaveJobConfigResultDialog.RegisterHandler(ShowSaveJobConfigResultDialogAsync));
+                    d.Add(ViewModel.ConfigLoadErrorDialog.RegisterHandler(ShowConfigLoadErrorDialogAsync));
                 }
             });
         }
@@ -90,6 +92,12 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.Windows
                 await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.Ok, "Job Configuration Error", result.Error.Message, null, MessageBoxIcon.Error);
             }
 
+            ctx.SetOutput(Unit.Default);
+        }
+
+        private async Task ShowConfigLoadErrorDialogAsync(InteractionContext<Exception, Unit> ctx)
+        {
+            await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.Ok, "Import Failed", ctx.Input.Message, null, MessageBoxIcon.Error);
             ctx.SetOutput(Unit.Default);
         }
     }

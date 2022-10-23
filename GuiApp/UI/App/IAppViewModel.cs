@@ -108,22 +108,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         #region +++ Job Configurator +++
         ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
-        public class JobConfiguratorLoadResult
-        {
-            public IJobConfiguratorViewModel? JobConfigurator { get; }
-
-            public Exception? Error { get; }
-
-            public bool Successful => JobConfigurator != null;
-
-            public JobConfiguratorLoadResult(IJobConfiguratorViewModel? jobConfigurator, Exception? error)
-            {
-                JobConfigurator = jobConfigurator;
-                Error = error;
-            }
-        }
-
-        ReactiveCommand<Unit, JobConfiguratorLoadResult> ShowJobConfiguratorWithOpenFileDialog { get; }
+        ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; }
 

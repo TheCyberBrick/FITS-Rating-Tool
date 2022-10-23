@@ -34,6 +34,8 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using static FitsRatingTool.GuiApp.UI.JobConfigurator.IJobConfiguratorViewModel;
 using System.Text.RegularExpressions;
+using System.Reactive.Concurrency;
+using System.Text;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
@@ -43,6 +45,12 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         {
             reg.RegisterAndReturn<JobConfiguratorViewModel>();
         }
+
+        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> reg)
+        {
+            reg.RegisterAndReturn<JobConfiguratorViewModel>();
+        }
+
 
         private class GroupingFilterViewModel : ReactiveObject, IGroupingFilterViewModel
         {
@@ -110,10 +118,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         }
 
 
-
         public IEvaluationFormulaViewModel EvaluationFormula { get; private set; } = null!;
-
-
 
 
         public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
@@ -229,15 +234,46 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         public Interaction<SaveResult, Unit> SaveJobConfigResultDialog { get; } = new();
 
 
+        public Interaction<Exception, Unit> ConfigLoadErrorDialog { get; } = new();
+
+
         private readonly IJobConfigFactory jobConfigFactory;
         private readonly IGroupingManager groupingManager;
 
+        private readonly string? configFile;
 
-        private JobConfiguratorViewModel(IJobConfiguratorViewModel.Of args, IEvaluationManager evaluationManager,
+        private JobConfiguratorViewModel(IJobConfiguratorViewModel.OfConfigFile args,
+            IEvaluationManager evaluationManager,
+            IJobConfigFactory jobConfigFactory,
+            IGroupingManager groupingManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
-            IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer, IJobConfigFactory jobConfigFactory, IGroupingManager groupingManager,
+            IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
+            IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer)
+            : this(args.File, evaluationManager, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer)
+        {
+        }
+
+        private JobConfiguratorViewModel(IJobConfiguratorViewModel.Of args,
+            IEvaluationManager evaluationManager,
+            IJobConfigFactory jobConfigFactory,
+            IGroupingManager groupingManager,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
+            IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
+            IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer)
+            : this((string?)null, evaluationManager, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer)
+        {
+        }
+
+        private JobConfiguratorViewModel(
+            string? configFile,
+            IEvaluationManager evaluationManager,
+            IJobConfigFactory jobConfigFactory,
+            IGroupingManager groupingManager,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
+            IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
             IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer)
         {
+            this.configFile = configFile;
             this.jobConfigFactory = jobConfigFactory;
             this.groupingManager = groupingManager;
 
@@ -271,18 +307,6 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 EvaluationFormula.RatingFormula = evaluationManager.CurrentFormula;
             });
 
-            this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.EvaluationFormula.RatingFormula).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.GroupingKeysRequired).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.IsFilteredByGrouping).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.ParallelIO).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.ParallelTasks).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.MaxImageSize).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.MaxImageWidth).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.MaxImageHeight).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.OutputLogsPath).Subscribe(x => UpdateJobConfig());
-            this.WhenAnyValue(x => x.CachePath).Subscribe(x => UpdateJobConfig());
-
             GroupingFilters.CollectionChanged += (_, args) =>
             {
                 // Only need to update when removed. Updating to add a new filter
@@ -292,8 +316,6 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                     UpdateJobConfig();
                 }
             };
-
-            UpdateJobConfig();
 
             var canSave = Observable.CombineLatest(
                 this.WhenAnyValue(x => x.EvaluationExporterConfigurator.ExporterConfigurator),
@@ -328,16 +350,69 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 }
             }, canSave);
 
+            AddNewGroupingFilter = ReactiveCommand.Create(() =>
+            {
+                AddGroupingFilter();
+            });
+        }
+
+        protected override void OnInstantiated()
+        {
+            this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.EvaluationFormula.RatingFormula).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.GroupingKeysRequired).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.IsFilteredByGrouping).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.ParallelIO).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.ParallelTasks).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.MaxImageSize).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.MaxImageWidth).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.MaxImageHeight).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.OutputLogsPath).Subscribe(x => UpdateJobConfig());
+            this.WhenAnyValue(x => x.CachePath).Subscribe(x => UpdateJobConfig());
+
+            UpdateJobConfig();
+
             // Add one entry by default
             if (GroupingFilters.Count == 0)
             {
                 AddGroupingFilter();
             }
 
-            AddNewGroupingFilter = ReactiveCommand.Create(() =>
+            if (configFile != null)
             {
-                AddGroupingFilter();
-            });
+                RxApp.MainThreadScheduler.Schedule(() => TryImportConfigFile(configFile));
+            }
+        }
+
+        private async void TryImportConfigFile(string file)
+        {
+            Exception? error = null;
+
+            try
+            {
+                var config = jobConfigFactory.Load(await File.ReadAllTextAsync(file, Encoding.UTF8));
+
+                if (!TryLoadJobConfig(config))
+                {
+                    error = new Exception("Failed loading job config into job configurator");
+                }
+            }
+            catch (Exception ex)
+            {
+                error = ex;
+            }
+
+            if (error != null)
+            {
+                try
+                {
+                    await ConfigLoadErrorDialog.Handle(error);
+                }
+                catch (UnhandledInteractionException<Exception, Unit>)
+                {
+                    // OK
+                }
+            }
         }
 
         public void AddGroupingFilter(string? key = null, string? pattern = null)

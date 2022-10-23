@@ -206,28 +206,9 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(instantiator, false, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowJobConfiguratorWithOpenFileDialog.Subscribe(result =>
+                    d.Add(ViewModel.ShowJobConfiguratorWithOpenFileDialog.Subscribe(instantiator =>
                     {
-                        if (result.JobConfigurator != null)
-                        {
-                            var window = windowManager.Get<JobConfiguratorWindow>().FirstOrDefault();
-                            if (window != null)
-                            {
-                                window.Close();
-                            }
-
-                            // TODO Temp
-                            // Should use instantiator
-                            windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(
-                                container => result.JobConfigurator,
-                                false, out var _);
-                        }
-                        else
-                        {
-                            Debug.WriteLine(result.Error);
-
-                            MessageBoxWindow.Show(this, MessageBoxStyle.Ok, "Import Failed", result.Error != null ? result.Error.Message : "Unknown error", null, MessageBoxIcon.Error);
-                        }
+                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>(instantiator, false, out var _);
                     }));
 
                     d.Add(ViewModel.ShowJobRunner.Subscribe(instantiator =>

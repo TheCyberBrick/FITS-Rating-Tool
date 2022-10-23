@@ -20,9 +20,7 @@ using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Evaluation;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Reactive;
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator
@@ -30,6 +28,8 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator
     public interface IJobConfiguratorViewModel
     {
         public record Of();
+
+        public record OfConfigFile(string File);
 
 
         IEvaluationFormulaViewModel EvaluationFormula { get; }
@@ -109,6 +109,9 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator
         ReactiveCommand<Unit, Unit> SaveJobConfigWithSaveFileDialog { get; }
 
         Interaction<Unit, string> SaveJobConfigSaveFileDialog { get; }
+
+
+        Interaction<Exception, Unit> ConfigLoadErrorDialog { get; }
 
         public class SaveResult
         {

@@ -151,7 +151,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IEvaluationExportProgressViewModel, EvaluationExportProgressViewModel>();
 
             container.Register<IJobGroupingConfiguratorViewModel, JobGroupingConfiguratorViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
-            container.Register<IJobConfiguratorViewModel, JobConfiguratorViewModel>();
+            container.Register<IJobConfiguratorViewModel, JobConfiguratorViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
             container.Register<IJobRunnerViewModel, JobRunnerViewModel>();
             container.Register<IJobRunnerProgressViewModel, JobRunnerProgressViewModel>();
 

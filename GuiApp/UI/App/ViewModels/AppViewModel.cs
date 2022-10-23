@@ -139,7 +139,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
-        public ReactiveCommand<Unit, IAppViewModel.JobConfiguratorLoadResult> ShowJobConfiguratorWithOpenFileDialog { get; }
+        public ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         public Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; } = new();
 
@@ -227,6 +227,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IInstantiatorFactory<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaFactory,
             IInstantiatorFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory,
             IInstantiatorFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> jobConfiguratorFactory,
+            IInstantiatorFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> jobConfiguratorFromFileFactory,
             IInstantiatorFactory<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerFactory,
             IInstantiatorFactory<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory)
         {
@@ -446,37 +447,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             ShowJobConfigurator = ReactiveCommand.Create(() => jobConfiguratorFactory.Create(new IJobConfiguratorViewModel.Of()));
 
-            // TODO Temp
             ShowJobConfiguratorWithOpenFileDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                Exception? error = null;
-
                 var file = await JobConfiguratorOpenFileDialog.Handle(Unit.Default);
                 if (file.Length > 0)
                 {
-                    try
-                    {
-                        var config = jobConfigFactory.Load(await File.ReadAllTextAsync(file, Encoding.UTF8));
-
-                        // TODO Temp
-                        var vm = jobConfiguratorContainer.Instantiate(new IJobConfiguratorViewModel.Of());
-
-                        if (vm.TryLoadJobConfig(config))
-                        {
-                            return new IAppViewModel.JobConfiguratorLoadResult(vm, null);
-                        }
-                        else
-                        {
-                            error = new Exception("Failed loading job config into job configurator");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        error = ex;
-                    }
+                    return jobConfiguratorFromFileFactory.Create(new IJobConfiguratorViewModel.OfConfigFile(file));
                 }
 
-                return new IAppViewModel.JobConfiguratorLoadResult(null, error);
+                return jobConfiguratorFromFileFactory.Create(new IJobConfiguratorViewModel.OfConfigFile(""));
             });
 
             ShowJobRunner = ReactiveCommand.Create(() => jobRunnerFactory.Create(new IJobRunnerViewModel.Of()));
