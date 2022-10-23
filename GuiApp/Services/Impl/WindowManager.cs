@@ -18,8 +18,10 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using DryIoc;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
@@ -32,17 +34,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public IEnumerable<Window> Windows => windows.SelectMany(pair => pair.Value);
 
-        public bool Show<T>(Func<T> factory, bool showMultiple, Func<T, bool>? filter = null) where T : Window
+        private readonly IResolverContext resolver;
+
+        public WindowManager(IResolverContext resolver)
         {
-            var type = typeof(T);
+            this.resolver = resolver;
+        }
+
+        public bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? outWindow, Func<TWindow, bool>? filter = null)
+            where TWindow : Window
+            where TData : class
+        {
+            var type = typeof(TWindow);
 
             windows.TryGetValue(type, out var list);
 
-            T? window = null;
+            TWindow? window = null;
 
             if (showMultiple || list == null || list.Count == 0)
             {
-                window = factory();
+                window = resolver.Resolve<TWindow>();
             }
             else if (list != null && filter != null)
             {
@@ -50,7 +61,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 foreach (var w in list)
                 {
-                    if (filter((T)w))
+                    if (filter((TWindow)w))
                     {
                         hasMatchingWindow = true;
                         break;
@@ -59,12 +70,18 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 if (!hasMatchingWindow)
                 {
-                    window = factory();
+                    window = resolver.Resolve<TWindow>();
                 }
             }
 
             if (window != null)
             {
+                var containerRoot = resolver.Resolve<IContainerRoot<TData, TTemplate>>();
+
+                var disposable = containerRoot.Initialize(out var container);
+
+                window.DataContext = factory.Invoke(container);
+
                 windows[type] = list ??= new();
                 list.Add(window);
 
@@ -79,6 +96,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 void onClosed(object? sender, EventArgs e)
                 {
                     window.Closed -= onClosed;
+
+                    disposable.Dispose();
 
                     stateObservableSubscription.Dispose();
 
@@ -99,6 +118,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 _windowOpened?.Invoke(this, new IWindowManager.WindowEventArgs(window));
 
+                outWindow = window;
+
                 return true;
             }
 
@@ -108,7 +129,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     list[0].WindowState = WindowState.Normal;
                 }
+
                 list[0].Activate();
+
+                outWindow = (TWindow)list[0];
+            }
+            else
+            {
+                outWindow = null;
             }
 
             return false;

@@ -33,6 +33,8 @@ namespace FitsRatingTool.GuiApp.Services
     {
         bool IsExpired { get; }
 
+        IInstantiator<T, Template> AndThen(Action<T> action);
+
         T Instantiate(Func<Template, T> factory);
     }
 }

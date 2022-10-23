@@ -29,11 +29,23 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             public bool IsExpired { get; private set; }
 
+            private readonly List<Action<T>> actions = new();
+
             private readonly Func<Template?> templateFactory;
 
             public Instantiator(Func<Template?> templateFactory)
             {
                 this.templateFactory = templateFactory;
+            }
+
+            public IInstantiator<T, Template> AndThen(Action<T> action)
+            {
+                lock (this)
+                {
+                    CheckExpired();
+                    actions.Add(action);
+                }
+                return this;
             }
 
             public T Instantiate(Func<Template, T> factory)
@@ -52,6 +64,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     CheckExpired();
 
                     var instance = factory.Invoke(template!);
+
+                    foreach (var action in actions)
+                    {
+                        action.Invoke(instance);
+                    }
 
                     Dispose();
 

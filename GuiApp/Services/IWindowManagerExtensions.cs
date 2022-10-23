@@ -18,37 +18,24 @@
 
 using Avalonia.Controls;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public interface IWindowManager
+    public static class IWindowManagerExtensions
     {
-        public class WindowEventArgs : EventArgs
+        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, IInstantiator<TData, TTemplate> instantiator, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
+            where TWindow : Window
+            where TData : class
         {
-            public Window Window { get; }
-
-            public WindowEventArgs(Window window)
-            {
-                Window = window;
-            }
+            return manager.Show<TWindow, TData, TTemplate>(container => instantiator.Instantiate(container.Instantiate), showMultiple, out window, filter);
         }
 
-        IEnumerable<Window> Windows { get; }
-
-        bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
+        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, TTemplate template, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
             where TWindow : Window
-            where TData : class;
-
-        IEnumerable<T> Get<T>() where T : Window;
-
-        void MinimizeAll();
-
-        void RestoreAll();
-
-        event EventHandler<WindowEventArgs> WindowOpened;
-
-        event EventHandler<WindowEventArgs> WindowClosed;
+            where TData : class
+        {
+            return manager.Show<TWindow, TData, TTemplate>(container => container.Instantiate(template), showMultiple, out window, filter);
+        }
     }
 }

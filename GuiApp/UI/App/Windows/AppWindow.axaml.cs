@@ -45,6 +45,11 @@ using System.IO;
 using System.Reactive.Concurrency;
 using FitsRatingTool.GuiApp.UI.AppConfig.Windows;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile.Windows;
+using FitsRatingTool.GuiApp.UI.FileTable;
+using FitsRatingTool.GuiApp.UI.Evaluation;
+using FitsRatingTool.GuiApp.UI.JobConfigurator;
+using FitsRatingTool.GuiApp.UI.JobRunner;
+using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
@@ -121,32 +126,27 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                     d.Add(ViewModel.JobConfiguratorOpenFileDialog.RegisterHandler(ShowJobConfiguratorOpenFileDialogAsync));
 
 
-                    d.Add(ViewModel.ShowFileTable.Subscribe(vm =>
+                    d.Add(ViewModel.ShowFileTable.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() =>
+                        IDisposable? sub = null;
+                        if (windowManager.Show<FileTableWindow, IFileTableViewModel, IFileTableViewModel.Of>(instantiator.AndThen(vm =>
                         {
-                            var window = new FileTableWindow()
-                            {
-                                DataContext = vm
-                            };
-
-                            var sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
+                            sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
                             {
                                 if (ViewModel != null && ViewModel.MultiViewer != null && x != null)
                                 {
                                     ViewModel.MultiViewer.File = x.File;
                                 }
                             });
-
+                        }), false, out var window))
+                        {
                             void onClosing(object? sender, EventArgs e)
                             {
-                                sub.Dispose();
+                                sub?.Dispose();
                                 window.Closing -= onClosing;
                             };
                             window.Closing += onClosing;
-
-                            return window;
-                        }, false);
+                        }
                     }));
 
                     d.Add(ViewModel.HideFileTable.Subscribe(_ =>
@@ -155,40 +155,32 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         Activate();
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationTable.Subscribe(vm =>
+                    d.Add(ViewModel.ShowEvaluationTable.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() =>
+                        IDisposable? sub = null;
+                        if (windowManager.Show<EvaluationTableWindow, IEvaluationTableViewModel, IEvaluationTableViewModel.Of>(instantiator.AndThen(vm =>
                         {
-                            var window = new EvaluationTableWindow()
-                            {
-                                DataContext = vm
-                            };
-
-                            var sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
+                            sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
                             {
                                 if (ViewModel != null && ViewModel.MultiViewer != null && x != null)
                                 {
                                     ViewModel.MultiViewer.File = x.File;
                                 }
                             });
-
+                        }), false, out var window))
+                        {
                             void onClosing(object? sender, EventArgs e)
                             {
-                                sub.Dispose();
+                                sub?.Dispose();
                                 window.Closing -= onClosing;
                             };
                             window.Closing += onClosing;
-
-                            return window;
-                        }, false);
+                        }
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationFormula.Subscribe(vm =>
+                    d.Add(ViewModel.ShowEvaluationFormula.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new EvaluationFormulaWindow()
-                        {
-                            DataContext = vm
-                        }, false);
+                        windowManager.Show<EvaluationFormulaWindow, IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>(instantiator, false, out var _);
                     }));
 
                     d.Add(ViewModel.ShowEvaluationTableAndFormula.Subscribe(_ =>
@@ -204,20 +196,14 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         Activate();
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationExporter.Subscribe(vm =>
+                    d.Add(ViewModel.ShowEvaluationExporter.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new EvaluationExporterWindow()
-                        {
-                            DataContext = vm
-                        }, false);
+                        windowManager.Show<EvaluationExporterWindow, IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>(instantiator, false, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowJobConfigurator.Subscribe(vm =>
+                    d.Add(ViewModel.ShowJobConfigurator.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new JobConfiguratorWindow()
-                        {
-                            DataContext = vm
-                        }, false);
+                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(instantiator, false, out var _);
                     }));
 
                     d.Add(ViewModel.ShowJobConfiguratorWithOpenFileDialog.Subscribe(result =>
@@ -230,10 +216,11 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                                 window.Close();
                             }
 
-                            windowManager.Show(() => new JobConfiguratorWindow()
-                            {
-                                DataContext = result.JobConfigurator
-                            }, false);
+                            // TODO Temp
+                            // Should use instantiator
+                            windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(
+                                container => result.JobConfigurator,
+                                false, out var _);
                         }
                         else
                         {
@@ -243,20 +230,14 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         }
                     }));
 
-                    d.Add(ViewModel.ShowJobRunner.Subscribe(vm =>
+                    d.Add(ViewModel.ShowJobRunner.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new JobRunnerWindow()
-                        {
-                            DataContext = vm
-                        }, true);
+                        windowManager.Show<JobRunnerWindow, IJobRunnerViewModel, IJobRunnerViewModel.Of>(instantiator, true, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowInstrumentProfileConfigurator.Subscribe(vm =>
+                    d.Add(ViewModel.ShowInstrumentProfileConfigurator.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new InstrumentProfileConfiguratorWindow()
-                        {
-                            DataContext = vm
-                        }, false);
+                        windowManager.Show<InstrumentProfileConfiguratorWindow, IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>(instantiator, false, out var _);
                     }));
                 }
             });

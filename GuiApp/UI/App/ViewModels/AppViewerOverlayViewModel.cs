@@ -74,11 +74,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
-        public ReactiveCommand<Unit, IFitsImageViewerViewModel> ShowExternalViewer { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
 
-        public ReactiveCommand<Unit, IFitsImageCornerViewerViewModel> ShowExternalCornerViewer { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        public ReactiveCommand<Unit, IImageAnalysisViewModel> ShowExternalImageAnalysis { get; }
+        public ReactiveCommand<Unit, IInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.OfViewer args, IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer,

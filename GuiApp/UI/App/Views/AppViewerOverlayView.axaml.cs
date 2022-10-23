@@ -20,6 +20,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
+using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.FitsImage.Windows;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis.Windows;
@@ -45,28 +46,25 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
                 {
                     var overlay = ViewModel;
 
-                    d.Add(overlay.ShowExternalViewer.Subscribe(vm =>
+                    d.Add(overlay.ShowExternalViewer.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new FitsImageViewerWindow()
-                        {
-                            DataContext = vm
-                        }, false, w => w.DataContext == vm);
+                        // TODO Temp
+                        // Missing filter
+                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(instantiator, false, out var _);
                     }));
 
-                    d.Add(overlay.ShowExternalCornerViewer.Subscribe(vm =>
+                    d.Add(overlay.ShowExternalCornerViewer.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new FitsImageCornerViewerWindow()
-                        {
-                            DataContext = vm
-                        }, false, w => w.DataContext == vm);
+                        // TODO Temp
+                        // Missing filter
+                        windowManager.Show<FitsImageCornerViewerWindow, IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>(instantiator, false, out var _);
                     }));
 
-                    d.Add(overlay.ShowExternalImageAnalysis.Subscribe(vm =>
+                    d.Add(overlay.ShowExternalImageAnalysis.Subscribe(instantiator =>
                     {
-                        windowManager.Show(() => new ImageAnalysisWindow()
-                        {
-                            DataContext = vm
-                        }, false, w => (w.DataContext as IImageAnalysisViewModel)?.File == vm.File);
+                        // TODO Temp
+                        // Missing filter
+                        windowManager.Show<ImageAnalysisWindow, IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>(instantiator, false, out var _);
                     }));
                 }
             });

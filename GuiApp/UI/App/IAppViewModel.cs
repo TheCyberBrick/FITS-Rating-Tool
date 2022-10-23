@@ -29,6 +29,7 @@ using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using Avalonia.Collections;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -37,7 +38,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         public record Of();
 
         #region +++ Misc +++
-        ReactiveCommand<Unit, IFileTableViewModel> ShowFileTable { get; }
+        ReactiveCommand<Unit, IInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
 
         ReactiveCommand<Unit, Unit> HideFileTable { get; }
 
@@ -45,7 +46,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
 
-        ReactiveCommand<Unit, IAppConfigViewModel> ShowSettingsDialog { get; }
+        ReactiveCommand<Unit, IInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
         #endregion
 
         #region +++ Images +++
@@ -71,7 +72,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         Interaction<Unit, IEnumerable<string>> LoadImagesOpenFileDialog { get; }
 
-        ReactiveCommand<IEnumerable<string>, IFitsImageLoadProgressViewModel> LoadImagesWithProgress { get; }
+        ReactiveCommand<IEnumerable<string>, IInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
 
         ReactiveCommand<IEnumerable<string>, Unit> LoadImagesWithProgressDialog { get; }
 
@@ -87,25 +88,25 @@ namespace FitsRatingTool.GuiApp.UI.App
         #endregion
 
         #region +++ Evaluation +++
-        ReactiveCommand<Unit, IFitsImageAllStatisticsProgressViewModel> CalculateAllStatisticsWithProgress { get; }
+        ReactiveCommand<Unit, IInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> CalculateAllStatisticsWithProgressDialog { get; }
 
         Interaction<IFitsImageAllStatisticsProgressViewModel, Unit> CalculateAllStatisticsProgressDialog { get; }
 
-        ReactiveCommand<Unit, IEvaluationTableViewModel> ShowEvaluationTable { get; }
+        ReactiveCommand<Unit, IInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
 
-        ReactiveCommand<Unit, IEvaluationFormulaViewModel> ShowEvaluationFormula { get; }
+        ReactiveCommand<Unit, IInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
 
         ReactiveCommand<Unit, Unit> ShowEvaluationTableAndFormula { get; }
 
         ReactiveCommand<Unit, Unit> HideEvaluationTableAndFormula { get; }
 
-        ReactiveCommand<Unit, IEvaluationExporterViewModel> ShowEvaluationExporter { get; }
+        ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
         #endregion
 
         #region +++ Job Configurator +++
-        ReactiveCommand<Unit, IJobConfiguratorViewModel> ShowJobConfigurator { get; }
+        ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
         public class JobConfiguratorLoadResult
         {
@@ -126,11 +127,11 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; }
 
-        ReactiveCommand<Unit, IJobRunnerViewModel> ShowJobRunner { get; }
+        ReactiveCommand<Unit, IInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
         #endregion
 
         #region +++ Instrument Profiles +++
-        ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
+        ReactiveCommand<Unit, IInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
 
         IAppProfileSelectorViewModel AppProfileSelector { get; }
         #endregion

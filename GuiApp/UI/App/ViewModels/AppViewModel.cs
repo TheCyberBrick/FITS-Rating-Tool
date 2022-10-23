@@ -51,7 +51,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             reg.RegisterAndReturn<AppViewModel>();
         }
 
-        public ReactiveCommand<Unit, IFileTableViewModel> ShowFileTable { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
 
         public ReactiveCommand<Unit, Unit> HideFileTable { get; }
 
@@ -59,7 +59,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
 
-        public ReactiveCommand<Unit, IAppConfigViewModel> ShowSettingsDialog { get; }
+        public ReactiveCommand<Unit, IInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
 
         public IFitsImageMultiViewerViewModel MultiViewer { get; private set; } = null!;
 
@@ -93,7 +93,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public Interaction<Unit, IEnumerable<string>> LoadImagesOpenFileDialog { get; } = new();
 
-        public ReactiveCommand<IEnumerable<string>, IFitsImageLoadProgressViewModel> LoadImagesWithProgress { get; }
+        public ReactiveCommand<IEnumerable<string>, IInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
 
         public ReactiveCommand<IEnumerable<string>, Unit> LoadImagesWithProgressDialog { get; }
 
@@ -118,7 +118,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 
 
-        public ReactiveCommand<Unit, IFitsImageAllStatisticsProgressViewModel> CalculateAllStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateAllStatisticsWithProgressDialog { get; }
 
@@ -126,27 +126,27 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
 
 
-        public ReactiveCommand<Unit, IEvaluationTableViewModel> ShowEvaluationTable { get; }
+        public ReactiveCommand<Unit, IInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
 
-        public ReactiveCommand<Unit, IEvaluationFormulaViewModel> ShowEvaluationFormula { get; }
+        public ReactiveCommand<Unit, IInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
 
         public ReactiveCommand<Unit, Unit> ShowEvaluationTableAndFormula { get; }
 
         public ReactiveCommand<Unit, Unit> HideEvaluationTableAndFormula { get; }
 
-        public ReactiveCommand<Unit, IEvaluationExporterViewModel> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
-        public ReactiveCommand<Unit, IJobConfiguratorViewModel> ShowJobConfigurator { get; }
+        public ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
         public ReactiveCommand<Unit, IAppViewModel.JobConfiguratorLoadResult> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         public Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; } = new();
 
-        public ReactiveCommand<Unit, IJobRunnerViewModel> ShowJobRunner { get; }
+        public ReactiveCommand<Unit, IInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
 
 
-        public ReactiveCommand<Unit, IInstrumentProfileConfiguratorViewModel> ShowInstrumentProfileConfigurator { get; }
+        public ReactiveCommand<Unit, IInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
 
         public IAppProfileSelectorViewModel AppProfileSelector { get; private set; } = null!;
 
