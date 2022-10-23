@@ -102,11 +102,18 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             set => this.RaiseAndSetIfChanged(ref _percentage, Math.Max(Math.Min(value, 1.0), 0.0001));
         }
 
+
+        private readonly IContainer<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> fitsImageSectionContainer;
+
         private FitsImageCornerViewerViewModel(IFitsImageCornerViewerViewModel.OfViewer args,
             IContainer<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> fitsImageSectionContainer)
         {
+            this.fitsImageSectionContainer = fitsImageSectionContainer;
             Viewer = args.Viewer;
+        }
 
+        protected override void OnInstantiated()
+        {
             this.WhenAnyValue(x => x.Viewer.FitsImage)
                 .Subscribe(x =>
                 {

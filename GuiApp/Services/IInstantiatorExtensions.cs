@@ -17,8 +17,10 @@
 */
 
 using FitsRatingTool.GuiApp.Services;
+using System;
+using System.Threading.Tasks;
 
-namespace FitsRatingTool.GuiApp.Models
+namespace FitsRatingTool.GuiApp.Services
 {
     public static class IInstantiatorExtensions
     {
@@ -26,6 +28,34 @@ namespace FitsRatingTool.GuiApp.Models
             where T : class
         {
             return instantiator.Instantiate(container.Instantiate);
+        }
+
+        public static void Do<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Action<T> action)
+            where T : class
+        {
+            var instance = instantiator.Instantiate(temporaryContainer);
+            try
+            {
+                action.Invoke(instance);
+            }
+            finally
+            {
+                temporaryContainer.Destroy(instance);
+            }
+        }
+
+        public static async Task DoAsync<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Func<T, Task> action)
+            where T : class
+        {
+            var instance = instantiator.Instantiate(temporaryContainer);
+            try
+            {
+                await action.Invoke(instance);
+            }
+            finally
+            {
+                temporaryContainer.Destroy(instance);
+            }
         }
     }
 }

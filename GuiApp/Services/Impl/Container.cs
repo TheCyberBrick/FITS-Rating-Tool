@@ -308,7 +308,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             lock (this)
             {
-                CheckDisposed();
+                if (disposed)
+                {
+                    // Nothing to do
+                    return false;
+                }
 
                 if (instance2Scope.TryGetValue(instance, out var scope))
                 {
@@ -357,7 +361,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             lock (this)
             {
-                CheckDisposed();
+                if (disposed)
+                {
+                    // Nothing to do
+                    return;
+                }
 
                 // Prevent initialization of new dependencies
                 // if the container is being disposed
