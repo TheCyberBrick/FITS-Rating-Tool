@@ -124,6 +124,7 @@ namespace FitsRatingTool.GuiApp
         private static void RegisterViewModels(Container container)
         {
             // TODO Temp
+            // Could use a cleanup
 
             container.Register<IAppViewModel, AppViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
             container.Register<IAppProfileSelectorViewModel, AppProfileSelectorViewModel>();

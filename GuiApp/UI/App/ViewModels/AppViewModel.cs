@@ -211,7 +211,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
             IContainer<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles> fitsImageAllStatisticsContainer,
             IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer,
-            IContainer<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> jobConfiguratorContainer,
             IContainer<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of> csvExporterConfiguratorContainer,
             IContainer<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> fitsHeaderExporterConfiguratorContainer,
             IContainer<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of> voyagerExporterConfiguratorContainer,
@@ -237,9 +236,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
             this.appViewerOverlayContainer = appViewerOverlayContainer;
-
-            // TODO Temp
-            jobConfiguratorContainer.ToSingleton();
 
             RegisterExporterConfigurators(
                 exporterConfiguratorManager,

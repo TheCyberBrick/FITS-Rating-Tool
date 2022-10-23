@@ -131,16 +131,19 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             // vvv
 
             // TODO Temp
+            // See above
             //ShowExternalViewer = ReactiveCommand.Create(() => Viewer);
             ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Create(new IFitsImageViewerViewModel.Of()));
 
             // TODO Temp
+            // See above
             ShowExternalCornerViewer = ReactiveCommand.Create(() => fitsImageCornerViewerFactory.Create(new IFitsImageCornerViewerViewModel.OfViewer(Viewer)).AndThen(vm =>
             {
                 vm.Percentage = CornerViewerPercentage;
             }));
 
             // TODO Temp
+            // See above
             ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Create(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
         }
 
