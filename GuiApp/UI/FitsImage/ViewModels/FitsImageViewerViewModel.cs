@@ -34,11 +34,10 @@ using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.Utils;
-using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
-    public class FitsImageViewerViewModel : ViewModelBase, IFitsImageViewerViewModel
+    public class FitsImageViewerViewModel : ViewModelBase, IFitsImageViewerViewModel, IDisposable
     {
         public FitsImageViewerViewModel(IRegistrar<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> reg)
         {
@@ -263,6 +262,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 var oldValue = _innerOverlayFactory;
                 this.RaiseAndSetIfChanged(ref _innerOverlayFactory, value);
+                if (value != oldValue && oldValue != null && InnerOverlay != null)
+                {
+                    oldValue.Destroy(InnerOverlay);
+                }
                 if (value != null && value != oldValue)
                 {
                     InnerOverlay = value.Create(this);
@@ -289,6 +292,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 var oldValue = _outerOverlayFactory;
                 this.RaiseAndSetIfChanged(ref _outerOverlayFactory, value);
+                if (value != oldValue && oldValue != null && OuterOverlay != null)
+                {
+                    oldValue.Destroy(OuterOverlay);
+                }
                 if (value != null && value != oldValue)
                 {
                     OuterOverlay = value.Create(this);
@@ -1262,6 +1269,18 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public void Dispose()
         {
+            if (InnerOverlay != null && InnerOverlayFactory != null)
+            {
+                InnerOverlayFactory.Destroy(InnerOverlay);
+            }
+            InnerOverlayFactory = null;
+
+            if (OuterOverlay != null && OuterOverlayFactory != null)
+            {
+                OuterOverlayFactory.Destroy(OuterOverlay);
+            }
+            OuterOverlayFactory = null;
+
             FitsImage = null;
             File = null;
 

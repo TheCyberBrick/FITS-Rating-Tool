@@ -182,10 +182,12 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private string? preSwitchFile = null;
 
         private readonly IFitsImageManager manager;
+        private readonly IAppConfig appConfig;
+        private readonly IVoyagerIntegration voyagerIntegration;
+
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer;
-        private readonly IVoyagerIntegration voyagerIntegration;
-        private readonly IAppConfig appConfig;
+        private readonly IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.OfViewer> appViewerOverlayContainer;
 
         // Designer only
 #pragma warning disable CS8618
@@ -197,6 +199,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private AppViewModel(IAppViewModel.Of args,
             IFitsImageManager manager,
+            IExporterConfiguratorManager exporterConfiguratorManager,
+            IJobConfigFactory jobConfigFactory,
+            IFileSystemService fileSystemService,
+            IOpenFileEventManager openFileEventManager,
+            IAppConfig appConfig,
+            IAppConfigManager appConfigManager,
+            IVoyagerIntegration voyagerIntegration,
             IContainer<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> multiImageViewerContainer,
             IContainer<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> imageLoadProgressContainer,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
@@ -204,10 +213,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
             IContainer<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles> fitsImageAllStatisticsContainer,
             IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer,
-            IVoyagerIntegration voyagerIntegration,
             IContainer<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> jobConfiguratorContainer,
-            IExporterConfiguratorManager exporterConfiguratorManager,
-            IJobConfigFactory jobConfigFactory,
             IContainer<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of> csvExporterConfiguratorContainer,
             IContainer<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> fitsHeaderExporterConfiguratorContainer,
             IContainer<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of> voyagerExporterConfiguratorContainer,
@@ -216,20 +222,17 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterContainer,
             IContainer<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerContainer,
             IContainer<IFileTableViewModel, IFileTableViewModel.Of> fileTableContainer,
-            IFileSystemService fileSystemService,
-            IOpenFileEventManager openFileEventManager,
-            IAppConfig appConfig,
-            IAppConfigManager appConfigManager,
             IContainer<IAppConfigViewModel, IAppConfigViewModel.Of> appConfigContainer,
             IContainer<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorContainer,
             IContainer<IAppProfileSelectorViewModel, IAppProfileSelectorViewModel.Of> appProfileSelectorContainer,
             IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.OfViewer> appViewerOverlayContainer)
         {
             this.manager = manager;
+            this.appConfig = appConfig;
+            this.voyagerIntegration = voyagerIntegration;
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
-            this.voyagerIntegration = voyagerIntegration;
-            this.appConfig = appConfig;
+            this.appViewerOverlayContainer = appViewerOverlayContainer;
 
             // TODO Temp
             evaluationTableContainer.ToSingleton();
@@ -256,9 +259,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             multiImageViewerContainer.ToSingleton().Inject(new IFitsImageMultiViewerViewModel.Of(), vm =>
             {
                 MultiViewer = vm;
-                // TODO Temp
-                // Must use IInstantiator
-                //vm.OuterOverlayFactory = viewer => appViewerOverlayContainer.Instantiate(new IAppViewerOverlayViewModel.OfViewer(viewer));
             });
 
             appProfileSelectorContainer.ToSingleton().Inject(new IAppProfileSelectorViewModel.Of(), vm => AppProfileSelector = vm);
@@ -515,6 +515,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         protected override void OnInstantiated()
         {
+            MultiViewer.OuterOverlayFactory = new AppViewerOverlayFactory(appViewerOverlayContainer);
+
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>
             {
                 if (item != null)

@@ -54,7 +54,7 @@ namespace FitsRatingTool.GuiApp
     {
         public static Container Initialize()
         {
-            var container = new Container();
+            var container = new Container(rules => rules.WithAutoConcreteTypeResolution());
 
             RegisterRepositories(container);
             RegisterServices(container);
@@ -137,7 +137,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IFitsImagePSFViewModel, FitsImagePSFViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
             container.Register<IFitsImageStatisticsProgressViewModel, FitsImageStatisticsProgressViewModel>();
             container.Register<IFitsImageStatisticsViewModel, FitsImageStatisticsViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
-            container.Register<IFitsImageViewerViewModel, FitsImageViewerViewModel>();
+            container.Register<IFitsImageViewerViewModel, FitsImageViewerViewModel>(setup: Setup.With(allowDisposableTransient: true));
             container.Register<IFitsImageMultiViewerViewModel, FitsImageMultiViewerViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
             container.Register<IFitsImageViewModel, FitsImageViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
             container.Register<IFitsImageLoadProgressViewModel, FitsImageLoadProgressViewModel>();

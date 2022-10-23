@@ -31,7 +31,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         public interface IOverlayFactory
         {
-            public IOverlay Create(IFitsImageViewerViewModel viewer);
+            IOverlay Create(IFitsImageViewerViewModel viewer);
+
+            void Destroy(IOverlay overlay);
         }
 
         public interface IOverlay
