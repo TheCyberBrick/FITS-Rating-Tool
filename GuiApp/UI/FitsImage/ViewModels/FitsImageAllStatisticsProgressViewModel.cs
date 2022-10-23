@@ -109,17 +109,22 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private IFitsImageStatisticsProgressViewModel? currentProgressViewModel = null;
 
         private readonly IFitsImageManager manager;
-        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IAppConfig appConfig;
+        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
+        private readonly IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer;
 
         private readonly bool useRepository;
 
-        private FitsImageAllStatisticsProgressViewModel(IFitsImageAllStatisticsProgressViewModel.OfFiles args, IFitsImageManager manager,
-            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer, IAppConfig appConfig) : base(null)
+        private FitsImageAllStatisticsProgressViewModel(IFitsImageAllStatisticsProgressViewModel.OfFiles args,
+            IFitsImageManager manager,
+            IAppConfig appConfig,
+            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer) : base(null)
         {
             this.manager = manager;
-            this.fitsImageContainer = fitsImageContainer;
             this.appConfig = appConfig;
+            this.fitsImageContainer = fitsImageContainer;
+            this.fitsImageStatisticsProgressContainer = fitsImageStatisticsProgressContainer;
             this.useRepository = args.UseRepository;
             this.images.AddRange(args.Files);
         }
@@ -158,64 +163,67 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                     try
                     {
-                        var vm = await imagevm.CalculateStatisticsWithProgress.Execute();
+                        var instantiator = await imagevm.CalculateStatisticsWithProgress.Execute();
 
-                        if (vm != null)
+                        if (instantiator != null)
                         {
-                            currentProgressViewModel = vm;
-
-                            Progress<FitsImageStatisticsProgress> progress = new();
-                            void progressHandler(object? sender, FitsImageStatisticsProgress value)
+                            await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
                             {
-                                // Delegate progress to self
-                                ReportProgress(new FitsImageAllStatisticsProgress
+                                currentProgressViewModel = vm;
+
+                                Progress<FitsImageStatisticsProgress> progress = new();
+                                void progressHandler(object? sender, FitsImageStatisticsProgress value)
                                 {
-                                    numberOfImages = nimages,
-                                    currentImage = iimage,
-                                    currentImageFile = imagevm.File,
-                                    numberOfObjects = value.numberOfObjects,
-                                    currentObject = value.currentObject,
-                                    numberOfStars = value.numberOfStars,
-                                    progress = (iimage + value.progress) * progressPerImage,
-                                    phase = value.phase
-                                });
-                            }
-                            progress.ProgressChanged += progressHandler;
-
-                            vm.Progress = progress;
-
-                            var result = await vm.Run.Execute();
-
-                            if (result.Status != ResultStatus.Cancelled)
-                            {
-                                var stats = result.Value;
-
-                                if (stats != null)
-                                {
-                                    results.Add(image, stats);
-
-                                    if (useRepository)
+                                    // Delegate progress to self
+                                    ReportProgress(new FitsImageAllStatisticsProgress
                                     {
-                                        var photometry = await imagevm.CalculatePhotometry.Execute();
+                                        numberOfImages = nimages,
+                                        currentImage = iimage,
+                                        currentImageFile = imagevm.File,
+                                        numberOfObjects = value.numberOfObjects,
+                                        currentObject = value.currentObject,
+                                        numberOfStars = value.numberOfStars,
+                                        progress = (iimage + value.progress) * progressPerImage,
+                                        phase = value.phase
+                                    });
+                                }
+                                progress.ProgressChanged += progressHandler;
 
-                                        var record = manager.GetOrAdd(image);
+                                vm.Progress = progress;
 
-                                        if (photometry != null)
+                                var result = await vm.Run.Execute();
+
+                                if (result.Status != ResultStatus.Cancelled)
+                                {
+                                    var stats = result.Value;
+
+                                    if (stats != null)
+                                    {
+                                        results.Add(image, stats);
+
+                                        if (useRepository)
                                         {
-                                            // Also cache photometry, otherwise the caching won't benefit
-                                            // the GUI at all
-                                            record.Photometry = photometry;
+                                            var photometry = await imagevm.CalculatePhotometry.Execute();
 
-                                            // Update stars count of statistics
-                                            stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
+                                            var record = manager.GetOrAdd(image);
+
+                                            if (photometry != null)
+                                            {
+                                                // Also cache photometry, otherwise the caching won't benefit
+                                                // the GUI at all
+                                                record.Photometry = photometry;
+
+                                                // Update stars count of statistics
+                                                stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
+                                            }
+
+                                            record.Statistics = stats;
+
+                                            record.IsOutdated = false;
                                         }
-
-                                        record.Statistics = stats;
-
-                                        record.IsOutdated = false;
                                     }
                                 }
-                            }
+                            });
                         }
                     }
                     finally

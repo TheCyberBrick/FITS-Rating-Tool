@@ -244,7 +244,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, IFitsImageStatisticsProgressViewModel?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -355,11 +355,15 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly IStarSampler starSampler;
 
 
-        private FitsImageViewerViewModel(IFitsImageViewerViewModel.Of args, IFitsImageManager manager, IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
+        private FitsImageViewerViewModel(IFitsImageViewerViewModel.Of args,
+            IFitsImageManager manager,
+            IStarSampler starSampler,
+            IAppConfig appConfig,
+            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
             IContainer<IFitsImageSectionViewerViewModel, IFitsImageSectionViewerViewModel.OfImage> fitsImageSectionContainer,
             IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageHistogramContainer,
             IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageStretchedHistogramContainer,
-            IStarSampler starSampler, IAppConfig appConfig)
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer)
         {
             this.manager = manager;
             this.fitsImageContainer = fitsImageContainer;
@@ -551,121 +555,125 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 var image = FitsImage;
                 if (image != null)
                 {
-                    var vm = await image.CalculateStatisticsWithProgress.Execute();
+                    var instantiator = await image.CalculateStatisticsWithProgress.Execute();
 
-                    vm.HookResultTask(async task =>
+                    if (instantiator != null)
                     {
-                        try
+                        return instantiator.AndThen(vm =>
                         {
-                            return await QueueImageTaskAsync(image, async (i, ct) =>
+                            vm.HookResultTask(async task =>
                             {
-                                var record = manager.Get(i.File);
-
-                                var statistics = record?.Statistics;
-                                var photometry = record?.Photometry;
-
-                                if ((record == null || !record.IsOutdated) && statistics != null && photometry != null && FitsImage == i)
+                                try
                                 {
-                                    using (DelayChangeNotifications())
+                                    return await QueueImageTaskAsync(image, async (i, ct) =>
                                     {
-                                        Photometry.Clear();
-                                        if (ShowPhotometry) SetShownPhotometry(photometry);
+                                        var record = manager.Get(i.File);
 
-                                        Statistics = statistics;
-                                    }
+                                        var statistics = record?.Statistics;
+                                        var photometry = record?.Photometry;
 
-                                    return vm.CreateCompletion(statistics);
-                                }
-
-                                if (i.IsImageDataValid)
-                                {
-                                    var result = await task.Invoke();
-
-                                    if (result.Status == ResultStatus.Completed)
-                                    {
-                                        var stats = result.Value;
-
-                                        if (stats != null && FitsImage == i)
+                                        if ((record == null || !record.IsOutdated) && statistics != null && photometry != null && FitsImage == i)
                                         {
-                                            if (record == null)
+                                            using (DelayChangeNotifications())
                                             {
-                                                record = manager.GetOrAdd(i.File);
+                                                Photometry.Clear();
+                                                if (ShowPhotometry) SetShownPhotometry(photometry);
+
+                                                Statistics = statistics;
                                             }
 
-                                            photometry = await image.CalculatePhotometry.Execute();
-                                            Photometry.Clear();
-                                            if (ShowPhotometry) SetShownPhotometry(photometry);
-                                            record.Photometry = photometry;
-
-                                            // Update stars count of statistics
-                                            stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
-                                            Statistics = stats;
-                                            record.Statistics = Statistics;
-
-                                            record.IsOutdated = false;
+                                            return vm.CreateCompletion(statistics);
                                         }
-                                    }
 
-                                    return result;
+                                        if (i.IsImageDataValid)
+                                        {
+                                            var result = await task.Invoke();
+
+                                            if (result.Status == ResultStatus.Completed)
+                                            {
+                                                var stats = result.Value;
+
+                                                if (stats != null && FitsImage == i)
+                                                {
+                                                    if (record == null)
+                                                    {
+                                                        record = manager.GetOrAdd(i.File);
+                                                    }
+
+                                                    photometry = await image.CalculatePhotometry.Execute();
+                                                    Photometry.Clear();
+                                                    if (ShowPhotometry) SetShownPhotometry(photometry);
+                                                    record.Photometry = photometry;
+
+                                                    // Update stars count of statistics
+                                                    stats = new FitsImageStatisticsViewModel(new IFitsImageStatisticsViewModel.OfOther(stats, photometry.Count()));
+                                                    Statistics = stats;
+                                                    record.Statistics = Statistics;
+
+                                                    record.IsOutdated = false;
+                                                }
+                                            }
+
+                                            return result;
+                                        }
+
+                                        return vm.CreateCancellation(null);
+                                    });
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                    // Don't care, image no longer used
                                 }
 
                                 return vm.CreateCancellation(null);
                             });
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Don't care, image no longer used
-                        }
 
-                        return vm.CreateCancellation(null);
-                    });
-
-                    vm.HookInternalTask(async task =>
-                    {
-                        using var cts = new CancellationTokenSource();
-                        var ct = cts.Token;
-
-                        loadingCts.Add(cts);
-
-                        try
-                        {
-                            if (image.IsImageDataValid)
+                            vm.HookInternalTask(async task =>
                             {
-                                using (ct.Register(() => vm.SetCancelling()))
+                                using var cts = new CancellationTokenSource();
+                                var ct = cts.Token;
+
+                                loadingCts.Add(cts);
+
+                                try
                                 {
-                                    ct.ThrowIfCancellationRequested();
-
-                                    var result = await task.Invoke();
-
-                                    if (result.Status == ResultStatus.Completed)
+                                    if (image.IsImageDataValid)
                                     {
-                                        ct.ThrowIfCancellationRequested();
-
-                                        var stats = result.Value;
-
-                                        if (stats.HasValue)
+                                        using (ct.Register(() => vm.SetCancelling()))
                                         {
-                                            return vm.CreateInternalCompletion(stats.Value);
+                                            ct.ThrowIfCancellationRequested();
+
+                                            var result = await task.Invoke();
+
+                                            if (result.Status == ResultStatus.Completed)
+                                            {
+                                                ct.ThrowIfCancellationRequested();
+
+                                                var stats = result.Value;
+
+                                                if (stats.HasValue)
+                                                {
+                                                    return vm.CreateInternalCompletion(stats.Value);
+                                                }
+                                            }
                                         }
                                     }
+
+                                    return vm.CreateInternalCancellation(null);
                                 }
-                            }
+                                catch (OperationCanceledException)
+                                {
+                                    // Don't care, image no longer used
+                                }
+                                finally
+                                {
+                                    loadingCts.Remove(cts);
+                                }
 
-                            return vm.CreateInternalCancellation(null);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Don't care, image no longer used
-                        }
-                        finally
-                        {
-                            loadingCts.Remove(cts);
-                        }
-
-                        return vm.CreateInternalCancellation(null);
-                    });
-
-                    return vm;
+                                return vm.CreateInternalCancellation(null);
+                            });
+                        });
+                    }
                 }
 
                 return null;
@@ -673,10 +681,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             CalculateStatisticsWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var vm = await CalculateStatisticsWithProgress.Execute();
-                if (vm != null)
+                var instantiator = await CalculateStatisticsWithProgress.Execute();
+                if (instantiator != null)
                 {
-                    await CalculateStatisticsProgressDialog.Handle(vm);
+                    await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
+                    {
+                        await CalculateStatisticsProgressDialog.Handle(vm);
+                    });
                 }
             });
 

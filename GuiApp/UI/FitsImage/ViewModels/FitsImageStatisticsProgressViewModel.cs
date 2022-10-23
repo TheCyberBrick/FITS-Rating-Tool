@@ -68,7 +68,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _phase, value);
         }
 
-        private FitsImageStatisticsProgressViewModel(IFitsImageStatisticsProgressViewModel.OfTaskFunc args, AsyncTaskFunc taskFunc) : base(callback => args.TaskFunc.Invoke(callback))
+        private FitsImageStatisticsProgressViewModel(IFitsImageStatisticsProgressViewModel.OfTaskFunc args) : base(callback => args.TaskFunc.Invoke(callback))
         {
         }
 

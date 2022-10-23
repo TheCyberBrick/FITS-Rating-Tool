@@ -209,7 +209,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, IFitsImageStatisticsViewModel?> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, IFitsImageStatisticsProgressViewModel?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, IInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -235,12 +235,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private readonly IFitsImageManager fitsImageManager;
 
-        private FitsImageViewModel(string file, IFitsImageManager fitsImageManager,
-            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer)
+        private FitsImageViewModel(string file,
+            IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
+            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
         {
             this.fitsImageManager = fitsImageManager;
-
-            fitsImageStatisticsProgressContainer.ToSingleton();
 
             fitsImage = null!; // Set in other constructors
             fitsImageRef = null!;
@@ -278,8 +278,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (IsImageDataValid)
                 {
-                    // TODO Temp
-                    return fitsImageStatisticsProgressContainer.Instantiate(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
+                    return fitsImageStatisticsProgressFactory.Create(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
                     {
                         if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {
@@ -295,10 +294,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             CalculateStatisticsWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var vm = await CalculateStatisticsWithProgress.Execute();
-                if (vm != null)
+                var instantiator = await CalculateStatisticsWithProgress.Execute();
+                if (instantiator != null)
                 {
-                    await CalculateStatisticsProgressDialog.Handle(vm);
+                    await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
+                    {
+                        await CalculateStatisticsProgressDialog.Handle(vm);
+                    });
                 }
             });
 
@@ -326,9 +328,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             });
         }
 
-        private FitsImageViewModel(IFitsImageViewModel.OfImage args, IFitsImageManager fitsImageManager,
-            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer)
-            : this(args.Image.File, fitsImageManager, fitsImageStatisticsProgressContainer)
+        private FitsImageViewModel(IFitsImageViewModel.OfImage args,
+            IFitsImageManager fitsImageManager,
+            IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
+            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            : this(args.Image.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = args.Image;
             fitsImageRef = args.Image.Ref();
@@ -345,10 +349,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             Init();
         }
 
-        private FitsImageViewModel(IFitsImageViewModel.OfFile args, IFitsImageLoader imageLoader, IFitsImageManager fitsImageManager,
+        private FitsImageViewModel(IFitsImageViewModel.OfFile args,
+            IFitsImageLoader imageLoader,
+            IFitsImageManager fitsImageManager,
+            IAppConfig appConfig,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IAppConfig appConfig)
-            : this(args.File, fitsImageManager, fitsImageStatisticsProgressContainer)
+            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            : this(args.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = imageLoader.LoadFit(args.File, args.MaxInputSize ?? appConfig.MaxImageSize, args.MaxWidth ?? appConfig.MaxImageWidth, args.MaxHeight ?? appConfig.MaxImageHeight)!;
             if (fitsImage == null)

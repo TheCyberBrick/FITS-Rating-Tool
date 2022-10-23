@@ -197,7 +197,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
-        public ReactiveCommand<Unit, IEvaluationExporterViewModel> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
 
@@ -211,9 +211,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationManager evaluationManager;
 
 
-        private EvaluationTableViewModel(IEvaluationTableViewModel.Of args, IFitsImageManager manager, IGroupingManager groupingManager, IEvaluationManager evaluationManager,
+        private EvaluationTableViewModel(IEvaluationTableViewModel.Of args,
+            IFitsImageManager manager,
+            IGroupingManager groupingManager,
+            IEvaluationManager evaluationManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
-            IContainer<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterContainer)
+            IInstantiatorFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
         {
             this.manager = manager;
             this.groupingManager = groupingManager;
@@ -286,9 +289,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
 
-            // TODO Temp
-            evaluationExporterContainer.ToSingleton();
-            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterContainer.Instantiate(new IEvaluationExporterViewModel.Of()));
+            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Create(new IEvaluationExporterViewModel.Of()));
 
             RemoveRecords = ReactiveCommand.CreateFromTask<IEnumerable>(async enumerable =>
             {

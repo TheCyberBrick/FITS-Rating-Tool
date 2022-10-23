@@ -18,6 +18,7 @@
 
 using Avalonia.Collections;
 using Avalonia.Visuals.Media.Imaging;
+using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Reactive;
@@ -106,7 +107,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        ReactiveCommand<Unit, IFitsImageStatisticsProgressViewModel?> CalculateStatisticsWithProgress { get; }
+        ReactiveCommand<Unit, IInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 

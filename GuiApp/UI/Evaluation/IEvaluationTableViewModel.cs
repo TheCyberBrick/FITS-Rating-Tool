@@ -23,6 +23,7 @@ using System.IO;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using System.Reactive;
 using System.Collections;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
@@ -181,6 +182,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
         #endregion
 
-        ReactiveCommand<Unit, IEvaluationExporterViewModel> ShowEvaluationExporter { get; }
+        ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
     }
 }

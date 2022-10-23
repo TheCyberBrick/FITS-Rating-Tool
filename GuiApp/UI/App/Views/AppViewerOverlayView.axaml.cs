@@ -48,23 +48,17 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
 
                     d.Add(overlay.ShowExternalViewer.Subscribe(instantiator =>
                     {
-                        // TODO Temp
-                        // Missing filter
-                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(instantiator, false, out var _);
+                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(instantiator, false, out var _, w => w.DataContext is IFitsImageViewerViewModel viewer && viewer.File == overlay.Viewer.File);
                     }));
 
                     d.Add(overlay.ShowExternalCornerViewer.Subscribe(instantiator =>
                     {
-                        // TODO Temp
-                        // Missing filter
-                        windowManager.Show<FitsImageCornerViewerWindow, IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>(instantiator, false, out var _);
+                        windowManager.Show<FitsImageCornerViewerWindow, IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>(instantiator, false, out var _, w => w.DataContext is IFitsImageCornerViewerViewModel viewer && viewer.Viewer == overlay.Viewer);
                     }));
 
                     d.Add(overlay.ShowExternalImageAnalysis.Subscribe(instantiator =>
                     {
-                        // TODO Temp
-                        // Missing filter
-                        windowManager.Show<ImageAnalysisWindow, IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>(instantiator, false, out var _);
+                        windowManager.Show<ImageAnalysisWindow, IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>(instantiator, false, out var _, w => w.DataContext is IImageAnalysisViewModel analysis && analysis.File == overlay.Viewer.File);
                     }));
                 }
             });
