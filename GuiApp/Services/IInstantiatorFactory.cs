@@ -23,18 +23,44 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IInstantiatorFactory<T, Template> : IDisposable
         where T : class
     {
-        IInstantiator<T, Template> Create(Func<Template?> templateFactory);
+        ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor);
 
-        IInstantiator<T, Template> Create(Template template);
+        IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor);
     }
 
-    public interface IInstantiator<T, Template>
-        where T : class
+    public interface IInstantiatorBase<T>
     {
         bool IsExpired { get; }
 
-        IInstantiator<T, Template> AndThen(Action<T> action);
+        IInstantiatorBase<T> AndThen(Action<T> action);
+    }
 
-        T Instantiate(Func<Template, T> factory);
+    public interface IGenericInstantiator<T, Template> : IInstantiatorBase<T>
+    {
+        new IGenericInstantiator<T, Template> AndThen(Action<T> action);
+
+        T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
+    }
+
+    public interface ITemplatedInstantiator<T, Template> : IGenericInstantiator<T, Template>
+        where T : class
+    {
+        new ITemplatedInstantiator<T, Template> AndThen(Action<T> action);
+
+        T Instantiate(Func<Template, T> instanceConstructor);
+    }
+
+    public interface IDelegatedInstantiator<T> : IInstantiatorBase<T>
+        where T : class
+    {
+        new IDelegatedInstantiator<T> AndThen(Action<T> action);
+
+        T Instantiate(out IDisposable disposable);
+    }
+
+    public interface IDelegatedInstantiator<T, Template> : IGenericInstantiator<T, Template>, IDelegatedInstantiator<T>
+        where T : class
+    {
+        new IDelegatedInstantiator<T, Template> AndThen(Action<T> action);
     }
 }

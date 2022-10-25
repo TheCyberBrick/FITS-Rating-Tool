@@ -197,7 +197,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
-        public ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
 
@@ -289,7 +289,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
 
-            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Create(new IEvaluationExporterViewModel.Of()));
+            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Templated(new IEvaluationExporterViewModel.Of()));
 
             RemoveRecords = ReactiveCommand.CreateFromTask<IEnumerable>(async enumerable =>
             {

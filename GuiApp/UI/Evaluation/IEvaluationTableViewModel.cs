@@ -182,6 +182,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
         #endregion
 
-        ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
     }
 }

@@ -54,13 +54,25 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             private set => this.RaiseAndSetIfChanged(ref _initialized, value);
         }
 
-        public IObservable<T?> WhenAny => this;
-
         private Action? _onInitialized;
         public event Action OnInitialized
         {
             add => _onInitialized += value;
             remove => _onInitialized -= value;
+        }
+
+        private Action<T>? _onInstantiated;
+        public event Action<T> OnInstantiated
+        {
+            add => _onInstantiated += value;
+            remove => _onInstantiated -= value;
+        }
+
+        private Action<T>? _onDestroyed;
+        public event Action<T> OnDestroyed
+        {
+            add => _onDestroyed += value;
+            remove => _onDestroyed -= value;
         }
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -270,6 +282,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                             NotifyEventListenersOnAdded(dependee: dependee, dependency: newInstance);
                         }
 
+                        // Notify listeners about added dependency
+                        _onInstantiated?.Invoke(newInstance);
+
                         // Notify observers about added dependency
                         foreach (var observer in observers)
                         {
@@ -330,6 +345,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     this.RaisePropertyChanged(nameof(Count));
 
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, instance));
+
+                    // Notify listeners about removed dependency
+                    _onDestroyed?.Invoke(instance);
 
                     // Notify parent's instance about removed dependency
                     (dependee as IContainerRelations)?.OnRemoved(instance);
@@ -397,6 +415,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 foreach (var instance in oldInstances)
                 {
+                    // Notify listeners about removed dependency
+                    _onDestroyed?.Invoke(instance);
+
                     // Notify parent's instance about removed dependency
                     (dependee as IContainerRelations)?.OnRemoved(instance);
 

@@ -74,7 +74,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         public ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        public ReactiveCommand<Unit, IInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 
@@ -156,7 +156,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                 }
             }, canRun);
 
-            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Create(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
+            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Templated(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
 
             RunWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {

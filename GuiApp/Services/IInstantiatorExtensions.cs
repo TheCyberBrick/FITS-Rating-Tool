@@ -24,37 +24,95 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public static class IInstantiatorExtensions
     {
-        public static T Instantiate<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> container)
+        public static ITemplatedInstantiator<T, Template> Templated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template)
+            where T : class
+        {
+            return factory.Templated(() => template);
+        }
+
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor)
+            where T : class
+        {
+            return factory.Delegated(() => template, instanceConstructor, instanceDestructor);
+        }
+
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Func<Template?> templateConstructor, IContainer<T, Template> container)
+            where T : class
+        {
+            return factory.Delegated(templateConstructor, container.Instantiate, instance => container.Destroy(instance));
+        }
+
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, IContainer<T, Template> container)
+            where T : class
+        {
+            return factory.Delegated(() => template, container);
+        }
+
+        public static T Instantiate<T, Template>(this ITemplatedInstantiator<T, Template> instantiator, IContainer<T, Template> container)
             where T : class
         {
             return instantiator.Instantiate(container.Instantiate);
         }
 
-        public static void Do<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Action<T> action)
+        public static T Instantiate<T, Template>(this IGenericInstantiator<T, Template> instantiator, IContainer<T, Template> container, out IDisposable disposable)
             where T : class
         {
-            var instance = instantiator.Instantiate(temporaryContainer);
+            return instantiator.Instantiate(container.Instantiate, instance => container.Destroy(instance), out disposable);
+        }
+
+        public static void Do<T, Template>(this IGenericInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Action<T> action)
+            where T : class
+        {
+            var instance = instantiator.Instantiate(temporaryContainer, out var disposable);
             try
             {
                 action.Invoke(instance);
             }
             finally
             {
-                temporaryContainer.Destroy(instance);
+                disposable.Dispose();
             }
         }
 
-        public static async Task DoAsync<T, Template>(this IInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Func<T, Task> action)
+        public static async Task DoAsync<T, Template>(this IGenericInstantiator<T, Template> instantiator, IContainer<T, Template> temporaryContainer, Func<T, Task> action)
             where T : class
         {
-            var instance = instantiator.Instantiate(temporaryContainer);
+            var instance = instantiator.Instantiate(temporaryContainer, out var disposable);
             try
             {
                 await action.Invoke(instance);
             }
             finally
             {
-                temporaryContainer.Destroy(instance);
+                disposable.Dispose();
+            }
+        }
+
+        public static void Do<T>(this IDelegatedInstantiator<T> instantiator, Action<T> action)
+            where T : class
+        {
+            var instance = instantiator.Instantiate(out var disposable);
+            try
+            {
+                action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
+            }
+        }
+
+        public static async Task DoAsync<T>(this IDelegatedInstantiator<T> instantiator, Func<T, Task> action)
+            where T : class
+        {
+            var instance = instantiator.Instantiate(out var disposable);
+            try
+            {
+                await action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
             }
         }
     }

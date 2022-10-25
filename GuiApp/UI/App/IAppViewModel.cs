@@ -38,7 +38,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         public record Of();
 
         #region +++ Misc +++
-        ReactiveCommand<Unit, IInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
 
         ReactiveCommand<Unit, Unit> HideFileTable { get; }
 
@@ -46,7 +46,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
         #endregion
 
         #region +++ Images +++
@@ -72,7 +72,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         Interaction<Unit, IEnumerable<string>> LoadImagesOpenFileDialog { get; }
 
-        ReactiveCommand<IEnumerable<string>, IInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
+        ReactiveCommand<IEnumerable<string>, ITemplatedInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
 
         ReactiveCommand<IEnumerable<string>, Unit> LoadImagesWithProgressDialog { get; }
 
@@ -88,35 +88,35 @@ namespace FitsRatingTool.GuiApp.UI.App
         #endregion
 
         #region +++ Evaluation +++
-        ReactiveCommand<Unit, IInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> CalculateAllStatisticsWithProgressDialog { get; }
 
         Interaction<IFitsImageAllStatisticsProgressViewModel, Unit> CalculateAllStatisticsProgressDialog { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
 
         ReactiveCommand<Unit, Unit> ShowEvaluationTableAndFormula { get; }
 
         ReactiveCommand<Unit, Unit> HideEvaluationTableAndFormula { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
         #endregion
 
         #region +++ Job Configurator +++
-        ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; }
 
-        ReactiveCommand<Unit, IInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
         #endregion
 
         #region +++ Instrument Profiles +++
-        ReactiveCommand<Unit, IInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
 
         IAppProfileSelectorViewModel AppProfileSelector { get; }
         #endregion

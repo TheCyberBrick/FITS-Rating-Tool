@@ -244,7 +244,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 

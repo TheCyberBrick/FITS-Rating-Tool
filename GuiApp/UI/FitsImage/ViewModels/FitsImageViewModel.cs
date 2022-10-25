@@ -209,7 +209,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, IFitsImageStatisticsViewModel?> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -278,7 +278,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (IsImageDataValid)
                 {
-                    return fitsImageStatisticsProgressFactory.Create(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
+                    return fitsImageStatisticsProgressFactory.Templated(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
                     {
                         if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {

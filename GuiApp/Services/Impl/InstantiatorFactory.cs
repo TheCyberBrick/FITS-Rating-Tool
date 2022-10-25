@@ -19,26 +19,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
     public class InstantiatorFactory<T, Template> : IInstantiatorFactory<T, Template>
         where T : class
     {
-        private class Instantiator : IInstantiator<T, Template>, IDisposable
+        private class GenericInstantiator : IGenericInstantiator<T, Template>, IDisposable
         {
             public bool IsExpired { get; private set; }
 
             private readonly List<Action<T>> actions = new();
 
-            private readonly Func<Template?> templateFactory;
+            private readonly Func<Template?> templateConstructor;
 
-            public Instantiator(Func<Template?> templateFactory)
+            public GenericInstantiator(Func<Template?> templateConstructor)
             {
-                this.templateFactory = templateFactory;
+                this.templateConstructor = templateConstructor;
             }
 
-            public IInstantiator<T, Template> AndThen(Action<T> action)
+            IInstantiatorBase<T> IInstantiatorBase<T>.AndThen(Action<T> action) => AndThen(action);
+
+            public IGenericInstantiator<T, Template> AndThen(Action<T> action)
             {
                 lock (this)
                 {
@@ -48,31 +51,40 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 return this;
             }
 
-            public T Instantiate(Func<Template, T> factory)
+            public T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable) => InstantiateInternal(instanceConstructor, instanceDestructor, out disposable);
+
+            protected T InstantiateInternal(Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
             {
                 lock (this)
                 {
                     CheckExpired();
 
-                    var template = templateFactory.Invoke();
+                    Expire();
+
+                    var template = templateConstructor.Invoke();
 
                     if (template == null)
                     {
                         Dispose();
+                        CheckExpired();
                     }
 
-                    CheckExpired();
+                    var instance = instanceConstructor.Invoke(template!);
 
-                    var instance = factory.Invoke(template!);
+                    if (instance == null)
+                    {
+                        Dispose();
+                        CheckExpired();
+                    }
 
                     foreach (var action in actions)
                     {
-                        action.Invoke(instance);
+                        action.Invoke(instance!);
                     }
 
-                    Dispose();
+                    disposable = Disposable.Create(() => instanceDestructor.Invoke(instance!));
 
-                    return instance;
+                    return instance!;
                 }
             }
 
@@ -80,51 +92,153 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 if (IsExpired)
                 {
-                    throw new ObjectDisposedException(nameof(Instantiator));
+                    throw new ObjectDisposedException(GetType().FullName);
                 }
             }
 
-            public void Dispose()
+            private void Expire()
             {
                 lock (this)
                 {
                     IsExpired = true;
                 }
             }
+
+            public virtual void Dispose()
+            {
+                Expire();
+            }
         }
+
+        private class TemplatedInstantiator : GenericInstantiator, ITemplatedInstantiator<T, Template>
+        {
+            public TemplatedInstantiator(Func<Template?> templateConstructor) : base(templateConstructor)
+            {
+            }
+
+            ITemplatedInstantiator<T, Template> ITemplatedInstantiator<T, Template>.AndThen(Action<T> action) => (ITemplatedInstantiator<T, Template>)AndThen(action);
+
+            public T Instantiate(Func<Template, T> instanceConstructor)
+            {
+                return Instantiate(instanceConstructor, instance => { }, out var _ /* no disposal needed, called is responsible for deconstruction */);
+            }
+        }
+
+        private class DelegatedInstantiator : GenericInstantiator, IDelegatedInstantiator<T, Template>
+        {
+            private readonly Func<Template, T?> instanceConstructor;
+            private readonly Action<T> instanceDestructor;
+
+            private readonly IDisposable disposable;
+
+            private T? instance;
+
+            public DelegatedInstantiator(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, out CompositeDisposable disposable) : base(templateConstructor)
+            {
+                this.instanceConstructor = instanceConstructor;
+                this.instanceDestructor = instanceDestructor;
+
+                // Return a disposable to allow
+                // the factory user to deconstruct
+                // the created instances
+                this.disposable = disposable = new CompositeDisposable();
+                disposable.Add(Disposable.Create(() =>
+                {
+                    lock (this)
+                    {
+                        base.Dispose();
+
+                        if (instance != null)
+                        {
+                            instanceDestructor.Invoke(instance);
+                            instance = null;
+                        }
+                    }
+                }));
+            }
+
+            IDelegatedInstantiator<T, Template> IDelegatedInstantiator<T, Template>.AndThen(Action<T> action) => (IDelegatedInstantiator<T, Template>)AndThen(action);
+
+            IDelegatedInstantiator<T> IDelegatedInstantiator<T>.AndThen(Action<T> action) => (IDelegatedInstantiator<T>)AndThen(action);
+
+            public T Instantiate(out IDisposable disposable)
+            {
+                lock (this)
+                {
+                    return instance = InstantiateInternal(instanceConstructor, instanceDestructor, out disposable);
+                }
+            }
+
+            public override void Dispose()
+            {
+                lock (this)
+                {
+                    base.Dispose();
+
+                    disposable.Dispose();
+                }
+            }
+        }
+
+        private readonly List<WeakReference<GenericInstantiator>> instantiators = new();
+        private readonly List<IDisposable> disposables = new();
 
         private bool disposed;
 
-        private readonly List<WeakReference<Instantiator>> instantiators = new();
-
-        public IInstantiator<T, Template> Create(Func<Template?> templateFactory)
+        public ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor)
         {
-            var instantiator = new Instantiator(templateFactory);
+            var instantiator = new TemplatedInstantiator(templateConstructor);
 
-            lock (instantiators)
+            AddInstantiator(instantiator);
+
+            return instantiator;
+        }
+
+        public IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor)
+        {
+            var instantiator = new DelegatedInstantiator(templateConstructor, instanceConstructor, instanceDestructor, out var disposable);
+
+            lock (disposables)
             {
-                if (disposed)
+                AddInstantiator(instantiator);
+
+                // Make disposable remove itself
+                // from the list when it's disposed
+                disposable.Add(Disposable.Create(() =>
                 {
-                    throw new ObjectDisposedException(nameof(InstantiatorFactory<T, Template>));
-                }
+                    lock (disposables)
+                    {
+                        disposables.Remove(disposable);
+                    }
+                }));
 
-                Maintain();
-
-                instantiators.Add(new(instantiator));
+                disposables.Add(disposable);
             }
 
             return instantiator;
         }
 
-        public IInstantiator<T, Template> Create(Template template)
-        {
-            return Create(() => template);
-        }
-
-        private void Maintain()
+        private void AddInstantiator(GenericInstantiator instantiator)
         {
             lock (instantiators)
             {
+                if (disposed)
+                {
+                    throw new ObjectDisposedException(GetType().FullName);
+                }
+
+                RemoveUnreferencedInstantiators();
+
+                instantiators.Add(new(instantiator));
+            }
+        }
+
+        private void RemoveUnreferencedInstantiators()
+        {
+            lock (instantiators)
+            {
+                // Remove any instantiators that are
+                // no longer referenced
                 for (int i = instantiators.Count - 1; i >= 0; --i)
                 {
                     if (!instantiators[i].TryGetTarget(out var _))
@@ -139,17 +253,31 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             lock (instantiators)
             {
-                disposed = true;
-
-                foreach (var wref in instantiators)
+                lock (disposables)
                 {
-                    if (wref.TryGetTarget(out var instantiator))
-                    {
-                        instantiator.Dispose();
-                    }
-                }
+                    disposed = true;
 
-                instantiators.Clear();
+                    // Dispose all instantiators that are
+                    // still referenced somewhere so that
+                    // they can't be used anymore
+                    foreach (var wref in instantiators)
+                    {
+                        if (wref.TryGetTarget(out var instantiator))
+                        {
+                            instantiator.Dispose();
+                        }
+                    }
+                    instantiators.Clear();
+
+                    // Dispose any "left over" delegated
+                    // instantiators to make sure that
+                    // their instances are deconstructed
+                    foreach (var disposable in disposables)
+                    {
+                        disposable.Dispose();
+                    }
+                    disposables.Clear();
+                }
             }
         }
     }

@@ -24,7 +24,7 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public static class IWindowManagerExtensions
     {
-        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, IInstantiator<TData, TTemplate> instantiator, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
+        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, ITemplatedInstantiator<TData, TTemplate> instantiator, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {

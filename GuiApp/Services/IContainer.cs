@@ -46,6 +46,10 @@ namespace FitsRatingTool.GuiApp.Services
 
         event Action OnInitialized;
 
+        event Action<T> OnInstantiated;
+
+        event Action<T> OnDestroyed;
+
         bool IsSingleton { get; }
     }
 

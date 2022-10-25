@@ -74,11 +74,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
-        public ReactiveCommand<Unit, IInstantiator<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.OfViewer args,
@@ -133,18 +133,18 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             // TODO Temp
             // See above
             //ShowExternalViewer = ReactiveCommand.Create(() => Viewer);
-            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Create(new IFitsImageViewerViewModel.Of()));
+            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IFitsImageViewerViewModel.Of()));
 
             // TODO Temp
             // See above
-            ShowExternalCornerViewer = ReactiveCommand.Create(() => fitsImageCornerViewerFactory.Create(new IFitsImageCornerViewerViewModel.OfViewer(Viewer)).AndThen(vm =>
+            ShowExternalCornerViewer = ReactiveCommand.Create(() => fitsImageCornerViewerFactory.Templated(new IFitsImageCornerViewerViewModel.OfViewer(Viewer)).AndThen(vm =>
             {
                 vm.Percentage = CornerViewerPercentage;
             }));
 
             // TODO Temp
             // See above
-            ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Create(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
+            ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Templated(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
         }
 
         public void TransferPropertiesFrom(IFitsImageViewerViewModel.IOverlay overlay)

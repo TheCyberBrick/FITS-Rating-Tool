@@ -49,7 +49,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner
         ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        ReactiveCommand<Unit, IInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
+        ReactiveCommand<Unit, ITemplatedInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 

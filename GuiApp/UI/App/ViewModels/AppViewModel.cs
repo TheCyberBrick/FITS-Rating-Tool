@@ -51,7 +51,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             reg.RegisterAndReturn<AppViewModel>();
         }
 
-        public ReactiveCommand<Unit, IInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
 
         public ReactiveCommand<Unit, Unit> HideFileTable { get; }
 
@@ -59,7 +59,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
 
         public IFitsImageMultiViewerViewModel MultiViewer { get; private set; } = null!;
 
@@ -93,7 +93,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public Interaction<Unit, IEnumerable<string>> LoadImagesOpenFileDialog { get; } = new();
 
-        public ReactiveCommand<IEnumerable<string>, IInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
+        public ReactiveCommand<IEnumerable<string>, ITemplatedInstantiator<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
 
         public ReactiveCommand<IEnumerable<string>, Unit> LoadImagesWithProgressDialog { get; }
 
@@ -118,7 +118,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 
 
-        public ReactiveCommand<Unit, IInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateAllStatisticsWithProgressDialog { get; }
 
@@ -126,27 +126,27 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
 
 
-        public ReactiveCommand<Unit, IInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
 
         public ReactiveCommand<Unit, Unit> ShowEvaluationTableAndFormula { get; }
 
         public ReactiveCommand<Unit, Unit> HideEvaluationTableAndFormula { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
-        public ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
-        public ReactiveCommand<Unit, IInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         public Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; } = new();
 
-        public ReactiveCommand<Unit, IInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
 
 
-        public ReactiveCommand<Unit, IInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
+        public ReactiveCommand<Unit, ITemplatedInstantiator<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
 
         public IAppProfileSelectorViewModel AppProfileSelector { get; private set; } = null!;
 
@@ -253,14 +253,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             appProfileSelectorContainer.ToSingleton().Inject(new IAppProfileSelectorViewModel.Of(), vm => AppProfileSelector = vm);
 
-            ShowFileTable = ReactiveCommand.Create(() => fileTableFactory.Create(new IFileTableViewModel.Of()));
+            ShowFileTable = ReactiveCommand.Create(() => fileTableFactory.Templated(new IFileTableViewModel.Of()));
             HideFileTable = ReactiveCommand.Create(() => { });
 
             Exit = ReactiveCommand.Create(() => { });
 
             ShowAboutDialog = ReactiveCommand.Create(() => { });
 
-            ShowSettingsDialog = ReactiveCommand.Create(() => appConfigFactory.Create(new IAppConfigViewModel.Of()));
+            ShowSettingsDialog = ReactiveCommand.Create(() => appConfigFactory.Templated(new IAppConfigViewModel.Of()));
 
             LoadImage = ReactiveCommand.CreateFromTask<string>(async (string file) =>
             {
@@ -307,7 +307,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            LoadImagesWithProgress = ReactiveCommand.Create((IEnumerable<string> files) => fitsImageLoadProgressFactory.Create(new IFitsImageLoadProgressViewModel.OfFiles(files, fitsImageContainer, image =>
+            LoadImagesWithProgress = ReactiveCommand.Create((IEnumerable<string> files) => fitsImageLoadProgressFactory.Templated(new IFitsImageLoadProgressViewModel.OfFiles(files, fitsImageContainer, image =>
             {
                 if (!AddImage(image, out var _))
                 {
@@ -417,7 +417,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 {
                     files.Add(item.Image.File);
                 }
-                return fitsImageAllStatisticsFactory.Create(new IFitsImageAllStatisticsProgressViewModel.OfFiles(files, true));
+                return fitsImageAllStatisticsFactory.Templated(new IFitsImageAllStatisticsProgressViewModel.OfFiles(files, true));
             });
 
             CalculateAllStatisticsWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
@@ -432,31 +432,31 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            ShowEvaluationTable = ReactiveCommand.Create(() => evaluationTableFactory.Create(new IEvaluationTableViewModel.Of()));
+            ShowEvaluationTable = ReactiveCommand.Create(() => evaluationTableFactory.Templated(new IEvaluationTableViewModel.Of()));
 
-            ShowEvaluationFormula = ReactiveCommand.Create(() => evaluationFormulaFactory.Create(new IEvaluationFormulaViewModel.Of()));
+            ShowEvaluationFormula = ReactiveCommand.Create(() => evaluationFormulaFactory.Templated(new IEvaluationFormulaViewModel.Of()));
 
             ShowEvaluationTableAndFormula = ReactiveCommand.Create(() => { });
             HideEvaluationTableAndFormula = ReactiveCommand.Create(() => { });
 
-            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Create(new IEvaluationExporterViewModel.Of()));
+            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Templated(new IEvaluationExporterViewModel.Of()));
 
-            ShowJobConfigurator = ReactiveCommand.Create(() => jobConfiguratorFactory.Create(new IJobConfiguratorViewModel.Of()));
+            ShowJobConfigurator = ReactiveCommand.Create(() => jobConfiguratorFactory.Templated(new IJobConfiguratorViewModel.Of()));
 
             ShowJobConfiguratorWithOpenFileDialog = ReactiveCommand.CreateFromTask(async () =>
             {
                 var file = await JobConfiguratorOpenFileDialog.Handle(Unit.Default);
                 if (file.Length > 0)
                 {
-                    return jobConfiguratorFromFileFactory.Create(new IJobConfiguratorViewModel.OfConfigFile(file));
+                    return jobConfiguratorFromFileFactory.Templated(new IJobConfiguratorViewModel.OfConfigFile(file));
                 }
 
-                return jobConfiguratorFromFileFactory.Create(new IJobConfiguratorViewModel.OfConfigFile(""));
+                return jobConfiguratorFromFileFactory.Templated(new IJobConfiguratorViewModel.OfConfigFile(""));
             });
 
-            ShowJobRunner = ReactiveCommand.Create(() => jobRunnerFactory.Create(new IJobRunnerViewModel.Of()));
+            ShowJobRunner = ReactiveCommand.Create(() => jobRunnerFactory.Templated(new IJobRunnerViewModel.Of()));
 
-            ShowInstrumentProfileConfigurator = ReactiveCommand.Create(() => instrumentProfileConfiguratorFactory.Create(new IInstrumentProfileConfiguratorViewModel.Of()));
+            ShowInstrumentProfileConfigurator = ReactiveCommand.Create(() => instrumentProfileConfiguratorFactory.Templated(new IInstrumentProfileConfiguratorViewModel.Of()));
 
             IncreaseThumbnailScale = ReactiveCommand.Create<float>(s => ThumbnailScale = Math.Min(1.0f, ThumbnailScale + Math.Max(0.0f, s)));
             DecreaseThumbnailScale = ReactiveCommand.Create<float>(s => ThumbnailScale = Math.Max(0.1f, ThumbnailScale - Math.Max(0.0f, s)));
