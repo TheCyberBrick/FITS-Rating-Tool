@@ -26,7 +26,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     public class InstantiatorFactory<T, Template> : IInstantiatorFactory<T, Template>
         where T : class
     {
-        private class GenericInstantiator : IGenericInstantiator<T, Template>, IDisposable
+        private abstract class GenericInstantiator : IGenericInstantiator<T, Template>, IDisposable
         {
             public bool IsExpired { get; private set; }
 
@@ -34,9 +34,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             private readonly Func<Template?> templateConstructor;
 
-            public GenericInstantiator(Func<Template?> templateConstructor)
+            private readonly bool allowMultipleInstantiations;
+
+            public GenericInstantiator(Func<Template?> templateConstructor, bool allowMultipleInstantiations)
             {
                 this.templateConstructor = templateConstructor;
+                this.allowMultipleInstantiations = allowMultipleInstantiations;
             }
 
             IInstantiatorBase<T> IInstantiatorBase<T>.AndThen(Action<T> action) => AndThen(action);
@@ -51,7 +54,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 return this;
             }
 
-            public T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable) => InstantiateInternal(instanceConstructor, instanceDestructor, out disposable);
+            public abstract T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
 
             protected T InstantiateInternal(Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
             {
@@ -59,7 +62,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     CheckExpired();
 
-                    Expire();
+                    if (!allowMultipleInstantiations)
+                    {
+                        Expire();
+                    }
 
                     var template = templateConstructor.Invoke();
 
@@ -112,7 +118,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private class TemplatedInstantiator : GenericInstantiator, ITemplatedInstantiator<T, Template>
         {
-            public TemplatedInstantiator(Func<Template?> templateConstructor) : base(templateConstructor)
+            public TemplatedInstantiator(Func<Template?> templateConstructor, bool allowMultipleInstantiations) : base(templateConstructor, allowMultipleInstantiations)
             {
             }
 
@@ -120,7 +126,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             public T Instantiate(Func<Template, T> instanceConstructor)
             {
-                return Instantiate(instanceConstructor, instance => { }, out var _ /* no disposal needed, called is responsible for deconstruction */);
+                return Instantiate(instanceConstructor, instance => { }, out var _ /* no disposal needed, caller is responsible for deconstruction */);
+            }
+
+            public override T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            {
+                return InstantiateInternal(instanceConstructor, instanceDestructor, out disposable);
             }
         }
 
@@ -131,9 +142,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             private readonly IDisposable disposable;
 
-            private T? instance;
+            private readonly List<T> instances = new();
 
-            public DelegatedInstantiator(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, out CompositeDisposable disposable) : base(templateConstructor)
+            public DelegatedInstantiator(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations, out CompositeDisposable disposable) : base(templateConstructor, allowMultipleInstantiations)
             {
                 this.instanceConstructor = instanceConstructor;
                 this.instanceDestructor = instanceDestructor;
@@ -148,11 +159,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         base.Dispose();
 
-                        if (instance != null)
+                        foreach (var instance in instances)
                         {
                             instanceDestructor.Invoke(instance);
-                            instance = null;
                         }
+                        instances.Clear();
                     }
                 }));
             }
@@ -165,8 +176,23 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 lock (this)
                 {
-                    return instance = InstantiateInternal(instanceConstructor, instanceDestructor, out disposable);
+                    var newInstance = InstantiateInternal(instanceConstructor, instanceDestructor, out var instanceDisposable);
+
+                    instances.Add(newInstance);
+
+                    disposable = Disposable.Create(() =>
+                    {
+                        instances.Remove(newInstance);
+                        instanceDisposable.Dispose();
+                    });
+
+                    return newInstance;
                 }
+            }
+
+            public override T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            {
+                return Instantiate(out disposable);
             }
 
             public override void Dispose()
@@ -185,18 +211,18 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private bool disposed;
 
-        public ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor)
+        public ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor, bool allowMultipleInstantiations)
         {
-            var instantiator = new TemplatedInstantiator(templateConstructor);
+            var instantiator = new TemplatedInstantiator(templateConstructor, allowMultipleInstantiations);
 
             AddInstantiator(instantiator);
 
             return instantiator;
         }
 
-        public IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor)
+        public IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations)
         {
-            var instantiator = new DelegatedInstantiator(templateConstructor, instanceConstructor, instanceDestructor, out var disposable);
+            var instantiator = new DelegatedInstantiator(templateConstructor, instanceConstructor, instanceDestructor, allowMultipleInstantiations, out var disposable);
 
             lock (disposables)
             {
@@ -251,9 +277,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public void Dispose()
         {
-            lock (instantiators)
+            lock (disposables)
             {
-                lock (disposables)
+                lock (instantiators)
                 {
                     disposed = true;
 

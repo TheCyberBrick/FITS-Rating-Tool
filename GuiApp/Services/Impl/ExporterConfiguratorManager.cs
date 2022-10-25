@@ -22,16 +22,16 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 {
     public class ExporterConfiguratorManager : IExporterConfiguratorManager
     {
-        private readonly Dictionary<string, IExporterConfiguratorManager.Factory> factories = new();
+        private readonly Dictionary<string, IExporterConfiguratorManager.FactoryInfo> factories = new();
 
-        public IEnumerable<KeyValuePair<string, IExporterConfiguratorManager.Factory>> Factories => factories;
+        public IEnumerable<KeyValuePair<string, IExporterConfiguratorManager.FactoryInfo>> Factories => factories;
 
-        public bool Register(string id, IExporterConfiguratorManager.Factory factory)
+        public bool Register(string id, IExporterConfiguratorManager.FactoryInfo factory)
         {
             return factories.TryAdd(id, factory);
         }
 
-        public IExporterConfiguratorManager.Factory? Get(string id)
+        public IExporterConfiguratorManager.FactoryInfo? Get(string id)
         {
             factories.TryGetValue(id, out var factory);
             return factory;

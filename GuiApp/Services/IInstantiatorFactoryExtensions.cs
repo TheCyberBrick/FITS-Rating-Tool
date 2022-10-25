@@ -22,30 +22,30 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public static class IInstantiatorExtensions
+    public static class IInstantiatorFactoryExtensions
     {
-        public static ITemplatedInstantiator<T, Template> Templated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template)
+        public static ITemplatedInstantiator<T, Template> Templated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, bool allowMultipleInstantiations = false)
             where T : class
         {
-            return factory.Templated(() => template);
+            return factory.Templated(() => template, allowMultipleInstantiations);
         }
 
-        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor)
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations = false)
             where T : class
         {
-            return factory.Delegated(() => template, instanceConstructor, instanceDestructor);
+            return factory.Delegated(() => template, instanceConstructor, instanceDestructor, allowMultipleInstantiations);
         }
 
-        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Func<Template?> templateConstructor, IContainer<T, Template> container)
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Func<Template?> templateConstructor, IContainer<T, Template> container, bool allowMultipleInstantiations = false)
             where T : class
         {
-            return factory.Delegated(templateConstructor, container.Instantiate, instance => container.Destroy(instance));
+            return factory.Delegated(templateConstructor, container.Instantiate, instance => container.Destroy(instance), allowMultipleInstantiations);
         }
 
-        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, IContainer<T, Template> container)
+        public static IDelegatedInstantiator<T, Template> Delegated<T, Template>(this IInstantiatorFactory<T, Template> factory, Template template, IContainer<T, Template> container, bool allowMultipleInstantiations = false)
             where T : class
         {
-            return factory.Delegated(() => template, container);
+            return factory.Delegated(() => template, container, allowMultipleInstantiations);
         }
 
         public static T Instantiate<T, Template>(this ITemplatedInstantiator<T, Template> instantiator, IContainer<T, Template> container)

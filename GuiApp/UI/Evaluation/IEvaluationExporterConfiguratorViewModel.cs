@@ -32,9 +32,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
             public string Name { get; }
 
-            public IExporterConfiguratorManager.Factory Factory { get; }
+            public IExporterConfiguratorManager.FactoryInfo Factory { get; }
 
-            public ExporterConfiguratorFactory(string id, IExporterConfiguratorManager.Factory factory)
+            public ExporterConfiguratorFactory(string id, IExporterConfiguratorManager.FactoryInfo factory)
             {
                 Id = id;
                 Name = factory.Name;

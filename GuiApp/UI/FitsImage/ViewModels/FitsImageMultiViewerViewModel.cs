@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageMultiViewerViewModel;
+using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageViewerViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
@@ -79,8 +80,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         }
 
 
-        private IFitsImageViewerViewModel.IOverlayFactory? _innerOverlayFactory;
-        public IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory
+        private IDelegatedInstantiator<IOverlay>? _innerOverlayFactory;
+        public IDelegatedInstantiator<IOverlay>? InnerOverlayFactory
         {
             get => _innerOverlayFactory;
             set
@@ -100,8 +101,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
-        private IFitsImageViewerViewModel.IOverlayFactory? _outerOverlayFactory;
-        public IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory
+        private IDelegatedInstantiator<IOverlay>? _outerOverlayFactory;
+        public IDelegatedInstantiator<IOverlay>? OuterOverlayFactory
         {
             get => _outerOverlayFactory;
             set

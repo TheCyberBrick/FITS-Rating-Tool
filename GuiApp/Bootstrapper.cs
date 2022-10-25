@@ -126,7 +126,7 @@ namespace FitsRatingTool.GuiApp
             // TODO Temp
             // Could use a cleanup
 
-            container.Register<IAppViewModel, AppViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
+            container.Register<IAppViewModel, AppViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
             container.Register<IAppProfileSelectorViewModel, AppProfileSelectorViewModel>();
             container.Register<IAppViewerOverlayViewModel, AppViewerOverlayViewModel>();
             container.Register<IAppImageItemViewModel, AppImageItemViewModel>();

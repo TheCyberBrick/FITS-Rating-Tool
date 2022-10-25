@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.Utils;
+using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageViewerViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
@@ -253,22 +254,23 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         public ReactiveCommand<string?, IFitsImageViewModel?> LoadImage { get; }
 
 
-
-        private IFitsImageViewerViewModel.IOverlayFactory? _innerOverlayFactory;
-        public IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory
+        private IDelegatedInstantiator<IOverlay>? _innerOverlayFactory;
+        public IDelegatedInstantiator<IOverlay>? InnerOverlayFactory
         {
             get => _innerOverlayFactory;
             set
             {
                 var oldValue = _innerOverlayFactory;
                 this.RaiseAndSetIfChanged(ref _innerOverlayFactory, value);
-                if (value != oldValue && oldValue != null && InnerOverlay != null)
+                if (value != oldValue)
                 {
-                    oldValue.Destroy(InnerOverlay);
+                    _innerOverlayDisposable?.Dispose();
+                    _innerOverlayDisposable = null;
                 }
                 if (value != null && value != oldValue)
                 {
-                    InnerOverlay = value.Create(this);
+                    InnerOverlay = value.Instantiate(out _innerOverlayDisposable);
+                    InnerOverlay.Viewer = this;
                 }
                 else if (value == null)
                 {
@@ -277,6 +279,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
+        private IDisposable? _innerOverlayDisposable;
         private IFitsImageViewerViewModel.IOverlay? _innerOverlay;
         public IFitsImageViewerViewModel.IOverlay? InnerOverlay
         {
@@ -284,21 +287,23 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _innerOverlay, value);
         }
 
-        private IFitsImageViewerViewModel.IOverlayFactory? _outerOverlayFactory;
-        public IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory
+        private IDelegatedInstantiator<IOverlay>? _outerOverlayFactory;
+        public IDelegatedInstantiator<IOverlay>? OuterOverlayFactory
         {
             get => _outerOverlayFactory;
             set
             {
                 var oldValue = _outerOverlayFactory;
                 this.RaiseAndSetIfChanged(ref _outerOverlayFactory, value);
-                if (value != oldValue && oldValue != null && OuterOverlay != null)
+                if (value != oldValue)
                 {
-                    oldValue.Destroy(OuterOverlay);
+                    _outerOverlayDisposable?.Dispose();
+                    _outerOverlayDisposable = null;
                 }
                 if (value != null && value != oldValue)
                 {
-                    OuterOverlay = value.Create(this);
+                    OuterOverlay = value.Instantiate(out _outerOverlayDisposable);
+                    OuterOverlay.Viewer = this;
                 }
                 else if (value == null)
                 {
@@ -307,6 +312,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
+        private IDisposable? _outerOverlayDisposable;
         private IFitsImageViewerViewModel.IOverlay? _outerOverlay;
         public IFitsImageViewerViewModel.IOverlay? OuterOverlay
         {
@@ -1280,16 +1286,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public void Dispose()
         {
-            if (InnerOverlay != null && InnerOverlayFactory != null)
-            {
-                InnerOverlayFactory.Destroy(InnerOverlay);
-            }
+            _innerOverlayDisposable?.Dispose();
+            _innerOverlayDisposable = null;
             InnerOverlayFactory = null;
 
-            if (OuterOverlay != null && OuterOverlayFactory != null)
-            {
-                OuterOverlayFactory.Destroy(OuterOverlay);
-            }
+            _outerOverlayDisposable?.Dispose();
+            _outerOverlayDisposable = null;
             OuterOverlayFactory = null;
 
             FitsImage = null;

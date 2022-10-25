@@ -27,13 +27,18 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
     public class AppViewerOverlayViewModel : ViewModelBase, IAppViewerOverlayViewModel
     {
-        public AppViewerOverlayViewModel(IRegistrar<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.OfViewer> reg)
+        public AppViewerOverlayViewModel(IRegistrar<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> reg)
         {
             reg.RegisterAndReturn<AppViewerOverlayViewModel>();
         }
 
 
-        public IFitsImageViewerViewModel Viewer { get; }
+        private IFitsImageViewerViewModel? _viewer;
+        public IFitsImageViewerViewModel Viewer
+        {
+            get => _viewer;
+            set => this.RaiseAndSetIfChanged(ref _viewer, value);
+        }
 
 
         private long _fileId;
@@ -81,15 +86,16 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public ReactiveCommand<Unit, ITemplatedInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
-        private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.OfViewer args,
+        private readonly IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer;
+
+        private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.Of args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer,
             IInstantiatorFactory<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerFactory,
             IInstantiatorFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
             IInstantiatorFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
-            Viewer = args.Viewer;
-
+            this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
             fitsImageCornerViewerContainer.ToSingletonWithObservable().Subscribe(vm => CornerViewer = vm);
 
             this.WhenAnyValue(x => x.Viewer.File).Subscribe(x =>
@@ -104,18 +110,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            this.WhenAnyValue(x => x.IsCornerViewerEnabled).Subscribe(x =>
-            {
-                if (x)
-                {
-                    var cornerViewer = fitsImageCornerViewerContainer.Instantiate(new IFitsImageCornerViewerViewModel.OfViewer(Viewer));
-                    cornerViewer.Percentage = CornerViewerPercentage;
-                }
-                else
-                {
-                    fitsImageCornerViewerContainer.Destroy();
-                }
-            });
+            this.WhenAnyValue(x => x.Viewer).Subscribe(_ => UpdateCornerViewer());
+
+            this.WhenAnyValue(x => x.IsCornerViewerEnabled).Subscribe(_ => UpdateCornerViewer());
 
             this.WhenAnyValue(x => x.CornerViewerPercentage)
                 .Subscribe(x =>
@@ -145,6 +142,19 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             // TODO Temp
             // See above
             ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Templated(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
+        }
+
+        private void UpdateCornerViewer()
+        {
+            if (IsCornerViewerEnabled)
+            {
+                var cornerViewer = fitsImageCornerViewerContainer.Instantiate(new IFitsImageCornerViewerViewModel.OfViewer(Viewer));
+                cornerViewer.Percentage = CornerViewerPercentage;
+            }
+            else
+            {
+                fitsImageCornerViewerContainer.Destroy();
+            }
         }
 
         public void TransferPropertiesFrom(IFitsImageViewerViewModel.IOverlay overlay)

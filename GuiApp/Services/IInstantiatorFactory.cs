@@ -23,12 +23,12 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IInstantiatorFactory<T, Template> : IDisposable
         where T : class
     {
-        ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor);
+        ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor, bool allowMultipleInstantiations = false);
 
-        IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor);
+        IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations = false);
     }
 
-    public interface IInstantiatorBase<T>
+    public interface IInstantiatorBase<out T>
     {
         bool IsExpired { get; }
 
@@ -50,7 +50,7 @@ namespace FitsRatingTool.GuiApp.Services
         T Instantiate(Func<Template, T> instanceConstructor);
     }
 
-    public interface IDelegatedInstantiator<T> : IInstantiatorBase<T>
+    public interface IDelegatedInstantiator<out T> : IInstantiatorBase<T>
         where T : class
     {
         new IDelegatedInstantiator<T> AndThen(Action<T> action);

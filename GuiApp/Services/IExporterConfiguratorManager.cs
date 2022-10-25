@@ -37,28 +37,12 @@ namespace FitsRatingTool.GuiApp.Services
             bool TryLoadConfig(string config);
         }
 
-        public class Factory
-        {
-            public virtual string Name { get; }
+        public record FactoryInfo(string Name, IDelegatedInstantiator<IExporterConfiguratorViewModel> Instantiator);
 
-            private readonly Func<IExporterConfiguratorViewModel> factory;
+        IEnumerable<KeyValuePair<string, FactoryInfo>> Factories { get; }
 
-            public Factory(string name, Func<IExporterConfiguratorViewModel> factory)
-            {
-                Name = name;
-                this.factory = factory;
-            }
+        bool Register(string id, FactoryInfo factory);
 
-            public virtual IExporterConfiguratorViewModel CreateConfigurator()
-            {
-                return factory.Invoke();
-            }
-        }
-
-        IEnumerable<KeyValuePair<string, Factory>> Factories { get; }
-
-        bool Register(string id, Factory factory);
-
-        Factory? Get(string id);
+        FactoryInfo? Get(string id);
     }
 }

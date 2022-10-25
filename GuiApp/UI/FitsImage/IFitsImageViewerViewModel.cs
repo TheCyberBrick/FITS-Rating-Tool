@@ -30,16 +30,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
     {
         public record Of();
 
-        public interface IOverlayFactory
-        {
-            IOverlay Create(IFitsImageViewerViewModel viewer);
-
-            void Destroy(IOverlay overlay);
-        }
-
         public interface IOverlay
         {
-            IFitsImageViewerViewModel Viewer { get; }
+            IFitsImageViewerViewModel? Viewer { get; set; }
 
             void TransferPropertiesFrom(IOverlay overlay);
         }
@@ -117,11 +110,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
         #endregion
 
         #region +++ Overlays +++
-        IOverlayFactory? InnerOverlayFactory { get; set; }
+        IDelegatedInstantiator<IOverlay>? InnerOverlayFactory { get; set; }
 
         IOverlay? InnerOverlay { get; }
 
-        IOverlayFactory? OuterOverlayFactory { get; set; }
+        IDelegatedInstantiator<IOverlay>? OuterOverlayFactory { get; set; }
 
         IOverlay? OuterOverlay { get; }
         #endregion

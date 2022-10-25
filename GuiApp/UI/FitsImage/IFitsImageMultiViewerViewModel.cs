@@ -21,6 +21,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System;
 using System.Reactive.Linq;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
@@ -63,9 +64,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             }
         }
 
-        IFitsImageViewerViewModel.IOverlayFactory? InnerOverlayFactory { get; set; }
+        IDelegatedInstantiator<IFitsImageViewerViewModel.IOverlay>? InnerOverlayFactory { get; set; }
 
-        IFitsImageViewerViewModel.IOverlayFactory? OuterOverlayFactory { get; set; }
+        IDelegatedInstantiator<IFitsImageViewerViewModel.IOverlay>? OuterOverlayFactory { get; set; }
 
         int MaxViewers { get; set; }
 

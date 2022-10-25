@@ -44,7 +44,7 @@ using Avalonia.Collections;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
-    public class AppViewModel : ViewModelBase, IAppViewModel
+    public class AppViewModel : ViewModelBase, IAppViewModel, IDisposable
     {
         public AppViewModel(IRegistrar<IAppViewModel, IAppViewModel.Of> reg)
         {
@@ -187,7 +187,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer;
-        private readonly IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.OfViewer> appViewerOverlayContainer;
+        private readonly IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayContainer;
+        private readonly IInstantiatorFactory<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory;
 
         // Designer only
 #pragma warning disable CS8618
@@ -217,7 +218,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of> fileDeleterExporterConfiguratorContainer,
             IContainer<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of> fileMoverExporterConfiguratorContainer,
             IContainer<IAppProfileSelectorViewModel, IAppProfileSelectorViewModel.Of> appProfileSelectorContainer,
-            IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.OfViewer> appViewerOverlayContainer,
+            IContainer<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayContainer,
             IInstantiatorFactory<IFileTableViewModel, IFileTableViewModel.Of> fileTableFactory,
             IInstantiatorFactory<IAppConfigViewModel, IAppConfigViewModel.Of> appConfigFactory,
             IInstantiatorFactory<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> fitsImageLoadProgressFactory,
@@ -228,7 +229,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IInstantiatorFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> jobConfiguratorFactory,
             IInstantiatorFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> jobConfiguratorFromFileFactory,
             IInstantiatorFactory<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerFactory,
-            IInstantiatorFactory<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory)
+            IInstantiatorFactory<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory,
+            IInstantiatorFactory<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory,
+            IInstantiatorFactory<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of> csvExporterConfiguratorFactory,
+            IInstantiatorFactory<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> fitsHeaderExporterConfiguratorFactory,
+            IInstantiatorFactory<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of> voyagerExporterConfiguratorFactory,
+            IInstantiatorFactory<IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of> fileDeleterExporterConfiguratorFactory,
+            IInstantiatorFactory<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of> fileMoverExporterConfiguratorFactory)
         {
             this.manager = manager;
             this.appConfig = appConfig;
@@ -236,14 +243,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
             this.appViewerOverlayContainer = appViewerOverlayContainer;
+            this.appViewerOverlayFactory = appViewerOverlayFactory;
 
             RegisterExporterConfigurators(
                 exporterConfiguratorManager,
-                csvExporterConfiguratorContainer,
-                fitsHeaderExporterConfiguratorContainer,
-                voyagerExporterConfiguratorContainer,
-                fileDeleterExporterConfiguratorContainer,
-                fileMoverExporterConfiguratorContainer
+                csvExporterConfiguratorFactory.Delegated(new ICSVExporterConfiguratorViewModel.Of(), csvExporterConfiguratorContainer, allowMultipleInstantiations: true),
+                fitsHeaderExporterConfiguratorFactory.Delegated(new IFitsHeaderExporterConfiguratorViewModel.Of(), fitsHeaderExporterConfiguratorContainer, allowMultipleInstantiations: true),
+                voyagerExporterConfiguratorFactory.Delegated(new IVoyagerExporterConfiguratorViewModel.Of(), voyagerExporterConfiguratorContainer, allowMultipleInstantiations: true),
+                fileDeleterExporterConfiguratorFactory.Delegated(new IFileDeleterExporterConfiguratorViewModel.Of(), fileDeleterExporterConfiguratorContainer, allowMultipleInstantiations: true),
+                fileMoverExporterConfiguratorFactory.Delegated(new IFileMoverExporterConfiguratorViewModel.Of(), fileMoverExporterConfiguratorContainer, allowMultipleInstantiations: true)
                 );
 
             multiImageViewerContainer.ToSingleton().Inject(new IFitsImageMultiViewerViewModel.Of(), vm =>
@@ -479,7 +487,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         protected override void OnInstantiated()
         {
-            MultiViewer.OuterOverlayFactory = new AppViewerOverlayFactory(appViewerOverlayContainer);
+            MultiViewer.OuterOverlayFactory = appViewerOverlayFactory.Delegated(new IAppViewerOverlayViewModel.Of(), appViewerOverlayContainer, allowMultipleInstantiations: true);
 
             this.WhenAnyValue(x => x.SelectedItem).Subscribe(item =>
             {
@@ -804,26 +812,22 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 
         private void RegisterExporterConfigurators(IExporterConfiguratorManager exporterConfiguratorManager,
-            IContainer<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of> csvExporterConfiguratorContainer,
-            IContainer<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> fitsHeaderExporterConfiguratorContainer,
-            IContainer<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of> voyagerExporterConfiguratorContainer,
-            IContainer<IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of> fileDeleterExporterConfiguratorContainer,
-            IContainer<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of> fileMoverExporterConfiguratorContainer)
+            IDelegatedInstantiator<ICSVExporterConfiguratorViewModel> csvExporterConfiguratorFactory,
+            IDelegatedInstantiator<IFitsHeaderExporterConfiguratorViewModel> fitsHeaderExporterConfiguratorFactory,
+            IDelegatedInstantiator<IVoyagerExporterConfiguratorViewModel> voyagerExporterConfiguratorFactory,
+            IDelegatedInstantiator<IFileDeleterExporterConfiguratorViewModel> fileDeleterExporterConfiguratorFactory,
+            IDelegatedInstantiator<IFileMoverExporterConfiguratorViewModel> fileMoverExporterConfiguratorFactory)
         {
-            // TODO Temp
-            // This all needs to be replaced. Manager should use IInstantiators instead of factories.
+            exporterConfiguratorManager.Register("csv", new IExporterConfiguratorManager.FactoryInfo("CSV", csvExporterConfiguratorFactory));
+            exporterConfiguratorManager.Register("fits_header", new IExporterConfiguratorManager.FactoryInfo("FITS Header", fitsHeaderExporterConfiguratorFactory));
+            exporterConfiguratorManager.Register("voyager", new IExporterConfiguratorManager.FactoryInfo("Voyager RoboTarget", voyagerExporterConfiguratorFactory));
+            exporterConfiguratorManager.Register("file_deleter", new IExporterConfiguratorManager.FactoryInfo("File Deleter", fileDeleterExporterConfiguratorFactory));
+            exporterConfiguratorManager.Register("file_mover", new IExporterConfiguratorManager.FactoryInfo("File Mover", fileMoverExporterConfiguratorFactory));
+        }
 
-            csvExporterConfiguratorContainer.ToSingleton();
-            fitsHeaderExporterConfiguratorContainer.ToSingleton();
-            voyagerExporterConfiguratorContainer.ToSingleton();
-            fileDeleterExporterConfiguratorContainer.ToSingleton();
-            fileMoverExporterConfiguratorContainer.ToSingleton();
-
-            exporterConfiguratorManager.Register("csv", new IExporterConfiguratorManager.Factory("CSV", () => csvExporterConfiguratorContainer.Instantiate(new ICSVExporterConfiguratorViewModel.Of())));
-            exporterConfiguratorManager.Register("fits_header", new IExporterConfiguratorManager.Factory("FITS Header", () => fitsHeaderExporterConfiguratorContainer.Instantiate(new IFitsHeaderExporterConfiguratorViewModel.Of())));
-            exporterConfiguratorManager.Register("voyager", new IExporterConfiguratorManager.Factory("Voyager RoboTarget", () => voyagerExporterConfiguratorContainer.Instantiate(new IVoyagerExporterConfiguratorViewModel.Of())));
-            exporterConfiguratorManager.Register("file_deleter", new IExporterConfiguratorManager.Factory("File Deleter", () => fileDeleterExporterConfiguratorContainer.Instantiate(new IFileDeleterExporterConfiguratorViewModel.Of())));
-            exporterConfiguratorManager.Register("file_mover", new IExporterConfiguratorManager.Factory("File Mover", () => fileMoverExporterConfiguratorContainer.Instantiate(new IFileMoverExporterConfiguratorViewModel.Of())));
+        public void Dispose()
+        {
+            appViewerOverlayFactory.Dispose();
         }
     }
 }
