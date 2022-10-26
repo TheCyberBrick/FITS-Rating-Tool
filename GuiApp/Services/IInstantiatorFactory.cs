@@ -23,15 +23,32 @@ namespace FitsRatingTool.GuiApp.Services
     public interface IInstantiatorFactory<T, Template> : IDisposable
         where T : class
     {
+        /// <summary>
+        /// Creates an instantiator whose instance construction is done by the instantiator's consumer.
+        /// The instances' lifetime is determined entirely by the consumer. The consumer is responsible
+        /// for the deconstruction of the instances.
+        /// </summary>
+        /// <param name="templateConstructor"></param>
+        /// <param name="allowMultipleInstantiations"></param>
+        /// <returns></returns>
         ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor, bool allowMultipleInstantiations = false);
 
+        /// <summary>
+        /// Creates an instantiator whose instance construction and destruction is delegated to this factory itself.
+        /// The instances' lifetime is at most the factory's lifetime. When the factory is disposed, all the instances
+        /// it created are deconstructed. Hence, the factory is responsible for the deconstruction of the created instances by disposing itself.
+        /// However, the consumer of the instantiator may and should also trigger the deconstruction of the instances on its own when they're no longer needed.
+        /// </summary>
+        /// <param name="templateConstructor"></param>
+        /// <param name="instanceConstructor"></param>
+        /// <param name="instanceDestructor"></param>
+        /// <param name="allowMultipleInstantiations"></param>
+        /// <returns></returns>
         IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations = false);
     }
 
     public interface IInstantiatorBase<out T>
     {
-        bool IsExpired { get; }
-
         IInstantiatorBase<T> AndThen(Action<T> action);
     }
 
@@ -39,6 +56,15 @@ namespace FitsRatingTool.GuiApp.Services
     {
         new IGenericInstantiator<T, Template> AndThen(Action<T> action);
 
+        /// <summary>
+        /// Creates a new instance. The <paramref name="instanceConstructor"/> may or may not be used to construct the instance. However, if <paramref name="instanceConstructor"/> is used to
+        /// construct the instance, then <paramref name="instanceDestructor"/> will be called exactly once when <paramref name="disposable"/> is disposed and/or the owning factory is disposed.
+        /// The caller is responsible for the deconstruction of the created instance by disposing <paramref name="disposable"/> when it is no longer needed.
+        /// </summary>
+        /// <param name="instanceConstructor"></param>
+        /// <param name="instanceDestructor"></param>
+        /// <param name="disposable"></param>
+        /// <returns></returns>
         T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
     }
 
@@ -47,6 +73,12 @@ namespace FitsRatingTool.GuiApp.Services
     {
         new ITemplatedInstantiator<T, Template> AndThen(Action<T> action);
 
+        /// <summary>
+        /// Creates a new instance through the specified constructor. The caller
+        /// is responsible for the deconstruction of the created instance, if necessary.
+        /// </summary>
+        /// <param name="instanceConstructor"></param>
+        /// <returns></returns>
         T Instantiate(Func<Template, T> instanceConstructor);
     }
 
@@ -55,6 +87,12 @@ namespace FitsRatingTool.GuiApp.Services
     {
         new IDelegatedInstantiator<T> AndThen(Action<T> action);
 
+        /// <summary>
+        /// Creates a new instance. The caller should deconstruct the created instance by disposing <paramref name="disposable"/>
+        /// when it is no longer needed, otherwise the instance will stay around until the owning factory is disposed.
+        /// </summary>
+        /// <param name="disposable"></param>
+        /// <returns></returns>
         T Instantiate(out IDisposable disposable);
     }
 

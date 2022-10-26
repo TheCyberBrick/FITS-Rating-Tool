@@ -28,7 +28,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     {
         private abstract class GenericInstantiator : IGenericInstantiator<T, Template>, IDisposable
         {
-            public bool IsExpired { get; private set; }
+            private bool expired;
 
             private readonly Func<Template?> templateConstructor;
 
@@ -76,7 +76,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             private void CheckExpired()
             {
-                if (IsExpired)
+                if (expired)
                 {
                     throw new ObjectDisposedException(GetType().FullName);
                 }
@@ -84,7 +84,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             protected void Expire()
             {
-                IsExpired = true;
+                expired = true;
             }
 
             public abstract void Dispose();
@@ -134,8 +134,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 this.parent = parent;
                 this.action = action;
             }
-
-            public bool IsExpired => parent.IsExpired;
 
             public ITemplatedInstantiator<T, Template> AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
 
@@ -273,8 +271,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 this.parent = parent;
                 this.action = action;
             }
-
-            public bool IsExpired => parent.IsExpired;
 
             public IDelegatedInstantiator<T, Template> AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
 
