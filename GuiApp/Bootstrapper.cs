@@ -147,7 +147,7 @@ namespace FitsRatingTool.GuiApp
 
             container.Register<IEvaluationTableViewModel, EvaluationTableViewModel>();
             container.Register<IEvaluationFormulaViewModel, EvaluationFormulaViewModel>();
-            container.Register<IEvaluationExporterConfiguratorViewModel, EvaluationExporterConfiguratorViewModel>();
+            container.Register<IEvaluationExporterConfiguratorViewModel, EvaluationExporterConfiguratorViewModel>(setup: Setup.With(allowDisposableTransient: true));
             container.Register<IEvaluationExporterViewModel, EvaluationExporterViewModel>();
             container.Register<IEvaluationExportProgressViewModel, EvaluationExportProgressViewModel>();
 

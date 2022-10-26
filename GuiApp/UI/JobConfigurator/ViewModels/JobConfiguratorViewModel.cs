@@ -532,13 +532,13 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             if (GroupingConfiguration.TryParseGroupingKeys(groupingManager, config.GroupingKeys ?? new List<string>(), out var groupingConfiguration) && groupingConfiguration != null)
             {
                 IEvaluationExporterConfiguratorViewModel.ExporterConfiguratorFactory? exporterFactory = null;
-                IExporterConfiguratorManager.IExporterConfiguratorViewModel? exporterConfigurator = null;
+                IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? exporterConfiguratorInstantiator = null;
 
                 if (config.Exporters != null)
                 {
                     foreach (var exporter in config.Exporters)
                     {
-                        if (exporterConfigurator != null)
+                        if (exporterConfiguratorInstantiator != null)
                         {
                             // Multiple exporters can't be handled in GUI
                             return false;
@@ -548,13 +548,20 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                         if (factory != null)
                         {
                             exporterFactory = factory;
-                            exporterConfigurator = factory.Factory.CreateConfigurator();
+                            exporterConfiguratorInstantiator = factory.Factory.Instantiator;
 
-                            if (!exporterConfigurator.TryLoadConfig(exporter.Config))
+                            var exporterConfigurator = exporterConfiguratorInstantiator.Instantiate(out var disposable);
+                            using (disposable)
                             {
-                                // Invalid config
-                                return false;
+                                if (!exporterConfigurator.TryLoadConfig(exporter.Config))
+                                {
+                                    // Invalid config
+                                    return false;
+                                }
                             }
+
+                            // Make exporter configurator load config on instantiation
+                            exporterConfiguratorInstantiator = exporterConfiguratorInstantiator.AndThen(exporterConfigurator => exporterConfigurator.TryLoadConfig(exporter.Config));
                         }
                         else
                         {
@@ -607,7 +614,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 OutputLogsPath = config.OutputLogsPath ?? "";
                 CachePath = config.CachePath ?? "";
 
-                EvaluationExporterConfigurator.SetExporterConfigurator(exporterConfigurator);
+                EvaluationExporterConfigurator.SetExporterConfigurator(exporterConfiguratorInstantiator);
 
                 UpdateJobConfig();
 

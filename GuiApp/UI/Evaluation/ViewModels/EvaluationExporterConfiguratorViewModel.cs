@@ -26,7 +26,7 @@ using static FitsRatingTool.GuiApp.UI.Evaluation.IEvaluationExporterConfigurator
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
-    public class EvaluationExporterConfiguratorViewModel : ViewModelBase, IEvaluationExporterConfiguratorViewModel
+    public class EvaluationExporterConfiguratorViewModel : ViewModelBase, IEvaluationExporterConfiguratorViewModel, IDisposable
     {
         public EvaluationExporterConfiguratorViewModel(IRegistrar<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> reg)
         {
@@ -43,6 +43,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _exporterConfiguratorFactory, value);
         }
 
+        private IDisposable? _exporterConfiguratorDisposable;
         private IExporterConfiguratorManager.IExporterConfiguratorViewModel? _exporterConfigurator;
         public IExporterConfiguratorManager.IExporterConfiguratorViewModel? ExporterConfigurator
         {
@@ -72,13 +73,16 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 .Skip(1)
                 .Subscribe(x =>
                 {
-                    var newConfigurator = x != null ? x.Factory.CreateConfigurator() : null;
+                    var newConfigurator = x != null ? x.Factory.Instantiator : null;
                     ReplaceExporterConfigurator(newConfigurator);
                 });
         }
 
-        private void ReplaceExporterConfigurator(IExporterConfiguratorManager.IExporterConfiguratorViewModel? newConfigurator)
+        private void ReplaceExporterConfigurator(IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? instantiator)
         {
+            IDisposable? newConfiguratorDisposable = null;
+            IExporterConfiguratorManager.IExporterConfiguratorViewModel? newConfigurator = instantiator != null ? instantiator.Instantiate(out newConfiguratorDisposable) : null;
+
             var oldConfigurator = ExporterConfigurator;
 
             if (oldConfigurator != null)
@@ -86,13 +90,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 if (newConfigurator != null && oldConfigurator.GetType() == newConfigurator.GetType())
                 {
                     // Same configurator, no changes needed
+                    newConfiguratorDisposable?.Dispose();
                     return;
                 }
 
                 WeakEventHandlerManager.Unsubscribe<EventArgs, EvaluationExporterConfiguratorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
             }
 
+            var oldExporterConfiguratorDisposable = _exporterConfiguratorDisposable;
+
+            _exporterConfiguratorDisposable = newConfiguratorDisposable;
             ExporterConfigurator = newConfigurator;
+
+            oldExporterConfiguratorDisposable?.Dispose();
 
             if (newConfigurator != null)
             {
@@ -110,18 +120,24 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        public void SetExporterConfigurator(IExporterConfiguratorManager.IExporterConfiguratorViewModel? exporterConfigurator)
+        public void SetExporterConfigurator(IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? instantiator)
         {
-            ReplaceExporterConfigurator(exporterConfigurator); // Set configurator first so it keeps its loaded data
+            ReplaceExporterConfigurator(instantiator); // Set configurator first so it keeps its loaded data
+
+            var exporterConfigurator = ExporterConfigurator;
 
             if (exporterConfigurator != null)
             {
                 foreach (var factory in ExporterConfiguratorFactories)
                 {
-                    if (factory.Factory.CreateConfigurator().GetType() == exporterConfigurator.GetType())
+                    var exporter = factory.Factory.Instantiator.Instantiate(out var disposable);
+                    using (disposable)
                     {
-                        SelectedExporterConfiguratorFactory = factory;
-                        return;
+                        if (exporter.GetType() == exporterConfigurator.GetType())
+                        {
+                            SelectedExporterConfiguratorFactory = factory;
+                            return;
+                        }
                     }
                 }
                 throw new InvalidOperationException("Tried setting exporter configurator to unknown type '" + exporterConfigurator.GetType().FullName + "'");
@@ -130,6 +146,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 SelectedExporterConfiguratorFactory = null;
             }
+        }
+
+        public void Dispose()
+        {
+            _exporterConfiguratorDisposable?.Dispose();
+            _exporterConfiguratorDisposable = null;
         }
     }
 }

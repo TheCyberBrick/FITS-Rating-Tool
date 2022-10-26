@@ -48,7 +48,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
         IExporterConfiguratorManager.IExporterConfiguratorViewModel? ExporterConfigurator { get; }
 
-        void SetExporterConfigurator(IExporterConfiguratorManager.IExporterConfiguratorViewModel? exporterConfigurator);
+        void SetExporterConfigurator(IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? instantiator);
 
 
         event EventHandler ConfigurationChanged;

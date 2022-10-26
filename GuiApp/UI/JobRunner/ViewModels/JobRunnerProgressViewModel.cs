@@ -103,14 +103,15 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
             {
                 standaloneEvaluationService.RegisterExporter(pair.Key, (ctx, config) =>
                 {
-                    var configurator = pair.Value.CreateConfigurator();
-
-                    if (configurator.TryLoadConfig(config))
+                    var configurator = pair.Value.Instantiator.Instantiate(out var disposable);
+                    using (disposable)
                     {
-                        return configurator.CreateExporter(ctx);
+                        if (configurator.TryLoadConfig(config))
+                        {
+                            return configurator.CreateExporter(ctx);
+                        }
+                        throw new InvalidOperationException("Failed loading exporter config");
                     }
-
-                    throw new InvalidOperationException("Failed loading exporter config");
                 });
             }
         }
