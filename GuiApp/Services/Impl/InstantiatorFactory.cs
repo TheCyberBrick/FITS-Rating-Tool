@@ -332,7 +332,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
 
                 // Remove any instantiators that are
-                // no longer referenced
+                // no longer referenced and thus can't
+                // be instantiated anymore -> no need
+                // to dispose them anymore later
                 for (int i = instantiators.Count - 1; i >= 0; --i)
                 {
                     if (!instantiators[i].TryGetTarget(out var _))
