@@ -110,12 +110,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             public override T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
             {
-                lock (this)
-                {
-                    var newInstance = Instantiate(instanceConstructor);
-                    disposable = Disposable.Create(() => instanceDestructor.Invoke(newInstance));
-                    return newInstance;
-                }
+                var newInstance = Instantiate(instanceConstructor);
+                disposable = Disposable.Create(() => instanceDestructor.Invoke(newInstance));
+                return newInstance;
             }
 
             public override void Dispose()
