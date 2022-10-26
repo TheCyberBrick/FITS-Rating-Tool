@@ -344,22 +344,22 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private void AddDisposer(DelegatedInstantiatorDisposer disposable)
+        private void AddDisposer(DelegatedInstantiatorDisposer disposer)
         {
             lock (disposers)
             {
-                if (!disposers.Contains(disposable))
+                if (!disposers.Contains(disposer))
                 {
-                    disposers.Add(disposable);
+                    disposers.Add(disposer);
                 }
             }
         }
 
-        private void RemoveDisposer(DelegatedInstantiatorDisposer disposable)
+        private void RemoveDisposer(DelegatedInstantiatorDisposer disposer)
         {
             lock (disposers)
             {
-                disposers.Remove(disposable);
+                disposers.Remove(disposer);
             }
         }
 
