@@ -16,36 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
-using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
-using ReactiveUI;
-using System;
 
-namespace FitsRatingTool.GuiApp.UI.FitsImage.Windows
+namespace FitsRatingTool.GuiApp.UI.Controls
 {
-    public partial class FitsImageViewerWindow : ReactiveWindow<FitsImageViewerViewModel>
+    public partial class InnerShadow : UserControl
     {
-        public FitsImageViewerWindow()
+        public InnerShadow()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-
-            var defaultTitle = Title;
-
-            this.WhenActivated(d =>
-            {
-                if (ViewModel != null)
-                {
-                    d.Add(ViewModel.WhenAnyValue(x => x.FileName).Subscribe(x =>
-                    {
-                        Title = x ?? defaultTitle;
-                    }));
-                }
-            });
         }
 
         private void InitializeComponent()

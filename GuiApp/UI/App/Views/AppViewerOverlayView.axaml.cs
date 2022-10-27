@@ -20,6 +20,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
+using FitsRatingTool.GuiApp.UI.App.Windows;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.FitsImage.Windows;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis;
@@ -48,7 +49,7 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
 
                     d.Add(overlay.ShowExternalViewer.Subscribe(factory =>
                     {
-                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(factory, false, out var _, w => w.DataContext is IFitsImageViewerViewModel viewer && viewer.File == overlay.Viewer.File);
+                        windowManager.Show<AppExternalFitsImageViewerWindow, IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>(factory, false, out var _, w => w.DataContext is IAppExternalFitsImageViewerViewModel viewer && viewer.Selector.SelectedFile == overlay.Viewer?.File);
                     }));
 
                     d.Add(overlay.ShowExternalCornerViewer.Subscribe(factory =>

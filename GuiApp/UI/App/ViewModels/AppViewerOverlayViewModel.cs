@@ -34,7 +34,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
 
         private IFitsImageViewerViewModel? _viewer;
-        public IFitsImageViewerViewModel Viewer
+        public IFitsImageViewerViewModel? Viewer
         {
             get => _viewer;
             set => this.RaiseAndSetIfChanged(ref _viewer, value);
@@ -79,7 +79,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>> ShowExternalViewer { get; }
 
         public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
@@ -91,14 +91,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.Of args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer,
-            IFactoryBuilder<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerFactory,
+            IFactoryBuilder<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile> fitsImageViewerFactory,
             IFactoryBuilder<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
             IFactoryBuilder<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
             this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
             fitsImageCornerViewerContainer.ToSingletonWithObservable().Subscribe(vm => CornerViewer = vm);
 
-            this.WhenAnyValue(x => x.Viewer.File).Subscribe(x =>
+            this.WhenAnyValue(x => x.Viewer!.File).Subscribe(x =>
             {
                 if (x != null)
                 {
@@ -111,7 +111,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             });
 
             this.WhenAnyValue(x => x.Viewer).Subscribe(_ => UpdateCornerViewer());
-
             this.WhenAnyValue(x => x.IsCornerViewerEnabled).Subscribe(_ => UpdateCornerViewer());
 
             this.WhenAnyValue(x => x.CornerViewerPercentage)
@@ -127,10 +126,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             // Need to reimplement these properlywith image selector VM
             // vvv
 
-            // TODO Temp
-            // See above
-            //ShowExternalViewer = ReactiveCommand.Create(() => Viewer);
-            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IFitsImageViewerViewModel.Of()));
+            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IAppExternalFitsImageViewerViewModel.OfFile(Viewer?.File)));
 
             // TODO Temp
             // See above
@@ -146,7 +142,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private void UpdateCornerViewer()
         {
-            if (IsCornerViewerEnabled)
+            if (IsCornerViewerEnabled && Viewer != null)
             {
                 var cornerViewer = fitsImageCornerViewerContainer.Instantiate(new IFitsImageCornerViewerViewModel.OfViewer(Viewer));
                 cornerViewer.Percentage = CornerViewerPercentage;

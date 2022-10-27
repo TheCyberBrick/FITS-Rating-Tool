@@ -1,0 +1,151 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:FitsRatingTool.GuiApp.ViewModels"
+        xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.FitsImage.Views"
+        xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        Width="600" Height="400"
+        UseLayoutRounding="True"
+        x:Class="FitsRatingTool.GuiApp.UI.App.Windows.AppExternalFitsImageViewerWindow"
+        Icon="/Assets/Icons/eye.png"
+        Title="Image Viewer"
+        Foreground="#FFECECEC"
+        FontFamily="Tahoma"
+        FontSize="10.5"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True"
+        Classes="pinnable"
+        Padding="0">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="controls:WindowExtensions.TitleIcon">
+        <Template>
+          <Image Source="/Assets/Icons/eye.png"/>
+        </Template>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <Border Background="#FF383838">
+    <Grid RowDefinitions="Auto,*" Margin="-1">
+      <ComboBox Grid.Row="0"
+                Items="{Binding Selector.Files}"
+                SelectedItem="{Binding Selector.SelectedFile}"
+                HorizontalAlignment="Stretch"/>
+
+      <Grid Grid.Row="1"
+            ColumnDefinitions="*,Auto">
+        <views:FitsImageViewerView Grid.Column="0"
+                                   DataContext="{Binding Viewer}"/>
+
+        <controls:InnerShadow/>
+
+        <Border HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                BoxShadow="0 0 4 1 #50000000">
+          <ToggleButton Name="SidePanelToggle"
+                        Background="#FF585858"
+                        BorderThickness="1 1 0 1"
+                        CornerRadius="2 0 0 2"
+                        BorderBrush="#FF4A4A4A"
+                        Width="12"
+                        Height="19">
+            <ToggleButton.Styles>
+              <Style Selector="ToggleButton">
+                <Setter Property="Content">
+                  <Template>
+                    <Viewbox Width="7" Height="7"
+                             HorizontalAlignment="Right">
+                      <Path Data="m 120 0 l -120 100 l 120 100 z"
+                            Fill="#FFFFFFFF"/>
+                    </Viewbox>
+                  </Template>
+                </Setter>
+              </Style>
+              <Style Selector="ToggleButton:checked">
+                <Setter Property="Content">
+                  <Template>
+                    <Viewbox Width="7" Height="7"
+                             HorizontalAlignment="Right">
+                      <Path Data="m 0 0 l 120 100 l -120 100 z"
+                            Fill="#FFFFFFFF"/>
+                    </Viewbox>
+                  </Template>
+                </Setter>
+              </Style>
+              <Style Selector="ToggleButton /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#FF555555"/>
+                <Setter Property="BorderBrush" Value="#FF4A4A4A"/>
+              </Style>
+              <Style Selector="ToggleButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#FF555555"/>
+                <Setter Property="BorderBrush" Value="#FF4A4A4A"/>
+              </Style>
+              <Style Selector="ToggleButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="Background" Value="#FF656565"/>
+                <Setter Property="BorderBrush" Value="#FF4A4A4A"/>
+              </Style>
+            </ToggleButton.Styles>
+          </ToggleButton>
+        </Border>
+
+        <Border Name="SidePanel"
+                Grid.Column="1"
+                Classes.is_shown="{Binding #SidePanelToggle.IsChecked}"
+                ClipToBounds="True">
+          <Border.Styles>
+            <Style Selector="Border#SidePanel">
+              <Setter Property="Transitions">
+                <Transitions>
+                  <DoubleTransition Property="Width"
+                                    Duration="0:0:0.1"
+                                    Easing="QuadraticEaseInOut"/>
+                </Transitions>
+              </Setter>
+              <Setter Property="Width" Value="0"/>
+            </Style>
+            <Style Selector="Border#SidePanel.is_shown">
+              <Setter Property="Width" Value="180"/>
+            </Style>
+          </Border.Styles>
+          <Border Classes="themed inner dark"
+                  MinWidth="180"
+                  Padding="4">
+            <Grid RowDefinitions="Auto,8,*">
+              <views:FitsImageViewerStretchView Grid.Row="0"
+                                                DataContext="{Binding Viewer}"/>
+              <ScrollViewer Grid.Row="2"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                <views:FitsImageViewerStatisticsView DataContext="{Binding Viewer}"/>
+              </ScrollViewer>
+            </Grid>
+          </Border>
+        </Border>
+
+      </Grid>
+    </Grid>
+  </Border>
+
+</Window>

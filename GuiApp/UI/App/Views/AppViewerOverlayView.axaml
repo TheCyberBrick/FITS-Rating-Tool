@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.App.Views.AppViewerOverlayView">
 
@@ -77,10 +78,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     </Grid>
 
-    <Border Background="#FF3C3C3C" Width="1" HorizontalAlignment="Left" VerticalAlignment="Stretch" BoxShadow="0 0 5 1 #BB000000"/>
-    <Border Background="#FF3C3C3C" Width="1" HorizontalAlignment="Right" VerticalAlignment="Stretch" BoxShadow="0 0 5 1 #BB000000"/>
-    <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" BoxShadow="0 0 5 1 #BB000000"/>
-    <Border Background="#FF3C3C3C" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BoxShadow="0 0 5 1 #BB000000"/>
+    <controls:InnerShadow/>
 
     <Border Name="MenuBorder"
             VerticalAlignment="Top" HorizontalAlignment="Right"

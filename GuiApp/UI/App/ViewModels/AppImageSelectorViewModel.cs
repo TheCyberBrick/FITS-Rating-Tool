@@ -20,18 +20,19 @@ using Avalonia.Utilities;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.FitsImage;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
+namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
-    public class FitsImageSelectorViewModel : ViewModelBase, IFitsImageSelectorViewModel
+    public class AppImageSelectorViewModel : ViewModelBase, IAppImageSelectorViewModel
     {
-        public FitsImageSelectorViewModel(IRegistrar<IFitsImageSelectorViewModel, IFitsImageSelectorViewModel.Of> reg)
+        public AppImageSelectorViewModel(IRegistrar<IAppImageSelectorViewModel, IAppImageSelectorViewModel.Of> reg)
         {
-            reg.RegisterAndReturn<FitsImageSelectorViewModel>();
+            reg.RegisterAndReturn<AppImageSelectorViewModel>();
         }
 
         public ObservableCollection<string> Files { get; } = new();
@@ -50,7 +51,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedFile, value);
         }
 
-        public IFitsImageViewModel? SelectedImage { get; private set; }
+        private IFitsImageViewModel? _selectedImage;
+        public IFitsImageViewModel? SelectedImage
+        {
+            get => _selectedImage;
+            private set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
+        }
 
 
         private string? prevSelectedFile;
@@ -58,7 +64,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly IFitsImageManager fitsImageManager;
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
 
-        private FitsImageSelectorViewModel(IFitsImageSelectorViewModel.Of args, IFitsImageManager fitsImageManager,
+        private AppImageSelectorViewModel(IAppImageSelectorViewModel.Of args, IFitsImageManager fitsImageManager,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer)
         {
             this.fitsImageManager = fitsImageManager;
@@ -86,15 +92,15 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 }
             });
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FitsImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, FitsImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
 
             UpdateFiles();
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers || (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed))
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed)
             {
                 UpdateFiles();
             }

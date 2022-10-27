@@ -167,6 +167,9 @@
     <Compile Update="UI\App\Windows\AppWindow.axaml.cs">
       <DependentUpon>AppWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Controls\InnerShadow.axaml.cs">
+      <DependentUpon>InnerShadow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\Evaluation\Views\EvaluationExporterConfiguratorView.axaml.cs">
       <DependentUpon>EvaluationExporterConfiguratorView.axaml</DependentUpon>
     </Compile>
@@ -227,8 +230,8 @@
     <Compile Update="UI\FitsImage\Windows\FitsImagePeekViewerWindow.axaml.cs">
       <DependentUpon>FitsImagePeekViewerWindow.axaml</DependentUpon>
     </Compile>
-    <Compile Update="UI\FitsImage\Windows\FitsImageViewerWindow.axaml.cs">
-      <DependentUpon>FitsImageViewerWindow.axaml</DependentUpon>
+    <Compile Update="UI\App\Windows\AppExternalFitsImageViewerWindow.axaml.cs">
+      <DependentUpon>AppExternalFitsImageViewerWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\ImageAnalysis\Views\ImageAnalysisView.axaml.cs">
       <DependentUpon>ImageAnalysisView.axaml</DependentUpon>

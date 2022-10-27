@@ -16,11 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.GuiApp.UI.FitsImage;
 using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.GuiApp.UI.FitsImage
+namespace FitsRatingTool.GuiApp.UI.App
 {
-    public interface IFitsImageSelectorViewModel
+    public interface IAppImageSelectorViewModel
     {
         public record Of();
 

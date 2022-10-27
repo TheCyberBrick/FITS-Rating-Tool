@@ -110,6 +110,8 @@ namespace FitsRatingTool.GuiApp
             container.Register<IAppProfileSelectorViewModel, AppProfileSelectorViewModel>();
             container.Register<IAppViewerOverlayViewModel, AppViewerOverlayViewModel>();
             container.Register<IAppImageItemViewModel, AppImageItemViewModel>();
+            container.Register<IAppImageSelectorViewModel, AppImageSelectorViewModel>();
+            container.Register<IAppExternalFitsImageViewerViewModel, AppExternalFitsImageViewerViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
 
             container.Register<IFitsImageAllStatisticsProgressViewModel, FitsImageAllStatisticsProgressViewModel>();
             container.Register<IFitsImageHeaderRecordViewModel, FitsImageHeaderRecordViewModel>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments));
