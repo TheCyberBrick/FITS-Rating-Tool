@@ -100,7 +100,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        ReactiveCommand<Unit, ITemplatedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -110,11 +110,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
         #endregion
 
         #region +++ Overlays +++
-        IDelegatedInstantiator<IOverlay>? InnerOverlayFactory { get; set; }
+        IDelegatedFactory<IOverlay>? InnerOverlayFactory { get; set; }
 
         IOverlay? InnerOverlay { get; }
 
-        IDelegatedInstantiator<IOverlay>? OuterOverlayFactory { get; set; }
+        IDelegatedFactory<IOverlay>? OuterOverlayFactory { get; set; }
 
         IOverlay? OuterOverlay { get; }
         #endregion

@@ -80,8 +80,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         }
 
 
-        private IDelegatedInstantiator<IOverlay>? _innerOverlayFactory;
-        public IDelegatedInstantiator<IOverlay>? InnerOverlayFactory
+        private IDelegatedFactory<IOverlay>? _innerOverlayFactory;
+        public IDelegatedFactory<IOverlay>? InnerOverlayFactory
         {
             get => _innerOverlayFactory;
             set
@@ -101,8 +101,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
-        private IDelegatedInstantiator<IOverlay>? _outerOverlayFactory;
-        public IDelegatedInstantiator<IOverlay>? OuterOverlayFactory
+        private IDelegatedFactory<IOverlay>? _outerOverlayFactory;
+        public IDelegatedFactory<IOverlay>? OuterOverlayFactory
         {
             get => _outerOverlayFactory;
             set

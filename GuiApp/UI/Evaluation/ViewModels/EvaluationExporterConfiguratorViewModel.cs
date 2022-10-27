@@ -73,15 +73,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 .Skip(1)
                 .Subscribe(x =>
                 {
-                    var newConfigurator = x != null ? x.Factory.Instantiator : null;
-                    ReplaceExporterConfigurator(newConfigurator);
+                    var newConfiguratorFactory = x != null ? x.FactoryInfo.Factory : null;
+                    ReplaceExporterConfigurator(newConfiguratorFactory);
                 });
         }
 
-        private void ReplaceExporterConfigurator(IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? instantiator)
+        private void ReplaceExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? factory)
         {
             IDisposable? newConfiguratorDisposable = null;
-            IExporterConfiguratorManager.IExporterConfiguratorViewModel? newConfigurator = instantiator != null ? instantiator.Instantiate(out newConfiguratorDisposable) : null;
+            IExporterConfiguratorManager.IExporterConfiguratorViewModel? newConfigurator = factory != null ? factory.Instantiate(out newConfiguratorDisposable) : null;
 
             var oldConfigurator = ExporterConfigurator;
 
@@ -120,9 +120,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        public void SetExporterConfigurator(IDelegatedInstantiator<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? instantiator)
+        public void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? factory)
         {
-            ReplaceExporterConfigurator(instantiator); // Set configurator first so it keeps its loaded data
+            ReplaceExporterConfigurator(factory); // Set configurator first so it keeps its loaded data
 
             var exporterConfigurator = ExporterConfigurator;
 
@@ -130,7 +130,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 foreach (var factory in ExporterConfiguratorFactories)
                 {
-                    var exporter = factory.Factory.Instantiator.Instantiate(out var disposable);
+                    var exporter = factory.FactoryInfo.Factory.Instantiate(out var disposable);
                     using (disposable)
                     {
                         if (exporter.GetType() == exporterConfigurator.GetType())

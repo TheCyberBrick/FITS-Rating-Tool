@@ -245,7 +245,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -254,8 +254,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         public ReactiveCommand<string?, IFitsImageViewModel?> LoadImage { get; }
 
 
-        private IDelegatedInstantiator<IOverlay>? _innerOverlayFactory;
-        public IDelegatedInstantiator<IOverlay>? InnerOverlayFactory
+        private IDelegatedFactory<IOverlay>? _innerOverlayFactory;
+        public IDelegatedFactory<IOverlay>? InnerOverlayFactory
         {
             get => _innerOverlayFactory;
             set
@@ -287,8 +287,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _innerOverlay, value);
         }
 
-        private IDelegatedInstantiator<IOverlay>? _outerOverlayFactory;
-        public IDelegatedInstantiator<IOverlay>? OuterOverlayFactory
+        private IDelegatedFactory<IOverlay>? _outerOverlayFactory;
+        public IDelegatedFactory<IOverlay>? OuterOverlayFactory
         {
             get => _outerOverlayFactory;
             set
@@ -561,11 +561,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 var image = FitsImage;
                 if (image != null)
                 {
-                    var instantiator = await image.CalculateStatisticsWithProgress.Execute();
+                    var factory = await image.CalculateStatisticsWithProgress.Execute();
 
-                    if (instantiator != null)
+                    if (factory != null)
                     {
-                        return instantiator.AndThen(vm =>
+                        return factory.AndThen(vm =>
                         {
                             vm.HookResultTask(async task =>
                             {
@@ -687,10 +687,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             CalculateStatisticsWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var instantiator = await CalculateStatisticsWithProgress.Execute();
-                if (instantiator != null)
+                var factory = await CalculateStatisticsWithProgress.Execute();
+                if (factory != null)
                 {
-                    await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
+                    await factory.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
                     {
                         await CalculateStatisticsProgressDialog.Handle(vm);
                     });

@@ -123,10 +123,10 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                     d.Add(ViewModel.JobConfiguratorOpenFileDialog.RegisterHandler(ShowJobConfiguratorOpenFileDialogAsync));
 
 
-                    d.Add(ViewModel.ShowFileTable.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowFileTable.Subscribe(factory =>
                     {
                         IDisposable? sub = null;
-                        if (windowManager.Show<FileTableWindow, IFileTableViewModel, IFileTableViewModel.Of>(instantiator.AndThen(vm =>
+                        if (windowManager.Show<FileTableWindow, IFileTableViewModel, IFileTableViewModel.Of>(factory.AndThen(vm =>
                         {
                             sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
                             {
@@ -152,10 +152,10 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         Activate();
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationTable.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowEvaluationTable.Subscribe(factory =>
                     {
                         IDisposable? sub = null;
-                        if (windowManager.Show<EvaluationTableWindow, IEvaluationTableViewModel, IEvaluationTableViewModel.Of>(instantiator.AndThen(vm =>
+                        if (windowManager.Show<EvaluationTableWindow, IEvaluationTableViewModel, IEvaluationTableViewModel.Of>(factory.AndThen(vm =>
                         {
                             sub = vm.WhenAnyValue(x => x.SelectedRecord).Subscribe(x =>
                             {
@@ -175,9 +175,9 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         }
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationFormula.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowEvaluationFormula.Subscribe(factory =>
                     {
-                        windowManager.Show<EvaluationFormulaWindow, IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>(instantiator, false, out var _);
+                        windowManager.Show<EvaluationFormulaWindow, IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>(factory, false, out var _);
                     }));
 
                     d.Add(ViewModel.ShowEvaluationTableAndFormula.Subscribe(_ =>
@@ -193,29 +193,29 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         Activate();
                     }));
 
-                    d.Add(ViewModel.ShowEvaluationExporter.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowEvaluationExporter.Subscribe(factory =>
                     {
-                        windowManager.Show<EvaluationExporterWindow, IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>(instantiator, false, out var _);
+                        windowManager.Show<EvaluationExporterWindow, IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>(factory, false, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowJobConfigurator.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowJobConfigurator.Subscribe(factory =>
                     {
-                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(instantiator, false, out var _);
+                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>(factory, false, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowJobConfiguratorWithOpenFileDialog.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowJobConfiguratorWithOpenFileDialog.Subscribe(factory =>
                     {
-                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>(instantiator, false, out var _);
+                        windowManager.Show<JobConfiguratorWindow, IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>(factory, false, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowJobRunner.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowJobRunner.Subscribe(factory =>
                     {
-                        windowManager.Show<JobRunnerWindow, IJobRunnerViewModel, IJobRunnerViewModel.Of>(instantiator, true, out var _);
+                        windowManager.Show<JobRunnerWindow, IJobRunnerViewModel, IJobRunnerViewModel.Of>(factory, true, out var _);
                     }));
 
-                    d.Add(ViewModel.ShowInstrumentProfileConfigurator.Subscribe(instantiator =>
+                    d.Add(ViewModel.ShowInstrumentProfileConfigurator.Subscribe(factory =>
                     {
-                        windowManager.Show<InstrumentProfileConfiguratorWindow, IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>(instantiator, false, out var _);
+                        windowManager.Show<InstrumentProfileConfiguratorWindow, IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>(factory, false, out var _);
                     }));
                 }
             });

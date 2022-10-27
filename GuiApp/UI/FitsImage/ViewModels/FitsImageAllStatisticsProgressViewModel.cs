@@ -163,11 +163,11 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                     try
                     {
-                        var instantiator = await imagevm.CalculateStatisticsWithProgress.Execute();
+                        var factory = await imagevm.CalculateStatisticsWithProgress.Execute();
 
-                        if (instantiator != null)
+                        if (factory != null)
                         {
-                            await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
+                            await factory.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
                             {
                                 currentProgressViewModel = vm;
 

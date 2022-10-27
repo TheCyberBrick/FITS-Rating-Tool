@@ -37,11 +37,11 @@ namespace FitsRatingTool.GuiApp.Services
             bool TryLoadConfig(string config);
         }
 
-        public record FactoryInfo(string Name, IDelegatedInstantiator<IExporterConfiguratorViewModel> Instantiator);
+        public record FactoryInfo(string Name, IDelegatedFactory<IExporterConfiguratorViewModel> Factory);
 
         IEnumerable<KeyValuePair<string, FactoryInfo>> Factories { get; }
 
-        bool Register(string id, FactoryInfo factory);
+        bool Register(string id, FactoryInfo factoryInfo);
 
         FactoryInfo? Get(string id);
     }

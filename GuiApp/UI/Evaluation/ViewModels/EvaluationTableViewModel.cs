@@ -197,7 +197,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
 
@@ -216,7 +216,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             IGroupingManager groupingManager,
             IEvaluationManager evaluationManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
-            IInstantiatorFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
+            IFactoryBuilder<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
         {
             this.manager = manager;
             this.groupingManager = groupingManager;

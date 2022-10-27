@@ -209,7 +209,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, IFitsImageStatisticsViewModel?> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -238,7 +238,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageViewModel(string file,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
         {
             this.fitsImageManager = fitsImageManager;
 
@@ -294,10 +294,10 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             CalculateStatisticsWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var instantiator = await CalculateStatisticsWithProgress.Execute();
-                if (instantiator != null)
+                var factory = await CalculateStatisticsWithProgress.Execute();
+                if (factory != null)
                 {
-                    await instantiator.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
+                    await factory.DoAsync(fitsImageStatisticsProgressContainer, async vm =>
                     {
                         await CalculateStatisticsProgressDialog.Handle(vm);
                     });
@@ -331,7 +331,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageViewModel(IFitsImageViewModel.OfImage args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
             : this(args.Image.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = args.Image;
@@ -354,7 +354,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             IFitsImageManager fitsImageManager,
             IAppConfig appConfig,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IInstantiatorFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
             : this(args.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = imageLoader.LoadFit(args.File, args.MaxInputSize ?? appConfig.MaxImageSize, args.MaxWidth ?? appConfig.MaxImageWidth, args.MaxHeight ?? appConfig.MaxImageHeight)!;

@@ -38,10 +38,10 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         IFitsImageCornerViewerViewModel? CornerViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
+        ReactiveCommand<Unit, ITemplatedFactory<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
+        ReactiveCommand<Unit, ITemplatedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
+        ReactiveCommand<Unit, ITemplatedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
     }
 }

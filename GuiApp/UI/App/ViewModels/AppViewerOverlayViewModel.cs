@@ -79,11 +79,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>> ShowExternalViewer { get; }
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
         private readonly IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer;
@@ -91,9 +91,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.Of args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer,
-            IInstantiatorFactory<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerFactory,
-            IInstantiatorFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
-            IInstantiatorFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
+            IFactoryBuilder<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerFactory,
+            IFactoryBuilder<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
+            IFactoryBuilder<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
             this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
             fitsImageCornerViewerContainer.ToSingletonWithObservable().Subscribe(vm => CornerViewer = vm);

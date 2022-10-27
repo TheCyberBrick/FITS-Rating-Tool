@@ -23,26 +23,26 @@ using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    public class InstantiatorFactory<T, Template> : IInstantiatorFactory<T, Template>
+    public class FactoryBuilder<T, Template> : IFactoryBuilder<T, Template>
         where T : class
     {
-        private abstract class GenericInstantiator : IGenericInstantiator<T, Template>, IDisposable
+        private abstract class GenericFactory : IGenericFactory<T, Template>, IDisposable
         {
+            public bool IsSingleUse { get; private set; }
+
             private bool expired;
 
             private readonly Func<Template?> templateConstructor;
 
-            private readonly bool allowMultipleInstantiations;
-
-            public GenericInstantiator(Func<Template?> templateConstructor, bool allowMultipleInstantiations)
+            public GenericFactory(Func<Template?> templateConstructor, bool isSingleUse)
             {
                 this.templateConstructor = templateConstructor;
-                this.allowMultipleInstantiations = allowMultipleInstantiations;
+                IsSingleUse = isSingleUse;
             }
 
-            public abstract IGenericInstantiator<T, Template> AndThen(Action<T> action);
+            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => AndThen(action);
 
-            IInstantiatorBase<T> IInstantiatorBase<T>.AndThen(Action<T> action) => AndThen(action);
+            public abstract IGenericFactory<T, Template> AndThen(Action<T> action);
 
             public abstract T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
 
@@ -50,7 +50,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 CheckExpired();
 
-                if (!allowMultipleInstantiations)
+                if (IsSingleUse)
                 {
                     Expire();
                 }
@@ -90,15 +90,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             public abstract void Dispose();
         }
 
-        private class TemplatedInstantiator : GenericInstantiator, ITemplatedInstantiator<T, Template>
+        private class TemplatedFactory : GenericFactory, ITemplatedFactory<T, Template>
         {
-            public TemplatedInstantiator(Func<Template?> templateConstructor, bool allowMultipleInstantiations) : base(templateConstructor, allowMultipleInstantiations)
+            public TemplatedFactory(Func<Template?> templateConstructor, bool isSingleUse) : base(templateConstructor, isSingleUse)
             {
             }
 
-            ITemplatedInstantiator<T, Template> ITemplatedInstantiator<T, Template>.AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
+            ITemplatedFactory<T, Template> ITemplatedFactory<T, Template>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
 
-            public override IGenericInstantiator<T, Template> AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
+            public override IGenericFactory<T, Template> AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
 
             public T Instantiate(Func<Template, T> instanceConstructor)
             {
@@ -124,22 +124,24 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class ChildTemplatedInstantiator : ITemplatedInstantiator<T, Template>
+        private class ChildTemplatedFactory : ITemplatedFactory<T, Template>
         {
-            private readonly ITemplatedInstantiator<T, Template> parent;
+            public bool IsSingleUse => parent.IsSingleUse;
+
+            private readonly ITemplatedFactory<T, Template> parent;
             private readonly Action<T> action;
 
-            public ChildTemplatedInstantiator(ITemplatedInstantiator<T, Template> parent, Action<T> action)
+            public ChildTemplatedFactory(ITemplatedFactory<T, Template> parent, Action<T> action)
             {
                 this.parent = parent;
                 this.action = action;
             }
 
-            public ITemplatedInstantiator<T, Template> AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
+            public ITemplatedFactory<T, Template> AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
 
-            IGenericInstantiator<T, Template> IGenericInstantiator<T, Template>.AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
+            IGenericFactory<T, Template> IGenericFactory<T, Template>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
 
-            IInstantiatorBase<T> IInstantiatorBase<T>.AndThen(Action<T> action) => new ChildTemplatedInstantiator(this, action);
+            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
 
             public T Instantiate(Func<Template, T> instanceConstructor)
             {
@@ -156,14 +158,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class DelegatedInstantiatorDisposer : IDisposable
+        private class DelegatedFactoryDisposer : IDisposable
         {
             private readonly List<T> instances = new();
 
-            private readonly InstantiatorFactory<T, Template> factory;
+            private readonly FactoryBuilder<T, Template> factory;
             private readonly Action<T> instanceDestructor;
 
-            public DelegatedInstantiatorDisposer(InstantiatorFactory<T, Template> factory, Action<T> instanceDestructor)
+            public DelegatedFactoryDisposer(FactoryBuilder<T, Template> factory, Action<T> instanceDestructor)
             {
                 this.instanceDestructor = instanceDestructor;
                 this.factory = factory;
@@ -214,22 +216,22 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class DelegatedInstantiator : GenericInstantiator, IDelegatedInstantiator<T, Template>
+        private class DelegatedFactory : GenericFactory, IDelegatedFactory<T, Template>
         {
             private readonly Func<Template, T?> instanceConstructor;
-            private readonly DelegatedInstantiatorDisposer disposer;
+            private readonly DelegatedFactoryDisposer disposer;
 
-            public DelegatedInstantiator(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, bool allowMultipleInstantiations, DelegatedInstantiatorDisposer disposer) : base(templateConstructor, allowMultipleInstantiations)
+            public DelegatedFactory(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, bool isSingleUse, DelegatedFactoryDisposer disposer) : base(templateConstructor, isSingleUse)
             {
                 this.instanceConstructor = instanceConstructor;
                 this.disposer = disposer;
             }
 
-            IDelegatedInstantiator<T, Template> IDelegatedInstantiator<T, Template>.AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            IDelegatedFactory<T, Template> IDelegatedFactory<T, Template>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
-            IDelegatedInstantiator<T> IDelegatedInstantiator<T>.AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            IDelegatedFactory<T> IDelegatedFactory<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
-            public override IGenericInstantiator<T, Template> AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            public override IGenericFactory<T, Template> AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
             public T Instantiate(out IDisposable disposable)
             {
@@ -261,24 +263,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class ChildDelegatedInstantiator : IDelegatedInstantiator<T, Template>
+        private class ChildDelegatedFactory : IDelegatedFactory<T, Template>
         {
-            private readonly IDelegatedInstantiator<T, Template> parent;
+            public bool IsSingleUse => parent.IsSingleUse;
+
+            private readonly IDelegatedFactory<T, Template> parent;
             private readonly Action<T> action;
 
-            public ChildDelegatedInstantiator(IDelegatedInstantiator<T, Template> parent, Action<T> action)
+            public ChildDelegatedFactory(IDelegatedFactory<T, Template> parent, Action<T> action)
             {
                 this.parent = parent;
                 this.action = action;
             }
 
-            public IDelegatedInstantiator<T, Template> AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            public IDelegatedFactory<T, Template> AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
-            IDelegatedInstantiator<T> IDelegatedInstantiator<T>.AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            IDelegatedFactory<T> IDelegatedFactory<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
-            IGenericInstantiator<T, Template> IGenericInstantiator<T, Template>.AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            IGenericFactory<T, Template> IGenericFactory<T, Template>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
-            IInstantiatorBase<T> IInstantiatorBase<T>.AndThen(Action<T> action) => new ChildDelegatedInstantiator(this, action);
+            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
 
             public T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
             {
@@ -295,52 +299,52 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private readonly List<WeakReference<GenericInstantiator>> instantiators = new();
-        private readonly List<DelegatedInstantiatorDisposer> disposers = new();
+        private readonly List<WeakReference<GenericFactory>> factories = new();
+        private readonly List<DelegatedFactoryDisposer> disposers = new();
 
         private bool disposed;
 
-        public ITemplatedInstantiator<T, Template> Templated(Func<Template?> templateConstructor, bool allowMultipleInstantiations)
+        public ITemplatedFactory<T, Template> Templated(Func<Template?> templateConstructor, bool isSingleUse)
         {
-            var instantiator = new TemplatedInstantiator(templateConstructor, allowMultipleInstantiations);
-            AddInstantiator(instantiator);
-            return instantiator;
+            var factory = new TemplatedFactory(templateConstructor, isSingleUse);
+            AddFactory(factory);
+            return factory;
         }
 
-        public IDelegatedInstantiator<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool allowMultipleInstantiations)
+        public IDelegatedFactory<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool isSingleUse)
         {
-            var disposer = new DelegatedInstantiatorDisposer(this, instanceDestructor);
-            var instantiator = new DelegatedInstantiator(templateConstructor, instanceConstructor, allowMultipleInstantiations, disposer);
-            AddInstantiator(instantiator);
-            return instantiator;
+            var disposer = new DelegatedFactoryDisposer(this, instanceDestructor);
+            var factory = new DelegatedFactory(templateConstructor, instanceConstructor, isSingleUse, disposer);
+            AddFactory(factory);
+            return factory;
         }
 
-        private void AddInstantiator(GenericInstantiator instantiator)
+        private void AddFactory(GenericFactory factory)
         {
-            lock (instantiators)
+            lock (factories)
             {
                 if (disposed)
                 {
                     throw new ObjectDisposedException(GetType().FullName);
                 }
 
-                // Remove any instantiators that are
-                // no longer referenced and thus can't
+                // Remove any factories that are no
+                // longer referenced and thus can't
                 // be instantiated anymore -> no need
                 // to dispose them anymore later
-                for (int i = instantiators.Count - 1; i >= 0; --i)
+                for (int i = factories.Count - 1; i >= 0; --i)
                 {
-                    if (!instantiators[i].TryGetTarget(out var _))
+                    if (!factories[i].TryGetTarget(out var _))
                     {
-                        instantiators.RemoveAt(i);
+                        factories.RemoveAt(i);
                     }
                 }
 
-                instantiators.Add(new(instantiator));
+                factories.Add(new(factory));
             }
         }
 
-        private void AddDisposer(DelegatedInstantiatorDisposer disposer)
+        private void AddDisposer(DelegatedFactoryDisposer disposer)
         {
             lock (disposers)
             {
@@ -351,7 +355,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private void RemoveDisposer(DelegatedInstantiatorDisposer disposer)
+        private void RemoveDisposer(DelegatedFactoryDisposer disposer)
         {
             lock (disposers)
             {
@@ -363,25 +367,25 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             lock (disposers)
             {
-                lock (instantiators)
+                lock (factories)
                 {
                     disposed = true;
 
-                    // Dispose all instantiators that are
-                    // still referenced somewhere so that
-                    // they can't be used anymore
-                    for (int i = instantiators.Count - 1; i >= 0; --i)
+                    // Dispose all factories that are still
+                    // referenced somewhere so that they
+                    // can't be used anymore
+                    for (int i = factories.Count - 1; i >= 0; --i)
                     {
-                        if (instantiators[i].TryGetTarget(out var instantiator))
+                        if (factories[i].TryGetTarget(out var factory))
                         {
-                            instantiator.Dispose();
+                            factory.Dispose();
                         }
-                        instantiators.RemoveAt(i);
+                        factories.RemoveAt(i);
                     }
 
                     // Dispose any "left over" delegated
-                    // instantiator disposers to make sure
-                    // that their instances are deconstructed
+                    // factory disposers to make sure that
+                    // their instances are deconstructed
                     for (int i = disposers.Count - 1; i >= 0; --i)
                     {
                         disposers[i].Dispose();

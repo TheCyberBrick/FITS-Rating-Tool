@@ -46,19 +46,19 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
                 {
                     var overlay = ViewModel;
 
-                    d.Add(overlay.ShowExternalViewer.Subscribe(instantiator =>
+                    d.Add(overlay.ShowExternalViewer.Subscribe(factory =>
                     {
-                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(instantiator, false, out var _, w => w.DataContext is IFitsImageViewerViewModel viewer && viewer.File == overlay.Viewer.File);
+                        windowManager.Show<FitsImageViewerWindow, IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of>(factory, false, out var _, w => w.DataContext is IFitsImageViewerViewModel viewer && viewer.File == overlay.Viewer.File);
                     }));
 
-                    d.Add(overlay.ShowExternalCornerViewer.Subscribe(instantiator =>
+                    d.Add(overlay.ShowExternalCornerViewer.Subscribe(factory =>
                     {
-                        windowManager.Show<FitsImageCornerViewerWindow, IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>(instantiator, false, out var _, w => w.DataContext is IFitsImageCornerViewerViewModel viewer && viewer.Viewer == overlay.Viewer);
+                        windowManager.Show<FitsImageCornerViewerWindow, IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>(factory, false, out var _, w => w.DataContext is IFitsImageCornerViewerViewModel viewer && viewer.Viewer == overlay.Viewer);
                     }));
 
-                    d.Add(overlay.ShowExternalImageAnalysis.Subscribe(instantiator =>
+                    d.Add(overlay.ShowExternalImageAnalysis.Subscribe(factory =>
                     {
-                        windowManager.Show<ImageAnalysisWindow, IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>(instantiator, false, out var _, w => w.DataContext is IImageAnalysisViewModel analysis && analysis.File == overlay.Viewer.File);
+                        windowManager.Show<ImageAnalysisWindow, IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>(factory, false, out var _, w => w.DataContext is IImageAnalysisViewModel analysis && analysis.File == overlay.Viewer.File);
                     }));
                 }
             });

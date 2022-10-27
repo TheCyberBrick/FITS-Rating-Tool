@@ -64,9 +64,9 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
             }
         }
 
-        IDelegatedInstantiator<IFitsImageViewerViewModel.IOverlay>? InnerOverlayFactory { get; set; }
+        IDelegatedFactory<IFitsImageViewerViewModel.IOverlay>? InnerOverlayFactory { get; set; }
 
-        IDelegatedInstantiator<IFitsImageViewerViewModel.IOverlay>? OuterOverlayFactory { get; set; }
+        IDelegatedFactory<IFitsImageViewerViewModel.IOverlay>? OuterOverlayFactory { get; set; }
 
         int MaxViewers { get; set; }
 

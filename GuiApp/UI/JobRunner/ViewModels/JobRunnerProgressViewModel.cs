@@ -103,7 +103,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
             {
                 standaloneEvaluationService.RegisterExporter(pair.Key, (ctx, config) =>
                 {
-                    var configurator = pair.Value.Instantiator.Instantiate(out var disposable);
+                    var configurator = pair.Value.Factory.Instantiate(out var disposable);
                     using (disposable)
                     {
                         if (configurator.TryLoadConfig(config))

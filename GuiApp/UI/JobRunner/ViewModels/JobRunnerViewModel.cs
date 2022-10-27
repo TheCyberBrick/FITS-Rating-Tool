@@ -74,7 +74,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         public ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        public ReactiveCommand<Unit, ITemplatedInstantiator<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
+        public ReactiveCommand<Unit, ITemplatedFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 
@@ -87,7 +87,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         private JobRunnerViewModel(IJobRunnerViewModel.Of args,
             IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressContainer,
             IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressTempContainer,
-            IInstantiatorFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
+            IFactoryBuilder<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
         {
             jobRunnerProgressContainer.ToSingletonWithObservable().Subscribe(x => Progress = x);
 
@@ -160,10 +160,10 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
             RunWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {
-                var instantiator = await RunWithProgress.Execute();
-                if (instantiator != null)
+                var factory = await RunWithProgress.Execute();
+                if (factory != null)
                 {
-                    await instantiator.DoAsync(jobRunnerProgressTempContainer, async vm =>
+                    await factory.DoAsync(jobRunnerProgressTempContainer, async vm =>
                     {
                         var result = await RunProgressDialog.Handle(vm);
 
