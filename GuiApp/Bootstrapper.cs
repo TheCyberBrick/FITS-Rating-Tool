@@ -21,7 +21,6 @@ using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
-using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.Repositories.Impl;
 using FitsRatingTool.GuiApp.Services;
@@ -62,26 +61,7 @@ namespace FitsRatingTool.GuiApp
             RegisterViews(container);
             RegisterExporters(container);
 
-            //Test(container);
-
             return container;
-        }
-
-        public static void Test(Container container)
-        {
-            container.Register<ITestVM0, TestVM0>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
-            container.Register<ITestVM1, TestVM1>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
-            container.Register<ITestVM2, TestVM2>(made: Made.Of(FactoryMethod.ConstructorWithResolvableArguments), setup: Setup.With(allowDisposableTransient: true));
-
-            container.Register<IService1, Service1>(Reuse.ScopedTo(TestVM1.MY_SCOPE, ResolutionScopeName.Of<ITestVM1>()));
-
-            //var c0 = new FitsRatingTool.GuiApp.Models.Container<ITestVM0, ITestVM0.Args>(container);
-
-            var d = container.Resolve<IContainerRoot<ITestVM0, ITestVM0.Args>>().Instantiate(new ITestVM0.Args(), out var c0, out var t0);
-
-            t0.Test();
-
-            d.Dispose();
         }
 
         private static void RegisterRepositories(Container container)
@@ -100,7 +80,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IEvaluationService, EvaluationService>(Reuse.Singleton);
             container.Register<IJobConfigFactory, JobConfigFactory>(Reuse.Singleton);
             container.Register<IBatchEvaluationService, BatchEvaluationService>(Reuse.Singleton);
-            container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Singleton);
+            container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Transient);
             container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
 
             // App

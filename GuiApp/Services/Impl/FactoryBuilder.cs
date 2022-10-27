@@ -30,6 +30,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             public bool IsSingleUse { get; private set; }
 
+            public Type InstanceType => typeof(T);
+
+            public Type TemplateType => typeof(Template);
+
             private bool expired;
 
             private readonly Func<Template?> templateConstructor;
@@ -127,6 +131,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private class ChildTemplatedFactory : ITemplatedFactory<T, Template>
         {
             public bool IsSingleUse => parent.IsSingleUse;
+
+            public Type InstanceType => parent.InstanceType;
+
+            public Type TemplateType => parent.TemplateType;
 
             private readonly ITemplatedFactory<T, Template> parent;
             private readonly Action<T> action;
@@ -266,6 +274,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private class ChildDelegatedFactory : IDelegatedFactory<T, Template>
         {
             public bool IsSingleUse => parent.IsSingleUse;
+
+            public Type InstanceType => parent.InstanceType;
+
+            public Type TemplateType => parent.TemplateType;
 
             private readonly IDelegatedFactory<T, Template> parent;
             private readonly Action<T> action;

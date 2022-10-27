@@ -120,27 +120,21 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        public void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? factory)
+        public void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? delegatedFactory)
         {
-            ReplaceExporterConfigurator(factory); // Set configurator first so it keeps its loaded data
+            ReplaceExporterConfigurator(delegatedFactory); // Set configurator first so it keeps its loaded data
 
-            var exporterConfigurator = ExporterConfigurator;
-
-            if (exporterConfigurator != null)
+            if (delegatedFactory != null)
             {
                 foreach (var factory in ExporterConfiguratorFactories)
                 {
-                    var exporter = factory.FactoryInfo.Factory.Instantiate(out var disposable);
-                    using (disposable)
+                    if (factory.FactoryInfo.Factory.InstanceType == delegatedFactory.InstanceType)
                     {
-                        if (exporter.GetType() == exporterConfigurator.GetType())
-                        {
-                            SelectedExporterConfiguratorFactory = factory;
-                            return;
-                        }
+                        SelectedExporterConfiguratorFactory = factory;
+                        return;
                     }
                 }
-                throw new InvalidOperationException("Tried setting exporter configurator to unknown type '" + exporterConfigurator.GetType().FullName + "'");
+                throw new InvalidOperationException("Tried setting exporter configurator to unknown type '" + delegatedFactory.InstanceType.FullName + "'");
             }
             else
             {

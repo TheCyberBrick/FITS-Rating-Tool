@@ -51,6 +51,10 @@ namespace FitsRatingTool.GuiApp.Services
     {
         bool IsSingleUse { get; }
 
+        Type InstanceType { get; }
+
+        Type TemplateType { get; }
+
         /// <summary>
         /// Returns a child factory that invokes the specified <paramref name="action"/>
         /// upon instantiation.
@@ -70,9 +74,9 @@ namespace FitsRatingTool.GuiApp.Services
         /// construct the instance, then <paramref name="instanceDestructor"/> will be called exactly once when <paramref name="disposable"/> is disposed and/or the owning factory builder is disposed.
         /// The caller is responsible for the deconstruction of the created instance by disposing <paramref name="disposable"/> when it is no longer needed.
         /// </summary>
-        /// <param name="instanceConstructor"></param>
-        /// <param name="instanceDestructor"></param>
-        /// <param name="disposable"></param>
+        /// <param name="instanceConstructor">Function that constructs the instance from a template.</param>
+        /// <param name="instanceDestructor">Function that deconstructs an instance created from the factory. Called exactly once for each instance created through <paramref name="instanceConstructor"/>.</param>
+        /// <param name="disposable">Object to dispose when the instance is no longer needed.</param>
         /// <returns></returns>
         T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
     }
@@ -87,7 +91,7 @@ namespace FitsRatingTool.GuiApp.Services
         /// Creates a new instance through the specified constructor. The caller
         /// is responsible for the deconstruction of the created instance, if necessary.
         /// </summary>
-        /// <param name="instanceConstructor"></param>
+        /// <param name="instanceConstructor">Function that constructs the instance from a template.</param>
         /// <returns></returns>
         T Instantiate(Func<Template, T> instanceConstructor);
     }

@@ -66,8 +66,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 var configurator = EvaluationExporterConfigurator.ExporterConfigurator;
                 if (id != null && configurator != null && configurator.IsValid)
                 {
-                    // TODO Temp
-                    // Should use instantiator
                     return evaluationExportProgressContainer.Instantiate(new IEvaluationExportProgressViewModel.OfExporter(id, configurator));
                 }
 

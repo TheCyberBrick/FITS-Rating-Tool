@@ -74,6 +74,20 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
+        public static R Do<T, Template, R>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, R> action)
+            where T : class
+        {
+            var instance = factory.Instantiate(temporaryContainer, out var disposable);
+            try
+            {
+                return action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
+            }
+        }
+
         public static async Task DoAsync<T, Template>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, Task> action)
             where T : class
         {
@@ -81,6 +95,20 @@ namespace FitsRatingTool.GuiApp.Services
             try
             {
                 await action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
+            }
+        }
+
+        public static async Task<R> DoAsync<T, Template, R>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, Task<R>> action)
+            where T : class
+        {
+            var instance = factory.Instantiate(temporaryContainer, out var disposable);
+            try
+            {
+                return await action.Invoke(instance);
             }
             finally
             {
@@ -102,6 +130,20 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
+        public static R Do<T, R>(this IDelegatedFactory<T> factory, Func<T, R> action)
+            where T : class
+        {
+            var instance = factory.Instantiate(out var disposable);
+            try
+            {
+                return action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
+            }
+        }
+
         public static async Task DoAsync<T>(this IDelegatedFactory<T> factory, Func<T, Task> action)
             where T : class
         {
@@ -109,6 +151,20 @@ namespace FitsRatingTool.GuiApp.Services
             try
             {
                 await action.Invoke(instance);
+            }
+            finally
+            {
+                disposable.Dispose();
+            }
+        }
+
+        public static async Task<R> DoAsync<T, R>(this IDelegatedFactory<T> factory, Func<T, Task<R>> action)
+            where T : class
+        {
+            var instance = factory.Instantiate(out var disposable);
+            try
+            {
+                return await action.Invoke(instance);
             }
             finally
             {

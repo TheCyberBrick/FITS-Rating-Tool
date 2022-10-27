@@ -550,14 +550,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                             exporterFactory = factory;
                             exporterDelegatedFactory = factory.FactoryInfo.Factory;
 
-                            var exporterConfigurator = exporterDelegatedFactory.Instantiate(out var disposable);
-                            using (disposable)
+                            if (!exporterDelegatedFactory.Do(exporterConfigurator => exporterConfigurator.TryLoadConfig(exporter.Config)))
                             {
-                                if (!exporterConfigurator.TryLoadConfig(exporter.Config))
-                                {
-                                    // Invalid config
-                                    return false;
-                                }
+                                // Invalid config
+                                return false;
                             }
 
                             // Make exporter configurator load config on instantiation
