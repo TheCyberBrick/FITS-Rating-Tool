@@ -30,9 +30,12 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using System.Reactive.Linq;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
+    [Export(typeof(IEvaluationExportProgressViewModel)), TransientReuse]
     public class EvaluationExportProgressViewModel : SimpleProgressViewModel<ExportResult, EvaluationExportProgress>, IEvaluationExportProgressViewModel
     {
         public EvaluationExportProgressViewModel(IRegistrar<IEvaluationExportProgressViewModel, IEvaluationExportProgressViewModel.OfExporter> reg)

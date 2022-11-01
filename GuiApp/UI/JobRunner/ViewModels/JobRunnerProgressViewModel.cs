@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Utils;
@@ -25,6 +26,7 @@ using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -34,6 +36,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 {
+    [Export(typeof(IJobRunnerProgressViewModel)), TransientReuse]
     public class JobRunnerProgressViewModel : SimpleProgressViewModel<JobResult, BatchEvaluationProgressTracker.ProgressState>, IJobRunnerProgressViewModel
     {
         public JobRunnerProgressViewModel(IRegistrar<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> reg)

@@ -16,11 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Repositories.Impl
 {
+    [Export(typeof(IFileRepository)), SingletonReuse]
     public class FileRepository : IFileRepository
     {
         private readonly HashSet<string> fileSet = new();

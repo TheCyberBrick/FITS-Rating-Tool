@@ -17,7 +17,6 @@
 */
 
 using Avalonia.Collections;
-using Avalonia.Utilities;
 using ReactiveUI;
 using System.Collections.Generic;
 using FitsRatingTool.GuiApp.Services;
@@ -33,9 +32,12 @@ using FitsRatingTool.Common.Models.FitsImage;
 using Microsoft.VisualStudio.Threading;
 using System.Reactive.Concurrency;
 using System.Collections;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
+    [Export(typeof(IEvaluationTableViewModel)), TransientReuse]
     public class EvaluationTableViewModel : ViewModelBase, IEvaluationTableViewModel
     {
         public EvaluationTableViewModel(IRegistrar<IEvaluationTableViewModel, IEvaluationTableViewModel.Of> reg)

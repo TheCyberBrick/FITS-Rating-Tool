@@ -33,17 +33,18 @@ using FitsRatingTool.GuiApp.UI.Exporters;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
-using Avalonia.Utilities;
 using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.FitsImage.ViewModels;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using System.Collections.Specialized;
-using System.Text;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using Avalonia.Collections;
+using System.ComponentModel.Composition;
+using DryIocAttributes;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
+    [Export(typeof(IAppViewModel)), TransientReuse, AllowDisposableTransient]
     public class AppViewModel : ViewModelBase, IAppViewModel, IDisposable
     {
         public AppViewModel(IRegistrar<IAppViewModel, IAppViewModel.Of> reg)

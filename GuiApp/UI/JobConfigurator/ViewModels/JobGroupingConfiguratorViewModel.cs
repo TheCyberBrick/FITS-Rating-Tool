@@ -26,9 +26,12 @@ using System.Reactive.Linq;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.Services;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
+    [Export(typeof(IJobGroupingConfiguratorViewModel)), TransientReuse]
     public class JobGroupingConfiguratorViewModel : ViewModelBase, IJobGroupingConfiguratorViewModel
     {
         public JobGroupingConfiguratorViewModel(IRegistrar<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> reg)

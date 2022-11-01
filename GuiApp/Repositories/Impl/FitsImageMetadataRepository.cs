@@ -22,9 +22,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FitsRatingTool.FitsLoader.Models;
 using System.IO;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Repositories.Impl
 {
+    [Export(typeof(IFitsImageMetadataRepository)), SingletonReuse]
     public class FitsImageMetadataRepository : IFitsImageMetadataRepository
     {
         private class Metadata : IFitsImageMetadata

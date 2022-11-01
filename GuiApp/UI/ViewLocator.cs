@@ -25,9 +25,9 @@ namespace FitsRatingTool.GuiApp.UI
 {
     public class ViewLocator : IDataTemplate
     {
-        private readonly Container container;
+        private readonly IContainer container;
 
-        public ViewLocator(Container container)
+        public ViewLocator(IContainer container)
         {
             this.container = container;
         }

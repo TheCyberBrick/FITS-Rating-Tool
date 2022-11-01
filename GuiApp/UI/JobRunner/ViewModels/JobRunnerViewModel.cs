@@ -16,15 +16,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 {
+    [Export(typeof(IJobRunnerViewModel)), TransientReuse]
     public class JobRunnerViewModel : ViewModelBase, IJobRunnerViewModel
     {
         public JobRunnerViewModel(IRegistrar<IJobRunnerViewModel, IJobRunnerViewModel.Of> reg)

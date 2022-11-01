@@ -16,16 +16,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Services;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 {
+    [Export(typeof(IAppConfigViewModel)), TransientReuse]
     public class AppConfigViewModel : ViewModelBase, IAppConfigViewModel
     {
         public AppConfigViewModel(IRegistrar<IAppConfigViewModel, IAppConfigViewModel.Of> reg)

@@ -36,9 +36,12 @@ using static FitsRatingTool.GuiApp.UI.JobConfigurator.IJobConfiguratorViewModel;
 using System.Text.RegularExpressions;
 using System.Reactive.Concurrency;
 using System.Text;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
+    [Export(typeof(IJobConfiguratorViewModel)), TransientReuse]
     public class JobConfiguratorViewModel : ViewModelBase, IJobConfiguratorViewModel
     {
         public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> reg)

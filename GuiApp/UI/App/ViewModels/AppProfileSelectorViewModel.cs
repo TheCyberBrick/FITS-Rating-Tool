@@ -16,17 +16,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia.Utilities;
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 using System.Reactive;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
+    [Export(typeof(IAppProfileSelectorViewModel)), TransientReuse]
     public class AppProfileSelectorViewModel : ViewModelBase, IAppProfileSelectorViewModel
     {
         public AppProfileSelectorViewModel(IRegistrar<IAppProfileSelectorViewModel, IAppProfileSelectorViewModel.Of> reg)

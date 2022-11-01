@@ -29,9 +29,12 @@ using System.Reactive.Concurrency;
 using Avalonia.Utilities;
 using System.IO;
 using System.Linq;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IEvaluationManager)), SingletonReuse]
     public class EvaluationManager : IEvaluationManager
     {
         private IEvaluationService.IEvaluator? cachedEvaluator;

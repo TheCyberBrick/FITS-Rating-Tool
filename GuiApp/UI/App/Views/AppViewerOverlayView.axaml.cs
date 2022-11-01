@@ -18,6 +18,7 @@
 
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.App.ViewModels;
 using FitsRatingTool.GuiApp.UI.App.Windows;
@@ -27,9 +28,11 @@ using FitsRatingTool.GuiApp.UI.ImageAnalysis;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis.Windows;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.App.Views
 {
+    [Export(typeof(AppViewerOverlayView)), TransientReuse]
     public partial class AppViewerOverlayView : ReactiveUserControl<AppViewerOverlayViewModel>
     {
         public AppViewerOverlayView()

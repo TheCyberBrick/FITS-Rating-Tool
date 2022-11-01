@@ -123,7 +123,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             container.Register<object>(
                 made: Made.Of(
                     req => typeof(DependencyTracker)
-                        .SingleMethod(nameof(DependencyTracker.OnDependencyInjected))
+                        .SingleMethod(nameof(DependencyTracker.CreateAndTrackDependency))
                         .MakeGenericMethod(req.ServiceType.GetGenericArguments()),
                     parameters: Parameters.Of.Type(req => (Action<IContainerLifecycle, IResolverContext>)OnDependencyInjected)),
                 setup: Setup.DecoratorWith(
@@ -344,8 +344,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     loadingScopes.Add(newScope);
                 }
 
-                // Create a new instance
-                newInstance = newScope.Resolve<Func<Template, T>>().Invoke(template);
+                // Create a new instance.
+                // Passes newScope explicitly to make sure that
+                // OnDependencyInjected receives the same scope
+                // instance so that it can track the dependencies
+                // properly
+                newInstance = newScope.Resolve<Func<Template, IResolverContext, T>>().Invoke(template, newScope);
 
                 List<IContainerLifecycle>? dependencies = null;
 
@@ -865,7 +869,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private static class DependencyTracker
         {
-            public static IContainer<TT, TTemplate> OnDependencyInjected<TT, TTemplate>(IContainer<TT, TTemplate> container, IResolverContext scope, Action<IContainerLifecycle, IResolverContext> action)
+            public static IContainer<TT, TTemplate> CreateAndTrackDependency<TT, TTemplate>(IContainer<TT, TTemplate> container, IResolverContext scope, Action<IContainerLifecycle, IResolverContext> action)
                 where TT : class
             {
                 if (container is IContainerLifecycle lifecycle)

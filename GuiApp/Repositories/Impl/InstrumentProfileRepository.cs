@@ -16,17 +16,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 namespace FitsRatingTool.GuiApp.Repositories.Impl
 {
+    [Export(typeof(IInstrumentProfileRepository)), SingletonReuse]
     public class InstrumentProfileRepository : IInstrumentProfileRepository
     {
         private Dictionary<string, IReadOnlyInstrumentProfile> profiles = new Dictionary<string, IReadOnlyInstrumentProfile>();

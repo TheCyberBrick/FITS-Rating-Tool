@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
@@ -24,9 +25,11 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
+    [Export(typeof(IAppImageSelectorViewModel)), TransientReuse]
     public class AppImageSelectorViewModel : ViewModelBase, IAppImageSelectorViewModel
     {
         public AppImageSelectorViewModel(IRegistrar<IAppImageSelectorViewModel, IAppImageSelectorViewModel.Of> reg)

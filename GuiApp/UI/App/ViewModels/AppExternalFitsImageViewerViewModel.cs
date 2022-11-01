@@ -16,13 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
+    [Export(typeof(IAppExternalFitsImageViewerViewModel)), TransientReuse]
     public class AppExternalFitsImageViewerViewModel : ViewModelBase, IAppExternalFitsImageViewerViewModel
     {
         public AppExternalFitsImageViewerViewModel(IRegistrar<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.Of> reg)

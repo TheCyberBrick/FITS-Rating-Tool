@@ -29,12 +29,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.Utils;
-using Avalonia.Utilities;
 using Avalonia.Collections;
 using FitsRatingTool.GuiApp.Models;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
+    [Export(typeof(IEvaluationFormulaViewModel)), TransientReuse]
     public class EvaluationFormulaViewModel : ViewModelBase, IEvaluationFormulaViewModel
     {
         public EvaluationFormulaViewModel(IRegistrar<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> reg)

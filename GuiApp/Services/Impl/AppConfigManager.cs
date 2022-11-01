@@ -16,12 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using System;
+using System.ComponentModel.Composition;
 using System.Configuration;
 using System.IO;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IAppConfigManager)), SingletonReuse]
     public class AppConfigManager : IAppConfigManager
     {
         public bool SaveOnChange { get; set; } = true;

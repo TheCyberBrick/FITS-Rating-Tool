@@ -16,17 +16,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
-    public class EvaluationExporterViewModel : IEvaluationExporterViewModel
+    [Export(typeof(IEvaluationExporterViewModel)), TransientReuse]
+    public class EvaluationExporterViewModel : ViewModelBase, IEvaluationExporterViewModel
     {
         public EvaluationExporterViewModel(IRegistrar<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> reg)
         {

@@ -16,10 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IExporterConfiguratorManager)), SingletonReuse]
     public class ExporterConfiguratorManager : IExporterConfiguratorManager
     {
         private readonly Dictionary<string, IExporterConfiguratorManager.FactoryInfo> factories = new();

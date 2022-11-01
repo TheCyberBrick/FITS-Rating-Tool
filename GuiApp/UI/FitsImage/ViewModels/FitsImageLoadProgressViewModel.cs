@@ -27,9 +27,12 @@ using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using FitsRatingTool.GuiApp.Services;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
+    [Export(typeof(IFitsImageLoadProgressViewModel)), TransientReuse]
     public class FitsImageLoadProgressViewModel : SimpleProgressViewModel<List<IFitsImageViewModel>, FitsImageLoadProgress>, IFitsImageLoadProgressViewModel
     {
         public FitsImageLoadProgressViewModel(IRegistrar<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> reg)

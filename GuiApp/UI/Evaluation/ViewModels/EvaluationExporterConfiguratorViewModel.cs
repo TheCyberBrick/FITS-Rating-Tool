@@ -16,16 +16,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia.Utilities;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Reactive.Linq;
 using static FitsRatingTool.GuiApp.UI.Evaluation.IEvaluationExporterConfiguratorViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
+    [Export(typeof(IEvaluationExporterConfiguratorViewModel)), TransientReuse, AllowDisposableTransient]
     public class EvaluationExporterConfiguratorViewModel : ViewModelBase, IEvaluationExporterConfiguratorViewModel, IDisposable
     {
         public EvaluationExporterConfiguratorViewModel(IRegistrar<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> reg)

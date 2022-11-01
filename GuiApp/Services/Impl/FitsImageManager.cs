@@ -27,9 +27,12 @@ using System.Threading;
 using FitsRatingTool.GuiApp.Models;
 using System.Collections.Specialized;
 using System.IO;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IFitsImageManager)), SingletonReuse]
     public class FitsImageManager : IFitsImageManager
     {
         private class Record : IFitsImageManager.IRecord

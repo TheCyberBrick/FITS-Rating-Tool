@@ -16,8 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
+using System.ComponentModel.Composition;
+
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IImageAnalysisManager)), SingletonReuse]
     public class ImageAnalysisManager : IImageAnalysisManager
     {
         public int? CurrentDataKeyIndex { get; set; }

@@ -16,11 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Models;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IAppConfig)), SingletonReuse]
     public class AppConfig : IAppConfig
     {
         private IAppConfigManager manager;

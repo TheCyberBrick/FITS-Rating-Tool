@@ -34,9 +34,12 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.Utils;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageViewerViewModel;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
+    [Export(typeof(IFitsImageViewerViewModel)), TransientReuse, AllowDisposableTransient]
     public class FitsImageViewerViewModel : ViewModelBase, IFitsImageViewerViewModel, IDisposable
     {
         public FitsImageViewerViewModel(IRegistrar<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> reg)

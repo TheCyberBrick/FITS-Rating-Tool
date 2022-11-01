@@ -16,12 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using System;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IFileSystemService)), SingletonReuse]
     public class FileSystemService : IFileSystemService
     {
         public bool ShowDirectory(string dir)

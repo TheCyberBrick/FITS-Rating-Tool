@@ -29,7 +29,7 @@ namespace FitsRatingTool.GuiApp
 {
     public partial class App : Application
     {
-        private Container? container;
+        private IContainer? container;
 
         public override void Initialize()
         {

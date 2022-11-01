@@ -17,10 +17,13 @@
 */
 
 using Avalonia.Utilities;
+using DryIocAttributes;
 using System;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IOpenFileEventManager)), SingletonReuse]
     public class OpenFileEventManager : IOpenFileEventManager
     {
         private EventHandler<IOpenFileEventManager.OpenFileEventArgs>? _onOpenFile;

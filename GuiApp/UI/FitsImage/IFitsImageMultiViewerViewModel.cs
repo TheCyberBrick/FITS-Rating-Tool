@@ -25,7 +25,7 @@ using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {
-    public interface IFitsImageMultiViewerViewModel : IDisposable
+    public interface IFitsImageMultiViewerViewModel
     {
         public record Of();
 

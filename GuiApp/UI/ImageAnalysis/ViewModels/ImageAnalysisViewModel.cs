@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia.Utilities;
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
@@ -24,6 +24,7 @@ using FitsRatingTool.GuiApp.UI.FitsImage;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -31,6 +32,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
 {
+    [Export(typeof(IImageAnalysisViewModel)), TransientReuse]
     public class ImageAnalysisViewModel : ViewModelBase, IImageAnalysisViewModel
     {
         public ImageAnalysisViewModel(IRegistrar<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> reg)

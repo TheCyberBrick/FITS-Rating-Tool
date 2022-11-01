@@ -19,10 +19,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 
 namespace FitsRatingTool.GuiApp.Repositories.Impl
 {
+    [Export(typeof(IAnalysisRepository)), SingletonReuse]
     public class AnalysisRepository : IAnalysisRepository
     {
         private readonly ConcurrentDictionary<string, IEnumerable<IFitsImagePhotometryViewModel>> photometryRepository = new();

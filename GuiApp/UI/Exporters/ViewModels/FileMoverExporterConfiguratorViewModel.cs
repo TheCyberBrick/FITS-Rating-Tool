@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
@@ -23,12 +24,14 @@ using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IFileMoverExporterConfiguratorViewModel)), TransientReuse]
     public class FileMoverExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileMoverExporterConfiguratorViewModel
     {
         public FileMoverExporterConfiguratorViewModel(IRegistrar<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of> reg)

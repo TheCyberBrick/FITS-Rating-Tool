@@ -17,7 +17,7 @@
 */
 
 using Avalonia.Collections;
-using Avalonia.Utilities;
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Utils;
 using FitsRatingTool.FitsLoader.Models;
@@ -26,6 +26,7 @@ using ReactiveUI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Reactive;
@@ -33,6 +34,7 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
 {
+    [Export(typeof(IFileTableViewModel)), TransientReuse]
     public class FileTableViewModel : ViewModelBase, IFileTableViewModel
     {
         public FileTableViewModel(IRegistrar<IFileTableViewModel, IFileTableViewModel.Of> reg)

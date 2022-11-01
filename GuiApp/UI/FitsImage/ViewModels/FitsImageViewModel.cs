@@ -18,6 +18,7 @@
 
 using Avalonia.Media.Imaging;
 using Avalonia.Visuals.Media.Imaging;
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.FitsLoader.Models;
@@ -27,6 +28,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -36,6 +38,7 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
+    [Export(typeof(IFitsImageViewModel)), TransientReuse, AllowDisposableTransient]
     public class FitsImageViewModel : ViewModelBase, IFitsImageViewModel, IFitsImageContainer, IDisposable
     {
         public FitsImageViewModel(IRegistrar<IFitsImageViewModel, IFitsImageViewModel.OfFile> reg)

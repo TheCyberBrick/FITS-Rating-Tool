@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
@@ -23,10 +24,12 @@ using FitsRatingTool.GuiApp.Services;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.ComponentModel.Composition;
 using System.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IFitsHeaderExporterConfiguratorViewModel)), TransientReuse]
     public class FitsHeaderExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel
     {
         public FitsHeaderExporterConfiguratorViewModel(IRegistrar<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of> reg)

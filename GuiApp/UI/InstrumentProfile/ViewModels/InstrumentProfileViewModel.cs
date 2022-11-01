@@ -17,17 +17,20 @@
 */
 
 using Avalonia.Collections;
+using DryIocAttributes;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
+    [Export(typeof(IInstrumentProfileViewModel)), TransientReuse]
     public class InstrumentProfileViewModel : ViewModelBase, IInstrumentProfileViewModel
     {
         public InstrumentProfileViewModel(IRegistrar<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> reg)

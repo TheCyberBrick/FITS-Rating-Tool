@@ -19,14 +19,17 @@
 using Avalonia;
 using Avalonia.Controls;
 using DryIoc;
+using DryIocAttributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IWindowManager)), SingletonReuse]
     public class WindowManager : IWindowManager
     {
         private readonly Dictionary<Type, List<Window>> windows = new();

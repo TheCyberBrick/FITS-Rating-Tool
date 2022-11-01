@@ -18,10 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IStarSampler)), SingletonReuse]
     public class StarSampler : IStarSampler
     {
         private static void GetCenter(IFitsImagePhotometryViewModel p, out int x, out int y)

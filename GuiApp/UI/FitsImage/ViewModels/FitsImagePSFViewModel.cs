@@ -16,11 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.FitsLoader.Models;
 using FitsRatingTool.GuiApp.Services;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
+    [Export(typeof(IFitsImagePSFViewModel)), TransientReuse]
     public class FitsImagePSFViewModel : ViewModelBase, IFitsImagePSFViewModel
     {
         public FitsImagePSFViewModel(IRegistrar<IFitsImagePSFViewModel, IFitsImagePSFViewModel.OfPSF> reg)

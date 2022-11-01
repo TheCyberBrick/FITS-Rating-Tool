@@ -16,10 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using Microsoft.VisualStudio.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -30,6 +32,7 @@ using VoyagerAPI.Scheduler;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
+    [Export(typeof(IVoyagerIntegration)), SingletonReuse]
     public class VoyagerIntegration : IVoyagerIntegration
     {
         private class Module : IRunnerModule

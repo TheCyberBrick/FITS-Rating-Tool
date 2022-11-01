@@ -18,12 +18,15 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Linq;
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
+    [Export(typeof(IFitsImageHistogramViewModel)), TransientReuse]
     public class FitsImageHistogramViewModel : ViewModelBase, IFitsImageHistogramViewModel
     {
         public FitsImageHistogramViewModel(IRegistrar<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> reg)

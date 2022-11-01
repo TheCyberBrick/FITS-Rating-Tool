@@ -25,9 +25,12 @@ using static FitsRatingTool.GuiApp.UI.InstrumentProfile.IInstrumentProfileConfig
 using System.IO;
 using System.Text;
 using FitsRatingTool.GuiApp.Services;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
+    [Export(typeof(IInstrumentProfileConfiguratorViewModel)), TransientReuse]
     public class InstrumentProfileConfiguratorViewModel : ViewModelBase, IInstrumentProfileConfiguratorViewModel
     {
         public InstrumentProfileConfiguratorViewModel(IRegistrar<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> reg)
@@ -38,25 +41,25 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         public IInstrumentProfileSelectorViewModel Selector { get; private set; } = null!;
 
-        private readonly ObservableAsPropertyHelper<bool> _hasProfile;
+        private ObservableAsPropertyHelper<bool> _hasProfile = null!;
         public bool HasProfile => _hasProfile.Value;
 
         public Interaction<IReadOnlyInstrumentProfile, bool> DeleteConfirmationDialog { get; } = new();
 
         public Interaction<Unit, bool> DiscardConfirmationDialog { get; } = new();
 
-        public ReactiveCommand<Unit, Unit> New { get; }
+        public ReactiveCommand<Unit, Unit> New { get; private set; } = null!;
 
-        public ReactiveCommand<Unit, Unit> Save { get; }
+        public ReactiveCommand<Unit, Unit> Save { get; private set; } = null!;
 
-        public ReactiveCommand<Unit, Unit> Delete { get; }
+        public ReactiveCommand<Unit, Unit> Delete { get; private set; } = null!;
 
-        public ReactiveCommand<Unit, bool> Cancel { get; }
+        public ReactiveCommand<Unit, bool> Cancel { get; private set; } = null!;
 
 
-        public ReactiveCommand<Unit, ImportResult> ImportWithOpenFileDialog { get; }
+        public ReactiveCommand<Unit, ImportResult> ImportWithOpenFileDialog { get; private set; } = null!;
 
-        public ReactiveCommand<Unit, ExportResult> ExportWithSaveFileDialog { get; }
+        public ReactiveCommand<Unit, ExportResult> ExportWithSaveFileDialog { get; private set; } = null!;
 
         public Interaction<Unit, string> ImportOpenFileDialog { get; } = new();
 
@@ -67,16 +70,24 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         public Interaction<ExportResult, Unit> ExportResultDialog { get; } = new();
 
 
+        private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer;
 
         private InstrumentProfileConfiguratorViewModel(IInstrumentProfileConfiguratorViewModel.Of args,
             IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
             IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer,
             IInstrumentProfileManager instrumentProfileManager)
         {
+            this.instrumentProfileManager = instrumentProfileManager;
+            this.instrumentProfileContainer = instrumentProfileContainer;
+
             instrumentProfileSelectorContainer.ToSingleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm => Selector = vm);
 
             instrumentProfileContainer.ToSingleton();
+        }
 
+        protected override void OnInstantiated()
+        {
             var hasProfile = this.WhenAnyValue(x => x.Selector.SelectedProfile, (IInstrumentProfileViewModel? x) => x != null);
             _hasProfile = hasProfile.ToProperty(this, x => x.HasProfile);
 

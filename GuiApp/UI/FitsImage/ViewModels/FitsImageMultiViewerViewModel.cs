@@ -16,18 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageMultiViewerViewModel;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageViewerViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
-    public class FitsImageMultiViewerViewModel : ViewModelBase, IFitsImageMultiViewerViewModel
+    [Export(typeof(IFitsImageMultiViewerViewModel)), TransientReuse, AllowDisposableTransient]
+    public class FitsImageMultiViewerViewModel : ViewModelBase, IFitsImageMultiViewerViewModel, IDisposable
     {
         public FitsImageMultiViewerViewModel(IRegistrar<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> reg)
         {
