@@ -96,6 +96,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryBuilder<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
             this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
+
             fitsImageCornerViewerContainer.ToSingletonWithObservable().Subscribe(vm => CornerViewer = vm);
 
             this.WhenAnyValue(x => x.Viewer!.File).Subscribe(x =>
@@ -122,11 +123,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     }
                 });
 
+            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IAppExternalFitsImageViewerViewModel.OfFile(Viewer?.File)));
+
             // TODO Temp
             // Need to reimplement these properlywith image selector VM
             // vvv
-
-            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IAppExternalFitsImageViewerViewModel.OfFile(Viewer?.File)));
 
             // TODO Temp
             // See above

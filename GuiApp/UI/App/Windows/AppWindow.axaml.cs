@@ -47,6 +47,7 @@ using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using FitsRatingTool.GuiApp.UI.AppConfig;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
@@ -92,14 +93,14 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
                         showDialog();
                     }));
 
-                    d.Add(ViewModel.ShowSettingsDialog.Subscribe(vm =>
+                    d.Add(ViewModel.ShowSettingsDialog.Subscribe(factory =>
                     {
                         async void showDialog()
                         {
-                            await new AppConfigWindow()
+                            if (windowManager.ShowDialog<AppConfigWindow, IAppConfigViewModel, IAppConfigViewModel.Of>(factory, false, this, out var window, out var task))
                             {
-                                DataContext = vm
-                            }.ShowDialog(this);
+                                await task;
+                            }
                         }
                         showDialog();
                     }));

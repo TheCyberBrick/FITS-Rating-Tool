@@ -20,6 +20,7 @@ using Avalonia.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services
 {
@@ -37,7 +38,15 @@ namespace FitsRatingTool.GuiApp.Services
 
         IEnumerable<Window> Windows { get; }
 
-        bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null)
+        bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
+            where TWindow : Window
+            where TData : class;
+
+        bool ShowDialog<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+            where TWindow : Window
+            where TData : class;
+
+        bool ShowDialog<TWindow, TData, TTemplate, R>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class;
 

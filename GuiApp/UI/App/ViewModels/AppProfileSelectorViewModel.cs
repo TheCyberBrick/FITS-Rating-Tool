@@ -125,6 +125,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 return confirmed;
             });
 
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+        }
+
+        protected override void OnInstantiated()
+        {
             this.WhenAnyValue(x => x.Selector.SelectedProfile).Subscribe(profile =>
             {
                 if (!suppressChangeCommand)
@@ -132,8 +137,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     ChangeProfile.Execute(profile).Subscribe();
                 }
             });
-
-            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
         }
 
         private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs e)

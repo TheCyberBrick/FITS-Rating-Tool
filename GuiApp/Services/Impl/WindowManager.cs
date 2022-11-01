@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -41,7 +42,52 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.resolver = resolver;
         }
 
-        public bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? outWindow, Func<TWindow, bool>? filter = null)
+        public bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter, Window? parent)
+            where TWindow : Window
+            where TData : class
+        {
+            if (ShowImpl(factory, showMultiple, filter, out window))
+            {
+                if (parent != null)
+                {
+                    window.Show(parent);
+                }
+                else
+                {
+                    window.Show();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public bool ShowDialog<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+            where TWindow : Window
+            where TData : class
+        {
+            if (ShowImpl(factory, showMultiple, filter, out window))
+            {
+                task = window.ShowDialog(parent);
+                return true;
+            }
+            task = null;
+            return false;
+        }
+
+        public bool ShowDialog<TWindow, TData, TTemplate, R>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
+            where TWindow : Window
+            where TData : class
+        {
+            if (ShowImpl(factory, showMultiple, filter, out window))
+            {
+                task = window.ShowDialog<R>(parent);
+                return true;
+            }
+            task = null;
+            return false;
+        }
+
+        private bool ShowImpl<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Func<TWindow, bool>? filter, [NotNullWhen(true)] out TWindow? outWindow)
             where TWindow : Window
             where TData : class
         {
@@ -113,8 +159,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     _windowClosed?.Invoke(this, new IWindowManager.WindowEventArgs(window));
                 }
                 window.Closed += onClosed;
-
-                window.Show();
 
                 _windowOpened?.Invoke(this, new IWindowManager.WindowEventArgs(window));
 
