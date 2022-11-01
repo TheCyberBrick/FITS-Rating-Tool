@@ -94,7 +94,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     return;
                 }
 
-                WeakEventHandlerManager.Unsubscribe<EventArgs, EvaluationExporterConfiguratorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
+                UnsubscribeFromEvent<IExporterConfiguratorManager.IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
             }
 
             var oldExporterConfiguratorDisposable = _exporterConfiguratorDisposable;
@@ -106,7 +106,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             if (newConfigurator != null)
             {
-                WeakEventHandlerManager.Subscribe<IExporterConfiguratorManager.IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
+                SubscribeToEvent<IExporterConfiguratorManager.IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
             }
 
             _configurationChanged?.Invoke(this, new EventArgs());

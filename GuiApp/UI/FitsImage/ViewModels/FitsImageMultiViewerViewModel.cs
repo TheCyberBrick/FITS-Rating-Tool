@@ -194,7 +194,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
                 if (baseViewer.FitsImage != null || baseViewer.File != null)
                 {
-                    AddNewInstance(baseViewer.FitsImage, baseViewer.File, baseViewer.FitsImage?.Owner == baseViewer);
+                    AddNewInstance(baseViewer.FitsImage, baseViewer.File);
                 }
             }
             else
@@ -203,7 +203,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }
         }
 
-        private Instance AddNewInstance(IFitsImageViewModel? image = null, string? imageFile = null, bool setOwner = false)
+        private Instance AddNewInstance(IFitsImageViewModel? image = null, string? imageFile = null)
         {
             var newViewer = fitsImageViewerContainer.Instantiate(new IFitsImageViewerViewModel.Of());
 
@@ -217,10 +217,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
             if (image != null)
             {
-                if (setOwner)
-                {
-                    image.Owner = newViewer;
-                }
                 newViewer.FitsImage = image;
             }
             else if (imageFile != null)
@@ -317,22 +313,12 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private async void DisposeViewer(IFitsImageViewerViewModel viewer)
         {
-            var image = viewer.FitsImage;
-            bool requiresDisposal = image?.Owner == viewer;
-
             viewer.FitsImage = null;
             viewer.File = null;
 
             await viewer.UnloadAsync();
 
             fitsImageViewerContainer.Destroy(viewer);
-
-            // TODO Temp
-            // Probably not necessary?
-            /*if (image != null && requiresDisposal)
-            {
-                image.Dispose();
-            }*/
         }
 
         private Instance? FindInstance(IFitsImageViewModel image)

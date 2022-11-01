@@ -16,7 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using Avalonia.Utilities;
 using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
@@ -58,8 +57,12 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _selectedImage, value);
         }
 
+        public Predicate<IFitsImage> SelectedImageFilter { get; set; }
+
 
         private string? prevSelectedFile;
+
+        private bool isImageLoading;
 
         private readonly IFitsImageManager fitsImageManager;
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
@@ -72,12 +75,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             fitsImageContainer.ToSingletonWithObservable().Subscribe(vm => SelectedImage = vm);
 
-            this.WhenAnyValue(x => x.SelectedFile).Subscribe(file =>
-            {
-                prevSelectedFile = file;
-                UpdateSelectedImage();
-            });
+            // Select only full images by default
+            SelectedImageFilter = i => i.OutDim.Width == i.ImageWidth && i.OutDim.Height == i.ImageHeight;
 
+            SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+        }
+
+        protected override void OnInstantiated()
+        {
             this.WhenAnyValue(x => x.SelectCurrentFile).Subscribe(x =>
             {
                 if (x)
@@ -92,15 +98,28 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+            this.WhenAnyValue(x => x.SelectedFile).Subscribe(file =>
+            {
+                prevSelectedFile = file;
+                UpdateSelectedImage();
+            });
 
             UpdateFiles();
+            UpdateSelectedImage();
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers)
+            {
+                UpdateFiles();
+
+                if (!isImageLoading)
+                {
+                    UpdateSelectedImage();
+                }
+            }
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed)
             {
                 UpdateFiles();
             }
@@ -128,6 +147,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     Files.Add(newFile);
                 }
             }
+
+            UpdateSelectedFile();
         }
 
         private List<string> FindFilesWithImages()
@@ -147,10 +168,26 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private void OnCurrentFileChanged(object? sender, IFitsImageManager.CurrentFileChangedEventArgs args)
         {
+            UpdateSelectedFile();
+        }
+
+        private void UpdateSelectedFile()
+        {
             if (SelectCurrentFile)
             {
                 var prev = prevSelectedFile;
-                SelectedFile = args.NewFile;
+
+                var currentFile = fitsImageManager.CurrentFile;
+
+                if (currentFile != null && Files.Contains(currentFile))
+                {
+                    SelectedFile = currentFile;
+                }
+                else
+                {
+                    SelectedFile = null;
+                }
+
                 prevSelectedFile = prev;
             }
         }
@@ -169,7 +206,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 var image = FindImage(selectedFile);
                 if (image != null)
                 {
-                    fitsImageContainer.Instantiate(new IFitsImageViewModel.OfImage(image));
+                    try
+                    {
+                        isImageLoading = true;
+                        fitsImageContainer.Instantiate(new IFitsImageViewModel.OfImage(image));
+                    }
+                    finally
+                    {
+                        isImageLoading = false;
+                    }
                 }
                 else
                 {
@@ -183,7 +228,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             var record = fitsImageManager.Get(file);
             if (record != null)
             {
-                return record.FindImage(file, i => i.OutDim.Width == i.ImageWidth && i.OutDim.Height == i.ImageHeight);
+                return record.FindImage(file, SelectedImageFilter);
             }
             return null;
         }

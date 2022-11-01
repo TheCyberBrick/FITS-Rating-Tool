@@ -16,7 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using System;
 using System.Collections.ObjectModel;
 
 namespace FitsRatingTool.GuiApp.UI.App
@@ -32,5 +34,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         string? SelectedFile { get; set; }
 
         IFitsImageViewModel? SelectedImage { get; }
+
+        Predicate<IFitsImage> SelectedImageFilter { get; set; }
     }
 }

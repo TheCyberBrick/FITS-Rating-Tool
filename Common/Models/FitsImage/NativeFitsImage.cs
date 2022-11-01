@@ -444,6 +444,22 @@ namespace FitsRatingTool.Common.Models.FitsImage
             return true;
         }
 
+        public void WithLock(Action action)
+        {
+            lock (this)
+            {
+                action.Invoke();
+            }
+        }
+
+        public T WithLock<T>(Func<T> func)
+        {
+            lock (this)
+            {
+                return func.Invoke();
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

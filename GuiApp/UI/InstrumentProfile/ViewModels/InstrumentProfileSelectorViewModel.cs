@@ -71,7 +71,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             Profiles = new ReadOnlyObservableCollection<IInstrumentProfileViewModel>(_profiles);
 
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
         }
 
         protected override void OnInstantiated()

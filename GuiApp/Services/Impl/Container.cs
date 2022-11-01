@@ -25,16 +25,18 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Disposables;
+using System.Reactive.Subjects;
 using System.Reflection;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    public class Container<T, Template> : ReactiveObject, IContainer<T, Template>, IContainerLifecycle, IObservable<T?>
+    public class Container<T, Template> : ReactiveObject, IContainer<T, Template>, IContainerLifecycle
         where T : class
     {
         private IContainerLifecycle? parent;
         private object? dependee;
+
+        private bool isContainerSingleton;
 
         private bool _isSingleton;
         public bool IsSingleton
@@ -46,8 +48,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public int Count => instance2Scope.Count;
 
 
-        private bool _initialized;
+        private bool isContainerInitialized;
 
+        private bool _initialized;
         public bool IsInitialized
         {
             get => _initialized;
@@ -79,13 +82,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
 
         private readonly Dictionary<IResolverContext, T> scope2Instance = new();
-        private readonly Dictionary<T, IResolverContext> instance2Scope = new();
+        private readonly ConcurrentDictionary<T, IResolverContext> instance2Scope = new();
+
         private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> scope2Dependencies = new();
         private readonly HashSet<IResolverContext> scopes = new();
 
-        private readonly List<IObserver<T?>> observers = new();
+
+        private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> loadingScope2Dependencies = new();
+        private readonly HashSet<IResolverContext> loadingScopes = new();
+
+        private readonly HashSet<T> loadingInstances = new();
+
+        private readonly ReplaySubject<T?> singletonSubject = new(bufferSize: 1);
+
+        private object generationKey = new();
+
+        private T? singletonInstance;
 
         private bool disposed;
+
+        private int reentrancyCount;
 
         private readonly DryIoc.IContainer container;
         private readonly object? scopeName;
@@ -115,7 +131,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         lock (this)
                         {
-                            return scopes.Contains(r.Container) &&
+                            return (scopes.Contains(r.Container) || loadingScopes.Contains(r.Container)) &&
                                 r.FactoryType != FactoryType.Wrapper &&
                                 r.ServiceType.IsGenericType &&
                                 typeof(IContainer<,>).IsAssignableFrom(r.ServiceType.GetGenericTypeDefinition());
@@ -154,6 +170,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
+        private void CheckReentrancy()
+        {
+            if (reentrancyCount > 0)
+            {
+                throw new InvalidOperationException($"Illegal reentrant modification");
+            }
+        }
+
         public IContainer<T, Template> ToSingleton()
         {
             ChangeToSingleton();
@@ -163,52 +187,67 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public IObservable<T?> ToSingletonWithObservable()
         {
             ChangeToSingleton();
-            return this;
+            return singletonSubject;
         }
 
         private void ChangeToSingleton()
         {
+            CheckReentrancy();
+
             lock (this)
             {
                 CheckDisposed();
 
-                if (!IsSingleton)
+                if (!isContainerSingleton)
                 {
-                    if (IsInitialized)
+                    if (isContainerInitialized)
                     {
                         throw new InvalidOperationException("Cannot change container to singleton after initialization");
                     }
 
-                    IsSingleton = true;
+                    isContainerSingleton = true;
                 }
             }
+
+            IsSingleton = true;
         }
 
         private void OnDependencyInjected(IContainerLifecycle lifecycle, IResolverContext scope)
         {
+            CheckReentrancy();
+
+            T? injectedInstance = null;
+
             lock (this)
             {
                 CheckDisposed();
 
-                if (!scopes.Contains(scope))
+                if (!scopes.Contains(scope) && !loadingScopes.Contains(scope))
                 {
                     throw new InvalidOperationException("Dependency was injected with unknown scope");
                 }
 
-                scope2Dependencies.GetOrAdd(scope, s => new()).Add(lifecycle);
+                loadingScope2Dependencies.GetOrAdd(scope, s => new()).Add(lifecycle);
 
                 if (scope2Instance.TryGetValue(scope, out var instance))
                 {
-                    // Dependency was created after the
-                    // instance has already been constructed
-                    // -> initialize injected dependency now
-                    lifecycle.Initialize(this, instance);
+                    injectedInstance = instance;
                 }
+            }
+
+            // Dependency was created after the
+            // instance has already been constructed
+            // -> initialize injected dependency now
+            if (injectedInstance != null)
+            {
+                lifecycle.Initialize(this, injectedInstance);
             }
         }
 
         void IContainerLifecycle.Initialize(IContainerLifecycle? parent, object? dependee)
         {
+            CheckReentrancy();
+
             lock (this)
             {
                 CheckDisposed();
@@ -216,104 +255,227 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 this.parent = parent;
                 this.dependee = dependee;
 
-                IsInitialized = true;
-
-                _onInitialized?.Invoke();
+                isContainerInitialized = true;
             }
+
+            IsInitialized = true;
+
+            _onInitialized?.Invoke();
         }
 
         private static void NotifyEventListenersOnAdded(object dependee, object dependency)
         {
             // Notify dependency about being added to dependee
-            (dependency as IContainerRelations)?.OnAddedTo(dependee);
+            (dependency as IContainerDependencyListener)?.OnAddedTo(dependee);
 
             // Notify dependee about added dependency
-            (dependee as IContainerRelations)?.OnAdded(dependency);
+            (dependee as IContainerDependencyListener)?.OnAdded(dependency);
         }
 
         public T Instantiate(Template template)
         {
+            CheckReentrancy();
+
+            IResolverContext newScope;
+            object? newGenerationKey;
+            bool clearContainer = isContainerSingleton;
+
             lock (this)
             {
                 CheckDisposed();
 
-                if (!IsInitialized)
+                if (!isContainerInitialized)
                 {
                     throw new InvalidOperationException($"Cannot instantiate before container ({typeof(T).FullName}, {typeof(Template).FullName}) is initialized");
                 }
+
+                if (isContainerSingleton && singletonInstance == null)
+                {
+                    newGenerationKey = generationKey = new object();
+                    clearContainer = false;
+                }
                 else
                 {
-                    if (IsSingleton)
+                    newGenerationKey = generationKey;
+                }
+            }
+
+            if (clearContainer)
+            {
+                newGenerationKey = DestroyInternal(false);
+            }
+
+            // Open a new scope with the scope name previously
+            // passed by T to the registrar
+            newScope = container.OpenScope(scopeName);
+
+            void destroyInstanceAndScope(T? instance)
+            {
+                if (instance != null)
+                {
+                    Destroy(instance);
+
+                    // If instance is destroyed due to exception
+                    // in constructor then the scope needs to be
+                    // disposed manually because the instance
+                    // (== null) cannot be mapped to the scope
+                    bool disposeScope;
+                    lock (this)
                     {
-                        Destroy();
+                        disposeScope = scopes.Remove(newScope);
+                    }
+                    if (disposeScope)
+                    {
+                        newScope.Dispose();
+                    }
+                }
+            }
+
+            T? newInstance = null;
+            try
+            {
+                lock (this)
+                {
+                    // Add new scope to loadingScopes so that
+                    // when the container is cleared it won't
+                    // destroy the new instance or dispose the
+                    // new scope because Instantiate will take
+                    // care of the destruction
+                    loadingScopes.Add(newScope);
+                }
+
+                // Create a new instance
+                newInstance = newScope.Resolve<Func<Template, T>>().Invoke(template);
+
+                List<IContainerLifecycle>? dependencies = null;
+
+                bool added = false;
+
+                lock (this)
+                {
+                    CheckDisposed();
+
+                    loadingScopes.Remove(newScope);
+                    loadingInstances.Add(newInstance);
+
+                    // Check if the container has been cleared
+                    // since the new instance was created, and
+                    // and if so, don't add the new instance and
+                    // immediately destroy it again further down
+                    if (generationKey == newGenerationKey)
+                    {
+                        added = true;
+
+                        ++reentrancyCount;
+                        try
+                        {
+                            this.RaisePropertyChanging(nameof(Count));
+
+                            if (loadingScope2Dependencies.TryRemove(newScope, out dependencies))
+                            {
+                                scope2Dependencies.TryAdd(newScope, dependencies);
+                            }
+
+                            scopes.Add(newScope);
+                            scope2Instance.Add(newScope, newInstance);
+                            instance2Scope.TryAdd(newInstance, newScope);
+
+                            this.RaisePropertyChanged(nameof(Count));
+
+                            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newInstance));
+                        }
+                        finally
+                        {
+                            --reentrancyCount;
+                        }
+
+                        singletonInstance = newInstance;
+                    }
+                }
+
+                if (added)
+                {
+                    // Initialize injected dependencies
+                    if (dependencies != null)
+                    {
+                        foreach (var dependency in dependencies)
+                        {
+                            dependency.Initialize(this, newInstance);
+                        }
                     }
 
-                    // Open a new scope with the scope previously
-                    // passed by T to the registrar
-                    var newScope = container.OpenScope(scopeName);
-                    scopes.Add(newScope);
-
-                    T? newInstance = null;
-                    try
+                    if (dependee != null)
                     {
-                        // Create a new instance
-                        newInstance = newScope.Resolve<Func<Template, T>>().Invoke(template);
-
-                        // Initialize injected dependencies
-                        foreach (var dependencies in scope2Dependencies.Values)
-                        {
-                            foreach (var dependency in dependencies)
-                            {
-                                dependency.Initialize(this, newInstance);
-                            }
-                        }
-
-                        this.RaisePropertyChanging(nameof(Count));
-
-                        scope2Instance.Add(newScope, newInstance);
-                        instance2Scope.Add(newInstance, newScope);
-
-                        this.RaisePropertyChanged(nameof(Count));
-
-                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newInstance));
-
-                        if (dependee != null)
-                        {
-                            NotifyEventListenersOnAdded(dependee: dependee, dependency: newInstance);
-                        }
-
-                        // Notify listeners about added dependency
-                        _onInstantiated?.Invoke(newInstance);
-
-                        // Notify observers about added dependency
-                        foreach (var observer in observers)
-                        {
-                            observer.OnNext(newInstance);
-                        }
-
-                        // Notify instance about completed instantiation
-                        (newInstance as IContainerInstantiation)?.OnInstantiated();
-
-                        return newInstance;
+                        NotifyEventListenersOnAdded(dependee: dependee, dependency: newInstance);
                     }
-                    catch (Exception ex)
-                    {
-                        if (newInstance != null)
-                        {
-                            Destroy(newInstance);
 
-                            if (scopes.Remove(newScope))
+                    // Notify instance about completed instantiation
+                    (newInstance as IContainerLifecycleListener)?.OnInstantiated();
+
+                    // Notify listeners about added dependency
+                    _onInstantiated?.Invoke(newInstance);
+
+                    bool doDestroyInstanceAndScope;
+
+                    lock (this)
+                    {
+                        // If instance is no longer in loadingInstance then
+                        // the container was cleared since it began loading
+                        doDestroyInstanceAndScope = !loadingInstances.Remove(newInstance);
+
+                        if (singletonInstance == newInstance)
+                        {
+                            if (doDestroyInstanceAndScope)
                             {
-                                newScope.Dispose();
+                                singletonInstance = null;
+                            }
+                            else
+                            {
+                                ++reentrancyCount;
+                                try
+                                {
+                                    // Notify observers about added singleton
+                                    singletonSubject.OnNext(newInstance);
+                                }
+                                finally
+                                {
+                                    --reentrancyCount;
+                                }
                             }
                         }
+                    }
 
-                        foreach (var observer in observers)
-                        {
-                            observer.OnError(ex);
-                        }
+                    if (doDestroyInstanceAndScope)
+                    {
+                        destroyInstanceAndScope(newInstance);
+                    }
+                }
+                else
+                {
+                    destroyInstanceAndScope(newInstance);
+                }
 
-                        throw;
+                return newInstance;
+            }
+            catch (Exception)
+            {
+                destroyInstanceAndScope(newInstance);
+                throw;
+            }
+            finally
+            {
+                // Ensure that temporary values during loading
+                // are cleaned up when an exception occurs
+
+                loadingScope2Dependencies.TryRemove(newScope, out var _);
+
+                lock (this)
+                {
+                    loadingScopes.Remove(newScope);
+
+                    if (newInstance != null)
+                    {
+                        loadingInstances.Remove(newInstance);
                     }
                 }
             }
@@ -321,6 +483,25 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public bool Destroy(T instance)
         {
+            if (!isContainerInitialized)
+            {
+                // There can't be any instances before container
+                // is initialized
+                return false;
+            }
+
+            if (!instance2Scope.ContainsKey(instance) || (isContainerSingleton && singletonInstance != instance))
+            {
+                // Nothing to do if container doesn't contain the instance.
+                // Once removed, it'll never be in the container again
+                return false;
+            }
+
+            CheckReentrancy();
+
+            IResolverContext? scope = null;
+            IEnumerable<IContainerLifecycle>? dependencies = null;
+
             lock (this)
             {
                 if (disposed)
@@ -329,42 +510,86 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     return false;
                 }
 
-                if (instance2Scope.TryGetValue(instance, out var scope))
+                if (instance2Scope.TryGetValue(instance, out scope))
                 {
-                    var dependencies = scope2Dependencies.TryRemove(scope, out var v) ? v : Enumerable.Empty<IContainerLifecycle>();
+                    ++reentrancyCount;
+                    try
+                    {
+                        this.RaisePropertyChanging(nameof(Count));
+
+                        dependencies = scope2Dependencies.TryRemove(scope, out var v) ? v : Enumerable.Empty<IContainerLifecycle>();
+
+                        scopes.Remove(scope);
+                        scope2Instance.Remove(scope);
+                        instance2Scope.TryRemove(instance, out var _);
+
+                        this.RaisePropertyChanged(nameof(Count));
+
+                        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, instance));
+                    }
+                    finally
+                    {
+                        --reentrancyCount;
+                    }
+                }
+            }
+
+            if (dependencies != null && scope != null)
+            {
+                bool doDestroyLifecycle;
+                lock (this)
+                {
+                    // If the instance is in loadingInstances then
+                    // the destruction of the instance will be handled
+                    // by Instantiate
+                    doDestroyLifecycle = !loadingInstances.Remove(instance);
+                }
+
+                if (doDestroyLifecycle)
+                {
+                    lock (this)
+                    {
+                        if (singletonInstance == instance)
+                        {
+                            singletonInstance = null;
+
+                            ++reentrancyCount;
+                            try
+                            {
+                                // Notify observers about removed singleton
+                                singletonSubject.OnNext(null);
+                            }
+                            finally
+                            {
+                                --reentrancyCount;
+                            }
+                        }
+                    }
+
+                    // Notify parent's instance about removed dependency
+                    (dependee as IContainerDependencyListener)?.OnRemoved(instance);
+
+                    // Notify instance of being destroyed
+                    (instance as IContainerLifecycleListener)?.OnDestroying();
+
+                    // Destroy removed dependencies
                     foreach (var dependency in dependencies)
                     {
                         dependency.Destroy(true);
                     }
 
-                    this.RaisePropertyChanging(nameof(Count));
+                    // Notify instance of having been destroyed
+                    (instance as IContainerLifecycleListener)?.OnDestroyed();
 
-                    scope2Instance.Remove(scope);
-                    instance2Scope.Remove(instance);
-
-                    this.RaisePropertyChanged(nameof(Count));
-
-                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, instance));
-
-                    // Notify listeners about removed dependency
+                    // Notify listeners about destroyed dependency
                     _onDestroyed?.Invoke(instance);
 
-                    // Notify parent's instance about removed dependency
-                    (dependee as IContainerRelations)?.OnRemoved(instance);
-
-                    // Notify observers about removed dependency
-                    foreach (var observer in observers)
-                    {
-                        observer.OnNext(null);
-                    }
-
-                    // Dispose scopes which will also dispose
+                    // Dispose scope which will also dispose
                     // the created instances
                     scope.Dispose();
-                    scopes.Remove(scope);
-
-                    return true;
                 }
+
+                return true;
             }
 
             return false;
@@ -372,17 +597,47 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public void Destroy()
         {
-            ((IContainerLifecycle)this).Destroy(false);
+            DestroyInternal(false);
         }
 
         void IContainerLifecycle.Destroy(bool dispose)
         {
+            DestroyInternal(dispose);
+        }
+
+        object? DestroyInternal(bool dispose)
+        {
+            if (!isContainerInitialized)
+            {
+                if (dispose)
+                {
+                    throw new InvalidOperationException($"Cannot dispose before container ({typeof(T).FullName}, {typeof(Template).FullName}) is initialized");
+                }
+
+                // There can't be any instances before container
+                // is initialized
+                return null;
+            }
+
+            if (Count == 0 || (isContainerSingleton && singletonInstance == null))
+            {
+                // Nothing to do if container is already empty
+                return null;
+            }
+
+            CheckReentrancy();
+
+            Dictionary<T, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)> oldInstances;
+            HashSet<IResolverContext> oldScopes;
+
+            object newGenerationKey;
+
             lock (this)
             {
                 if (disposed)
                 {
                     // Nothing to do
-                    return;
+                    return null;
                 }
 
                 // Prevent initialization of new dependencies
@@ -392,94 +647,151 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     disposed = true;
                 }
 
-                // Clear and dispose all dependencies first
-                foreach (var dependencies in scope2Dependencies.Values)
+                // Set new generation key so that instantiations
+                // started before the container is cleared here
+                // and haven't finished yet won't be added to
+                // the container and instead be destroyed
+                newGenerationKey = generationKey = new object();
+
+                oldInstances = new Dictionary<T, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)>();
+                foreach (var entry in scope2Instance)
                 {
+                    oldInstances.Add(entry.Value, (scope2Dependencies.TryGetValue(entry.Key, out var dependencies) ? dependencies : Enumerable.Empty<IContainerLifecycle>(), entry.Key));
+                }
+
+                oldScopes = new HashSet<IResolverContext>(scopes);
+
+                ++reentrancyCount;
+                try
+                {
+                    this.RaisePropertyChanging(nameof(Count));
+
+                    scope2Dependencies.Clear();
+                    scopes.Clear();
+                    scope2Instance.Clear();
+                    instance2Scope.Clear();
+
+                    this.RaisePropertyChanged(nameof(Count));
+
+                    CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                }
+                finally
+                {
+                    --reentrancyCount;
+                }
+            }
+
+            foreach (var entry in oldInstances)
+            {
+                var instance = entry.Key;
+                var dependencies = entry.Value.dependencies;
+                var scope = entry.Value.scope;
+
+                bool doDestroyLifecycle;
+                lock (this)
+                {
+                    // If the instance is in loadingInstances then
+                    // the destruction of the instance will be handled
+                    // by Instantiate
+                    doDestroyLifecycle = !loadingInstances.Remove(instance);
+                }
+
+                if (doDestroyLifecycle)
+                {
+                    lock (this)
+                    {
+                        if (singletonInstance == instance)
+                        {
+                            singletonInstance = null;
+
+                            ++reentrancyCount;
+                            try
+                            {
+                                // Notify observers about removed singleton
+                                singletonSubject.OnNext(null);
+                            }
+                            finally
+                            {
+                                --reentrancyCount;
+                            }
+                        }
+                    }
+
+                    // Notify parent's instance about removed dependency
+                    (dependee as IContainerDependencyListener)?.OnRemoved(instance);
+
+                    // Notify instance of being destroyed
+                    (instance as IContainerLifecycleListener)?.OnDestroying();
+
+                    // Destroy removed dependencies
                     foreach (var dependency in dependencies)
                     {
                         dependency.Destroy(true);
                     }
-                }
-                scope2Dependencies.Clear();
 
-                var oldInstances = new List<T>(scope2Instance.Values);
+                    // Notify instance of having been destroyed
+                    (instance as IContainerLifecycleListener)?.OnDestroyed();
 
-                this.RaisePropertyChanging(nameof(Count));
-
-                scope2Instance.Clear();
-                instance2Scope.Clear();
-
-                this.RaisePropertyChanged(nameof(Count));
-
-                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-
-                foreach (var instance in oldInstances)
-                {
-                    // Notify listeners about removed dependency
+                    // Notify listeners about destroyed dependency
                     _onDestroyed?.Invoke(instance);
 
-                    // Notify parent's instance about removed dependency
-                    (dependee as IContainerRelations)?.OnRemoved(instance);
-
-                    // Notify observers about removed dependency
-                    foreach (var observer in observers)
-                    {
-                        observer.OnNext(null);
-                    }
-                }
-
-                // Dispose scopes which will also dispose
-                // the created instances
-                foreach (var scope in scopes)
-                {
-                    scope?.Dispose();
-                }
-                scopes.Clear();
-
-                if (dispose)
-                {
-                    foreach (var observer in observers)
-                    {
-                        observer.OnCompleted();
-                    }
-                    observers.Clear();
-
-                    // Child container is not disposed because
-                    // disposal of services is already handled
-                    // by the scope, and disposing the child
-                    // container would cause unintentional
-                    // disposal of other services due to the
-                    // container's scopes being shared instead
-                    // of cloned
+                    // Dispose scope which will also dispose
+                    // the created instances
+                    scope.Dispose();
+                    oldScopes.Remove(scope);
                 }
             }
-        }
 
-        IDisposable IObservable<T?>.Subscribe(IObserver<T?> observer)
-        {
-            lock (this)
+            // Dispose scopes which will also dispose
+            // the created instances
+            foreach (var scope in oldScopes)
             {
-                CheckDisposed();
-                observers.Add(observer);
-                observer.OnNext(this.FirstOrDefault());
+                scope.Dispose();
             }
-            return Disposable.Create(() =>
+
+            if (dispose)
             {
                 lock (this)
                 {
-                    observers.Remove(observer);
+                    ++reentrancyCount;
+                    try
+                    {
+                        singletonSubject.OnCompleted();
+                    }
+                    finally
+                    {
+                        --reentrancyCount;
+                    }
+
+                    singletonSubject.Dispose();
                 }
-            });
+
+                // Child container is not disposed because
+                // disposal of services is already handled
+                // by the scope, and disposing the child
+                // container would cause unintentional
+                // disposal of other services due to the
+                // container's scopes being shared instead
+                // of cloned
+            }
+
+            return newGenerationKey;
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return instance2Scope.Keys.GetEnumerator();
+            foreach (var entry in instance2Scope)
+            {
+                yield return entry.Key;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)instance2Scope.Keys).GetEnumerator();
+            foreach (var entry in instance2Scope)
+            {
+                yield return entry.Key;
+            }
         }
 
         private class Registrar : IRegistrar<T, Template>

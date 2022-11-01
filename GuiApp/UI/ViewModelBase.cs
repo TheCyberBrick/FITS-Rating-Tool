@@ -16,21 +16,54 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia.Utilities;
 using FitsRatingTool.GuiApp.Services;
 using ReactiveUI;
+using System;
+using System.Collections.Generic;
 
 namespace FitsRatingTool.GuiApp.UI
 {
-    public class ViewModelBase : ReactiveObject, IActivatableViewModel, IContainerInstantiation, IContainerRelations
+    public class ViewModelBase : ReactiveObject, IActivatableViewModel, IContainerLifecycleListener, IContainerDependencyListener
     {
         public ViewModelActivator Activator { get; }
+
+        private readonly List<Action> cleanup = new();
+        private readonly Dictionary<(object, string, object), Action> subscribedEvents = new();
 
         public ViewModelBase()
         {
             Activator = new ViewModelActivator();
         }
 
-        void IContainerInstantiation.OnInstantiated()
+        protected void WhenDestroying(Action action)
+        {
+            cleanup.Add(action);
+        }
+
+        protected void SubscribeToEvent<TTarget, TEventArgs, TSubscriber>(TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
+            where TEventArgs : EventArgs
+            where TSubscriber : class
+            where TTarget : class
+        {
+            if (subscribedEvents.TryAdd((target, eventName, subscriber), () => WeakEventHandlerManager.Unsubscribe<TEventArgs, TSubscriber>(target, eventName, subscriber)))
+            {
+                WeakEventHandlerManager.Subscribe<TTarget, TEventArgs, TSubscriber>(target, eventName, subscriber);
+            }
+        }
+
+        protected void UnsubscribeFromEvent<TTarget, TEventArgs, TSubscriber>(TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
+            where TEventArgs : EventArgs
+            where TSubscriber : class
+            where TTarget : class
+        {
+            if (subscribedEvents.Remove((target, eventName, subscriber), out var action))
+            {
+                action.Invoke();
+            }
+        }
+
+        void IContainerLifecycleListener.OnInstantiated()
         {
             OnInstantiated();
         }
@@ -39,15 +72,60 @@ namespace FitsRatingTool.GuiApp.UI
         {
         }
 
-        void IContainerRelations.OnAdded(object dependency)
+        void IContainerLifecycleListener.OnDestroying()
+        {
+            foreach (var action in subscribedEvents.Values)
+            {
+                action.Invoke();
+            }
+            subscribedEvents.Clear();
+
+            foreach (var action in cleanup)
+            {
+                action.Invoke();
+            }
+            cleanup.Clear();
+
+            OnDestroying();
+        }
+
+        protected virtual void OnDestroying()
         {
         }
 
-        void IContainerRelations.OnRemoved(object dependency)
+        void IContainerLifecycleListener.OnDestroyed()
+        {
+            OnDestroyed();
+        }
+
+        protected virtual void OnDestroyed()
         {
         }
 
-        void IContainerRelations.OnAddedTo(object dependee)
+        void IContainerDependencyListener.OnAdded(object dependency)
+        {
+            OnAdded(dependency);
+        }
+
+        protected virtual void OnAdded(object dependency)
+        {
+        }
+
+        void IContainerDependencyListener.OnRemoved(object dependency)
+        {
+            OnRemoved(dependency);
+        }
+
+        protected virtual void OnRemoved(object dependency)
+        {
+        }
+
+        void IContainerDependencyListener.OnAddedTo(object dependee)
+        {
+            OnAddedTo(dependee);
+        }
+
+        protected virtual void OnAddedTo(object dependee)
         {
         }
     }

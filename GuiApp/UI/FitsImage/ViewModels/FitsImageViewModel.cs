@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -197,14 +198,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         public int ImageHeight => fitsImage.ImageHeight;
 
 
-        private IFitsImageViewerViewModel? _owner;
-        public IFitsImageViewerViewModel? Owner
-        {
-            get => _owner;
-            set => this.RaiseAndSetIfChanged(ref _owner, value);
-        }
-
-
         public ReactiveCommand<Unit, Unit> ResetStretchParameters { get; }
 
         public ReactiveCommand<Unit, IFitsImageStatisticsViewModel?> CalculateStatistics { get; }
@@ -231,6 +224,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         private ImageStretchParameters computedStretch;
 
+        private bool disposed;
 
 
         private readonly IFitsImageManager fitsImageManager;
@@ -396,7 +390,17 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             SetStretchParameters(stretch);
 
             FitsImages.Add(fitsImage);
-            fitsImageContainerRegistration = fitsImageManager.RegisterImageContainer(this);
+
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                lock (this)
+                {
+                    if (!disposed)
+                    {
+                        fitsImageContainerRegistration = fitsImageManager.RegisterImageContainer(this);
+                    }
+                }
+            });
         }
 
         private void SetStretchParameters(ImageStretchParameters p)
@@ -478,98 +482,147 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         public Bitmap? UpdateOrCreateBitmap(bool disposeBeforeSwap = true)
         {
             IsUpdating = true;
+
             try
             {
                 var oldBitmap = Bitmap;
+
                 if (disposeBeforeSwap || !fitsImage.IsImageDataValid)
                 {
                     Bitmap = null;
+
                     oldBitmap?.Dispose();
+
                     if (!fitsImage.IsImageDataValid)
                     {
                         return null;
                     }
                 }
+
                 FitsImageLoaderParameters loaderParameters = this.loaderParameters;
+
                 loaderParameters.stretchParameters = GetStretchParameters();
-                if (fitsImage.ProcessImage(false, loaderParameters, out var data) && data is NativeFitsImageData nativeData && fitsImage.IsImageValid)
+
+                var newBitmap = fitsImage.WithLock(() =>
                 {
-                    Bitmap = new Bitmap(Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Unpremul, nativeData.Ptr, new Avalonia.PixelSize(fitsImage.OutDim.Width, fitsImage.OutDim.Height), new Avalonia.Vector(96, 96), fitsImage.OutDim.Width * 4);
-                    IsImageValid = true;
+                    if (fitsImage.ProcessImage(false, loaderParameters, out var data) && data is NativeFitsImageData nativeData && fitsImage.IsImageValid)
+                    {
+                        return new Bitmap(Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Unpremul, nativeData.Ptr, new Avalonia.PixelSize(fitsImage.OutDim.Width, fitsImage.OutDim.Height), new Avalonia.Vector(96, 96), fitsImage.OutDim.Width * 4);
+                    }
+                    return null;
+                });
+
+                Bitmap = newBitmap;
+
+                try
+                {
+                    IsImageValid = fitsImage.IsImageValid && newBitmap != null;
+
+                    this.RaisePropertyChanged(nameof(HasImage));
+
+                    StretchedHistogram = null;
+                    StretchedHistogram = fitsImage.StretchedHistogram;
                 }
-                else
+                finally
                 {
-                    Bitmap = null;
-                    IsImageValid = false;
-                }
-                this.RaisePropertyChanged(nameof(HasImage));
-                StretchedHistogram = null;
-                StretchedHistogram = fitsImage.StretchedHistogram;
-                if (!disposeBeforeSwap)
-                {
-                    oldBitmap?.Dispose();
+                    if (!disposeBeforeSwap)
+                    {
+                        oldBitmap?.Dispose();
+                    }
                 }
             }
             finally
             {
                 IsUpdating = false;
             }
+
             return Bitmap;
         }
 
         public async Task<Bitmap?> UpdateOrCreateBitmapAsync(bool disposeBeforeSwap = true, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+
             IsUpdating = true;
+
             try
             {
                 var oldBitmap = Bitmap;
+
                 if (disposeBeforeSwap || !fitsImage.IsImageDataValid)
                 {
                     Bitmap = null;
+
                     oldBitmap?.Dispose();
+
                     if (!fitsImage.IsImageDataValid)
                     {
                         return null;
                     }
                 }
+
                 FitsImageLoaderParameters loaderParameters = this.loaderParameters;
+
                 loaderParameters.stretchParameters = GetStretchParameters();
-                var task = Task.Run(() =>
+
+                var newBitmap = await Task.Run(() =>
                 {
                     ct.ThrowIfCancellationRequested();
-                    if (fitsImage.ProcessImage(false, loaderParameters, out var data))
+
+                    return fitsImage.WithLock(() =>
                     {
                         ct.ThrowIfCancellationRequested();
-                        if (data is NativeFitsImageData nativeData && fitsImage.IsImageValid)
+
+                        if (fitsImage.ProcessImage(false, loaderParameters, out var data))
                         {
-                            return new Bitmap(Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Unpremul, nativeData.Ptr, new Avalonia.PixelSize(fitsImage.OutDim.Width, fitsImage.OutDim.Height), new Avalonia.Vector(96, 96), fitsImage.OutDim.Width * 4);
+                            ct.ThrowIfCancellationRequested();
+
+                            if (data is NativeFitsImageData nativeData && fitsImage.IsImageValid)
+                            {
+                                return new Bitmap(Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Unpremul, nativeData.Ptr, new Avalonia.PixelSize(fitsImage.OutDim.Width, fitsImage.OutDim.Height), new Avalonia.Vector(96, 96), fitsImage.OutDim.Width * 4);
+                            }
                         }
-                    }
-                    ct.ThrowIfCancellationRequested();
-                    return null;
+
+                        return null;
+                    });
                 });
-                Bitmap = await task;
-                IsImageValid = fitsImage.IsImageValid && Bitmap != null;
-                this.RaisePropertyChanged(nameof(HasImage));
-                StretchedHistogram = null;
-                StretchedHistogram = fitsImage.StretchedHistogram;
-                if (!disposeBeforeSwap)
+
+                Bitmap = newBitmap;
+
+                try
                 {
-                    oldBitmap?.Dispose();
+                    IsImageValid = fitsImage.IsImageValid && newBitmap != null;
+
+                    this.RaisePropertyChanged(nameof(HasImage));
+
+                    StretchedHistogram = null;
+                    StretchedHistogram = fitsImage.StretchedHistogram;
+                }
+                finally
+                {
+                    if (!disposeBeforeSwap)
+                    {
+                        oldBitmap?.Dispose();
+                    }
                 }
             }
             finally
             {
                 IsUpdating = false;
             }
+
             return Bitmap;
         }
 
         public void Dispose()
         {
-            fitsImageContainerRegistration?.Dispose();
-            fitsImageContainerRegistration = null;
+            lock (this)
+            {
+                disposed = true;
+
+                fitsImageContainerRegistration?.Dispose();
+                fitsImageContainerRegistration = null;
+            }
 
             IsImageValid = false;
 

@@ -17,7 +17,6 @@
 */
 
 using Avalonia.Collections;
-using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 using Microsoft.VisualStudio.Threading;
 using ReactiveUI;
@@ -710,7 +709,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 return null;
             });
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FitsImageViewerViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FitsImageViewerViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
         }
 
         private void SetShownPhotometry(IEnumerable<IFitsImagePhotometryViewModel> photometry)
@@ -889,7 +888,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                             newImage = await Task.Run(() =>
                             {
                                 var i = fitsImageContainer.Instantiate(new IFitsImageViewModel.OfFile(file, MaxInputSize, MaxWidth, MaxHeight));
-                                i.Owner = this;
                                 return i;
                             });
 
@@ -1064,8 +1062,8 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         );
 
                 // Adding the image as disposable here even if it may not have
-                // been loaded by the viewer, because the viewer checks the owner
-                // before the actual disposal
+                // been loaded by the viewer, because the container will only
+                // dispose the image if the container created it
                 await AddImageDisposableAsync(image, fitsImageContainer.DestroyWithDisposable(image));
             }
             else
@@ -1218,16 +1216,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             return defaultVal;
         }
 
-        private bool ShouldDispose(IDisposable disposable)
-        {
-            if (disposable is IFitsImageViewModel image)
-            {
-                // Only dispose an image if it is owned by this viewer
-                return image.Owner == this;
-            }
-            return true;
-        }
-
         private async Task<bool> AddImageDisposableAsync(IFitsImageViewModel image, IDisposable disposable)
         {
             bool result = await QueueImageTaskAsync(image, (i, ct) =>
@@ -1245,10 +1233,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             }, false);
             if (!result)
             {
-                if (ShouldDispose(disposable))
-                {
-                    disposable.Dispose();
-                }
+                disposable.Dispose();
             }
             return result;
         }
@@ -1270,10 +1255,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 {
                     foreach (var disposable in disposables)
                     {
-                        if (ShouldDispose(disposable))
-                        {
-                            disposable.Dispose();
-                        }
+                        disposable.Dispose();
                     }
                 }
                 imageDisposables.Remove(image);
@@ -1303,10 +1285,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                 {
                     foreach (var disposable in disposables)
                     {
-                        if (ShouldDispose(disposable))
-                        {
-                            disposable.Dispose();
-                        }
+                        disposable.Dispose();
                     }
                 }
             }

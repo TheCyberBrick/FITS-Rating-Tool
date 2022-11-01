@@ -71,7 +71,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                 }
             }
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FileTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, FileTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
             RemoveRecords = ReactiveCommand.CreateFromTask<IEnumerable>(async enumerable =>
             {

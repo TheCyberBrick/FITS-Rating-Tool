@@ -60,6 +60,10 @@ namespace FitsRatingTool.Common.Models.FitsImage
 
         bool ProcessImage(bool computeStretch, FitsImageLoaderParameters parameters, out IFitsImageData? data);
 
+        void WithLock(Action action);
+
+        T WithLock<T>(Func<T> func);
+
         IDisposable Ref();
     }
 }

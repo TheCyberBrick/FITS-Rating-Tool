@@ -133,7 +133,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 }
             });
 
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
         }
 
         private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs e)

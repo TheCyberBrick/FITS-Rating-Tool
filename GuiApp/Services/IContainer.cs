@@ -67,12 +67,16 @@ namespace FitsRatingTool.GuiApp.Services
     {
     }
 
-    public interface IContainerInstantiation
+    public interface IContainerLifecycleListener
     {
         void OnInstantiated();
+
+        void OnDestroying();
+
+        void OnDestroyed();
     }
 
-    public interface IContainerRelations
+    public interface IContainerDependencyListener
     {
         void OnAdded(object dependency);
 

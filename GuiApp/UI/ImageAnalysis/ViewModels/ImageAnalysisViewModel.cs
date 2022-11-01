@@ -239,7 +239,7 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
                 Steps = DEFAULT_STEPS;
             });
 
-            WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, ImageAnalysisViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, ImageAnalysisViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
 
             UpdateData();
         }

@@ -49,10 +49,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
   <Border Background="#FF383838">
     <Grid RowDefinitions="Auto,*" Margin="-1">
-      <ComboBox Grid.Row="0"
-                Items="{Binding Selector.Files}"
-                SelectedItem="{Binding Selector.SelectedFile}"
-                HorizontalAlignment="Stretch"/>
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <Panel Grid.Column="0"
+               IsEnabled="{Binding !#ShowLatestImageCheckBox.IsChecked}">
+          <ComboBox Items="{Binding Selector.Files}"
+                    SelectedItem="{Binding Selector.SelectedFile}"
+                    HorizontalAlignment="Stretch"/>
+        </Panel>
+        <CheckBox Grid.Column="1"
+                  Name="ShowLatestImageCheckBox"
+                  Content="Show current image"
+                  IsChecked="{Binding Selector.SelectCurrentFile}"
+                  VerticalAlignment="Center"
+                  Margin="4 1 6 0"/>
+      </Grid>
 
       <Grid Grid.Row="1"
             ColumnDefinitions="*,Auto">

@@ -35,8 +35,6 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage
 
         public record OfImage(IFitsImage Image);
 
-        IFitsImageViewerViewModel? Owner { get; set; }
-
         bool IsAutoLoaded { get; set; }
 
         #region +++ Stretch +++
