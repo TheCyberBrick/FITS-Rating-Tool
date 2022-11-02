@@ -17,7 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Exporters;
 using FitsRatingTool.GuiApp.UI.Progress;
 using ReactiveUI;
 using System;
@@ -66,7 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
     public interface IEvaluationExportProgressViewModel : IProgressViewModel<ExportResult, ExportResult, EvaluationExportProgress>
     {
-        public record OfExporter(string ExporterId, IExporterConfiguratorManager.IExporterConfiguratorViewModel ExporterConfigurator);
+        public record OfExporter(string ExporterId, IExporterConfiguratorViewModel ExporterConfigurator);
 
         int NumberOfFiles { get; }
 

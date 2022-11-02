@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Exporters;
 using System;
 using System.Collections.Generic;
 
@@ -32,13 +33,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
             public string Name { get; }
 
-            public IExporterConfiguratorManager.FactoryInfo FactoryInfo { get; }
+            public IDelegatedFactory<IExporterConfiguratorViewModel> Factory { get; }
 
-            public ExporterConfiguratorFactory(string id, IExporterConfiguratorManager.FactoryInfo factoryInfo)
+            public ExporterConfiguratorFactory(string id, string name, IDelegatedFactory<IExporterConfiguratorViewModel> factory)
             {
                 Id = id;
-                Name = factoryInfo.Name;
-                FactoryInfo = factoryInfo;
+                Name = name;
+                Factory = factory;
             }
         }
 
@@ -46,9 +47,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
         ExporterConfiguratorFactory? SelectedExporterConfiguratorFactory { get; set; }
 
-        IExporterConfiguratorManager.IExporterConfiguratorViewModel? ExporterConfigurator { get; }
+        IExporterConfiguratorViewModel? ExporterConfigurator { get; }
 
-        void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? factory);
+        void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorViewModel>? factory);
 
 
         event EventHandler ConfigurationChanged;

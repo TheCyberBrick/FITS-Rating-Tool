@@ -32,6 +32,7 @@ using FitsRatingTool.GuiApp.UI.FitsImage;
 using System.Reactive.Linq;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.GuiApp.UI.Exporters;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -96,7 +97,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly List<CancellationTokenSource> loadingCts = new();
 
         private readonly string exporterId;
-        private readonly IExporterConfiguratorManager.IExporterConfiguratorViewModel exporterConfigurator;
+        private readonly IExporterConfiguratorViewModel exporterConfigurator;
 
         private readonly IFitsImageManager fitsImageManager;
         private readonly IEvaluationManager evaluationManager;
@@ -133,7 +134,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
                     using var ctx = new Context();
 
-                    var exporter = exporterConfigurator.CreateExporter(ctx);
+                    using var exporter = exporterConfigurator.CreateExporter(ctx);
 
                     var confirmationMessage = exporter.ConfirmationMessage;
                     if (confirmationMessage != null)
@@ -162,102 +163,95 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                         }
                     }
 
-                    try
+                    var grouping = evaluationManager.CurrentGrouping;
+                    var evaluationFormula = evaluationManager.CurrentFormula;
+
+                    if (!evaluationService.Build(evaluationFormula ?? "", out var evaluator, out var formulaErrorMessage) || evaluator == null)
                     {
-                        var grouping = evaluationManager.CurrentGrouping;
-                        var evaluationFormula = evaluationManager.CurrentFormula;
+                        return CreateCancellation(new ExportResult("Invalid evaluation formula"));
+                    }
 
-                        if (!evaluationService.Build(evaluationFormula ?? "", out var evaluator, out var formulaErrorMessage) || evaluator == null)
-                        {
-                            return CreateCancellation(new ExportResult("Invalid evaluation formula"));
-                        }
+                    var groups = new Dictionary<string, List<IFitsImageStatisticsViewModel>>();
+                    var files = new Dictionary<IFitsImageStatisticsViewModel, string>();
 
-                        var groups = new Dictionary<string, List<IFitsImageStatisticsViewModel>>();
-                        var files = new Dictionary<IFitsImageStatisticsViewModel, string>();
+                    int numFiles = fitsImageManager.Files.Count;
 
-                        int numFiles = fitsImageManager.Files.Count;
+                    int numToExport = 0;
 
-                        int numToExport = 0;
-
-                        foreach (var file in fitsImageManager.Files)
-                        {
-                            if (IsCancelling)
-                            {
-                                break;
-                            }
-
-                            var record = fitsImageManager.Get(file);
-                            if (record != null)
-                            {
-                                var stats = record.Statistics;
-                                var metadata = record.Metadata;
-                                if (stats != null && metadata != null)
-                                {
-                                    var groupMatch = grouping != null ? grouping.GetGroupMatch(metadata) : null;
-                                    var groupKey = groupMatch != null ? groupMatch.GroupKey : "All";
-
-                                    if (!groups.TryGetValue(groupKey, out var group))
-                                    {
-                                        groups.Add(groupKey, group = new());
-                                    }
-
-                                    group.Add(stats);
-                                    files.Add(stats, file);
-
-                                    ++numToExport;
-                                }
-                            }
-                        }
-
-                        int numExported = 0;
-
-                        foreach (var pair in groups)
-                        {
-                            if (IsCancelling)
-                            {
-                                break;
-                            }
-
-                            var groupKey = pair.Key;
-                            var statistics = pair.Value;
-
-                            try
-                            {
-                                await evaluator.EvaluateAsync(statistics, 8, async (stats, variableValues, value, ct) =>
-                                {
-                                    var file = files[(IFitsImageStatisticsViewModel)stats];
-
-                                    ReportProgress(new EvaluationExportProgress
-                                    {
-                                        numberOfFiles = numToExport,
-                                        currentFile = numExported,
-                                        currentFilePath = file
-                                    });
-
-                                    await exporter.ExportAsync(ctx, file, groupKey, variableValues, value, ct);
-                                    await exporter.FlushAsync(ct);
-
-                                    Interlocked.Increment(ref numExported);
-                                }, null, ct);
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                // Expected
-                            }
-                        }
-
+                    foreach (var file in fitsImageManager.Files)
+                    {
                         if (IsCancelling)
                         {
-                            return CreateCancellation(new ExportResult(numFiles, numExported));
+                            break;
                         }
-                        else
+
+                        var record = fitsImageManager.Get(file);
+                        if (record != null)
                         {
-                            return CreateCompletion(new ExportResult(numFiles, numExported));
+                            var stats = record.Statistics;
+                            var metadata = record.Metadata;
+                            if (stats != null && metadata != null)
+                            {
+                                var groupMatch = grouping != null ? grouping.GetGroupMatch(metadata) : null;
+                                var groupKey = groupMatch != null ? groupMatch.GroupKey : "All";
+
+                                if (!groups.TryGetValue(groupKey, out var group))
+                                {
+                                    groups.Add(groupKey, group = new());
+                                }
+
+                                group.Add(stats);
+                                files.Add(stats, file);
+
+                                ++numToExport;
+                            }
                         }
                     }
-                    finally
+
+                    int numExported = 0;
+
+                    foreach (var pair in groups)
                     {
-                        exporter.Close();
+                        if (IsCancelling)
+                        {
+                            break;
+                        }
+
+                        var groupKey = pair.Key;
+                        var statistics = pair.Value;
+
+                        try
+                        {
+                            await evaluator.EvaluateAsync(statistics, 8, async (stats, variableValues, value, ct) =>
+                            {
+                                var file = files[(IFitsImageStatisticsViewModel)stats];
+
+                                ReportProgress(new EvaluationExportProgress
+                                {
+                                    numberOfFiles = numToExport,
+                                    currentFile = numExported,
+                                    currentFilePath = file
+                                });
+
+                                await exporter.ExportAsync(ctx, file, groupKey, variableValues, value, ct);
+                                await exporter.FlushAsync(ct);
+
+                                Interlocked.Increment(ref numExported);
+                            }, null, ct);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // Expected
+                        }
+                    }
+
+                    if (IsCancelling)
+                    {
+                        return CreateCancellation(new ExportResult(numFiles, numExported));
+                    }
+                    else
+                    {
+                        return CreateCompletion(new ExportResult(numFiles, numExported));
                     }
                 }
                 finally

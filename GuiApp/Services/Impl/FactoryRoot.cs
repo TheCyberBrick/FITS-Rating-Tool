@@ -23,7 +23,7 @@ using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    public class FactoryBuilder<T, Template> : IFactoryBuilder<T, Template>
+    public class FactoryRoot<T, Template> : IFactoryRoot<T, Template>
         where T : class
     {
         private abstract class GenericFactory : IGenericFactory<T, Template>, IDisposable
@@ -170,10 +170,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             private readonly List<T> instances = new();
 
-            private readonly FactoryBuilder<T, Template> factory;
+            private readonly FactoryRoot<T, Template> factory;
             private readonly Action<T> instanceDestructor;
 
-            public DelegatedFactoryDisposer(FactoryBuilder<T, Template> factory, Action<T> instanceDestructor)
+            public DelegatedFactoryDisposer(FactoryRoot<T, Template> factory, Action<T> instanceDestructor)
             {
                 this.instanceDestructor = instanceDestructor;
                 this.factory = factory;

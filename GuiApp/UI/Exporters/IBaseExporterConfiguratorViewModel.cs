@@ -19,11 +19,10 @@
 using Avalonia.Collections;
 using ReactiveUI;
 using System.Reactive;
-using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters
 {
-    public interface IBaseExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
+    public interface IBaseExporterConfiguratorViewModel : IExporterConfiguratorViewModel
     {
         bool UsesPath { get; }
 

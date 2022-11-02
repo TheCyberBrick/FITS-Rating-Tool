@@ -21,15 +21,21 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.Services.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
 using System.ComponentModel.Composition;
 using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
+    public class FileDeleterExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of>
+    {
+        public FileDeleterExporterConfiguratorRegistration() : base("file_deleter", "File Deleter", new IFileDeleterExporterConfiguratorViewModel.Of()) { }
+    }
+
     [Export(typeof(IFileDeleterExporterConfiguratorViewModel)), TransientReuse]
     public class FileDeleterExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileDeleterExporterConfiguratorViewModel
     {

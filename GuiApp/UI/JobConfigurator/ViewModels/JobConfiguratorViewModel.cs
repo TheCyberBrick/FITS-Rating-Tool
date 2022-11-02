@@ -38,6 +38,7 @@ using System.Reactive.Concurrency;
 using System.Text;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.GuiApp.UI.Exporters;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
@@ -535,7 +536,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             if (GroupingConfiguration.TryParseGroupingKeys(groupingManager, config.GroupingKeys ?? new List<string>(), out var groupingConfiguration) && groupingConfiguration != null)
             {
                 IEvaluationExporterConfiguratorViewModel.ExporterConfiguratorFactory? exporterFactory = null;
-                IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? exporterDelegatedFactory = null;
+                IDelegatedFactory<IExporterConfiguratorViewModel>? exporterDelegatedFactory = null;
 
                 if (config.Exporters != null)
                 {
@@ -551,7 +552,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                         if (factory != null)
                         {
                             exporterFactory = factory;
-                            exporterDelegatedFactory = factory.FactoryInfo.Factory;
+                            exporterDelegatedFactory = factory.Factory;
 
                             if (!exporterDelegatedFactory.Do(exporterConfigurator => exporterConfigurator.TryLoadConfig(exporter.Config)))
                             {

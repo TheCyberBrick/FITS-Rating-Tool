@@ -18,6 +18,7 @@
 
 using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Exporters;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
 
-        public IReadOnlyList<ExporterConfiguratorFactory> ExporterConfiguratorFactories { get; }
+        public IReadOnlyList<ExporterConfiguratorFactory> ExporterConfiguratorFactories { get; private set; } = null!;
 
         private ExporterConfiguratorFactory? _exporterConfiguratorFactory;
         public ExporterConfiguratorFactory? SelectedExporterConfiguratorFactory
@@ -46,8 +47,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
         private IDisposable? _exporterConfiguratorDisposable;
-        private IExporterConfiguratorManager.IExporterConfiguratorViewModel? _exporterConfigurator;
-        public IExporterConfiguratorManager.IExporterConfiguratorViewModel? ExporterConfigurator
+        private IExporterConfiguratorViewModel? _exporterConfigurator;
+        public IExporterConfiguratorViewModel? ExporterConfigurator
         {
             get => _exporterConfigurator;
             private set => this.RaiseAndSetIfChanged(ref _exporterConfigurator, value);
@@ -62,28 +63,36 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
 
-        private EvaluationExporterConfiguratorViewModel(IEvaluationExporterConfiguratorViewModel.Of args, IExporterConfiguratorManager exporterConfiguratorManager)
+        private EvaluationExporterConfiguratorViewModel(IEvaluationExporterConfiguratorViewModel.Of args,
+            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
         {
-            var exporterConfiguratorFactories = new List<ExporterConfiguratorFactory>();
-            foreach (var pair in exporterConfiguratorManager.Factories)
+            exporterConfiguratorRegistryContainer.ToSingleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
             {
-                exporterConfiguratorFactories.Add(new ExporterConfiguratorFactory(pair.Key, pair.Value));
-            }
-            ExporterConfiguratorFactories = exporterConfiguratorFactories;
+                var exporterConfiguratorFactories = new List<ExporterConfiguratorFactory>();
+
+                foreach (var id in registry.Ids)
+                {
+                    var registration = registry.GetRegistration(id);
+                    var factory = registry.GetFactory(id);
+
+                    if (registration != null && factory != null)
+                    {
+                        exporterConfiguratorFactories.Add(new ExporterConfiguratorFactory(id, registration.Name, factory));
+                    }
+                }
+
+                ExporterConfiguratorFactories = exporterConfiguratorFactories;
+            });
 
             this.WhenAnyValue(x => x.SelectedExporterConfiguratorFactory)
                 .Skip(1)
-                .Subscribe(x =>
-                {
-                    var newConfiguratorFactory = x != null ? x.FactoryInfo.Factory : null;
-                    ReplaceExporterConfigurator(newConfiguratorFactory);
-                });
+                .Subscribe(x => ReplaceExporterConfigurator(x?.Factory));
         }
 
-        private void ReplaceExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? factory)
+        private void ReplaceExporterConfigurator(IDelegatedFactory<IExporterConfiguratorViewModel>? factory)
         {
             IDisposable? newConfiguratorDisposable = null;
-            IExporterConfiguratorManager.IExporterConfiguratorViewModel? newConfigurator = factory != null ? factory.Instantiate(out newConfiguratorDisposable) : null;
+            IExporterConfiguratorViewModel? newConfigurator = factory != null ? factory.Instantiate(out newConfiguratorDisposable) : null;
 
             var oldConfigurator = ExporterConfigurator;
 
@@ -96,7 +105,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     return;
                 }
 
-                UnsubscribeFromEvent<IExporterConfiguratorManager.IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
+                UnsubscribeFromEvent<IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
             }
 
             var oldExporterConfiguratorDisposable = _exporterConfiguratorDisposable;
@@ -108,7 +117,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             if (newConfigurator != null)
             {
-                SubscribeToEvent<IExporterConfiguratorManager.IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
+                SubscribeToEvent<IExporterConfiguratorViewModel, EventArgs, EvaluationExporterConfiguratorViewModel>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnExporterConfigurationChanged);
             }
 
             _configurationChanged?.Invoke(this, new EventArgs());
@@ -122,7 +131,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        public void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorManager.IExporterConfiguratorViewModel>? delegatedFactory)
+        public void SetExporterConfigurator(IDelegatedFactory<IExporterConfiguratorViewModel>? delegatedFactory)
         {
             ReplaceExporterConfigurator(delegatedFactory); // Set configurator first so it keeps its loaded data
 
@@ -130,7 +139,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 foreach (var factory in ExporterConfiguratorFactories)
                 {
-                    if (factory.FactoryInfo.Factory.InstanceType == delegatedFactory.InstanceType)
+                    if (factory.Factory.InstanceType == delegatedFactory.InstanceType)
                     {
                         SelectedExporterConfiguratorFactory = factory;
                         return;

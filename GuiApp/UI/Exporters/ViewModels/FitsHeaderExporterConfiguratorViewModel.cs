@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.Services.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
@@ -29,6 +30,12 @@ using System.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
+    public class FitsHeaderExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of>
+    {
+        public FitsHeaderExporterConfiguratorRegistration() : base("fits_header", "FITS Header", new IFitsHeaderExporterConfiguratorViewModel.Of()) { }
+    }
+
     [Export(typeof(IFitsHeaderExporterConfiguratorViewModel)), TransientReuse]
     public class FitsHeaderExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel
     {

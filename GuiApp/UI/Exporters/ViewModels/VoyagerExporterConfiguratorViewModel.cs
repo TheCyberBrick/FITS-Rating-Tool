@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.Services.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
@@ -31,6 +32,12 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
+    public class VoyagerExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of>
+    {
+        public VoyagerExporterConfiguratorRegistration() : base("voyager", "Voyager RoboTarget", new IVoyagerExporterConfiguratorViewModel.Of()) { }
+    }
+
     [Export(typeof(IVoyagerExporterConfiguratorViewModel)), TransientReuse]
     public class VoyagerExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<int>, IVoyagerExporterConfiguratorViewModel
     {

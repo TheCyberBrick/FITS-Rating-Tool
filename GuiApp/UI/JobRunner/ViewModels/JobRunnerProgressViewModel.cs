@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Utils;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Exporters;
 using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using ReactiveUI;
@@ -96,35 +97,46 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
         private readonly IStandaloneEvaluationService standaloneEvaluationService;
 
-        private JobRunnerProgressViewModel(IJobRunnerProgressViewModel.OfJob args, IStandaloneEvaluationService standaloneEvaluationService, IExporterConfiguratorManager exporterConfiguratorManager)
+        private JobRunnerProgressViewModel(
+            IJobRunnerProgressViewModel.OfJob args,
+            IStandaloneEvaluationService standaloneEvaluationService,
+            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
         {
             jobConfigFile = args.JobConfigFile;
             path = args.Path;
             this.standaloneEvaluationService = standaloneEvaluationService;
 
-            foreach (var pair in exporterConfiguratorManager.Factories)
+            exporterConfiguratorRegistryContainer.ToSingleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
             {
-                standaloneEvaluationService.RegisterExporter(pair.Key, (ctx, config) =>
+                foreach (var id in registry.Ids)
                 {
-                    var exporter = pair.Value.Factory.Do(configurator =>
-                    {
-                        if (configurator.TryLoadConfig(config))
-                        {
-                            return configurator.CreateExporter(ctx);
-                        }
-                        return null;
-                    });
+                    var factory = registry.GetFactory(id);
 
-                    if (exporter != null)
+                    if (factory != null)
                     {
-                        return exporter;
+                        standaloneEvaluationService.RegisterExporter(id, (ctx, config) =>
+                        {
+                            var exporter = factory.Do(configurator =>
+                            {
+                                if (configurator.TryLoadConfig(config))
+                                {
+                                    return configurator.CreateExporter(ctx);
+                                }
+                                return null;
+                            });
+
+                            if (exporter != null)
+                            {
+                                return exporter;
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException("Failed loading exporter config");
+                            }
+                        });
                     }
-                    else
-                    {
-                        throw new InvalidOperationException("Failed loading exporter config");
-                    }
-                });
-            }
+                }
+            });
         }
 
 

@@ -22,27 +22,27 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public static class IFactoryBuilderExtensions
+    public static class IFactoryRootExtensions
     {
-        public static ITemplatedFactory<T, Template> Templated<T, Template>(this IFactoryBuilder<T, Template> factory, Template template, bool isSingleUse = true)
+        public static ITemplatedFactory<T, Template> Templated<T, Template>(this IFactoryRoot<T, Template> factory, Template template, bool isSingleUse = true)
             where T : class
         {
             return factory.Templated(() => template, isSingleUse);
         }
 
-        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryBuilder<T, Template> factory, Template template, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool isSingleUse = true)
+        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryRoot<T, Template> factory, Template template, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool isSingleUse = true)
             where T : class
         {
             return factory.Delegated(() => template, instanceConstructor, instanceDestructor, isSingleUse);
         }
 
-        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryBuilder<T, Template> factory, Func<Template?> templateConstructor, IContainer<T, Template> container, bool isSingleUse = true)
+        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryRoot<T, Template> factory, Func<Template?> templateConstructor, IContainer<T, Template> container, bool isSingleUse = true)
             where T : class
         {
             return factory.Delegated(templateConstructor, container.Instantiate, instance => container.Destroy(instance), isSingleUse);
         }
 
-        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryBuilder<T, Template> factory, Template template, IContainer<T, Template> container, bool isSingleUse = true)
+        public static IDelegatedFactory<T, Template> Delegated<T, Template>(this IFactoryRoot<T, Template> factory, Template template, IContainer<T, Template> container, bool isSingleUse = true)
             where T : class
         {
             return factory.Delegated(() => template, container, isSingleUse);
@@ -60,115 +60,95 @@ namespace FitsRatingTool.GuiApp.Services
             return factory.Instantiate(container.Instantiate, instance => container.Destroy(instance), out disposable);
         }
 
+        public static IDisposable Instantiate<T, Template>(this IGenericFactory<T, Template> factory, IContainer<T, Template> container, out T instance)
+            where T : class
+        {
+            return factory.Instantiate(container.Instantiate, instance => container.Destroy(instance), out instance);
+        }
+
+        public static IDisposable Instantiate<T>(this IDelegatedFactory<T> factory, out T instance)
+            where T : class
+        {
+            instance = factory.Instantiate(out var disposable);
+            return disposable;
+        }
+
+        public static IDisposable Instantiate<T, Template>(this IGenericFactory<T, Template> factory, Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out T instance)
+            where T : class
+        {
+            instance = factory.Instantiate(instanceConstructor, instanceDestructor, out var disposable);
+            return disposable;
+        }
+
         public static void Do<T, Template>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Action<T> action)
             where T : class
         {
-            var instance = factory.Instantiate(temporaryContainer, out var disposable);
-            try
+            using (factory.Instantiate(temporaryContainer, out T instance))
             {
                 action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static R Do<T, Template, R>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, R> action)
             where T : class
         {
-            var instance = factory.Instantiate(temporaryContainer, out var disposable);
-            try
+            using (factory.Instantiate(temporaryContainer, out T instance))
             {
                 return action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static async Task DoAsync<T, Template>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, Task> action)
             where T : class
         {
-            var instance = factory.Instantiate(temporaryContainer, out var disposable);
-            try
+            using (factory.Instantiate(temporaryContainer, out T instance))
             {
                 await action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static async Task<R> DoAsync<T, Template, R>(this IGenericFactory<T, Template> factory, IContainer<T, Template> temporaryContainer, Func<T, Task<R>> action)
             where T : class
         {
-            var instance = factory.Instantiate(temporaryContainer, out var disposable);
-            try
+            using (factory.Instantiate(temporaryContainer, out T instance))
             {
                 return await action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static void Do<T>(this IDelegatedFactory<T> factory, Action<T> action)
             where T : class
         {
-            var instance = factory.Instantiate(out var disposable);
-            try
+            using (factory.Instantiate(out T instance))
             {
                 action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static R Do<T, R>(this IDelegatedFactory<T> factory, Func<T, R> action)
             where T : class
         {
-            var instance = factory.Instantiate(out var disposable);
-            try
+            using (factory.Instantiate(out T instance))
             {
                 return action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static async Task DoAsync<T>(this IDelegatedFactory<T> factory, Func<T, Task> action)
             where T : class
         {
-            var instance = factory.Instantiate(out var disposable);
-            try
+            using (factory.Instantiate(out T instance))
             {
                 await action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
 
         public static async Task<R> DoAsync<T, R>(this IDelegatedFactory<T> factory, Func<T, Task<R>> action)
             where T : class
         {
-            var instance = factory.Instantiate(out var disposable);
-            try
+            using (factory.Instantiate(out T instance))
             {
                 return await action.Invoke(instance);
-            }
-            finally
-            {
-                disposable.Dispose();
             }
         }
     }

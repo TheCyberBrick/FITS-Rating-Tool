@@ -235,7 +235,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageViewModel(string file,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryRoot<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
         {
             this.fitsImageManager = fitsImageManager;
 
@@ -328,7 +328,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private FitsImageViewModel(IFitsImageViewModel.OfImage args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryRoot<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
             : this(args.Image.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = args.Image;
@@ -351,7 +351,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             IFitsImageManager fitsImageManager,
             IAppConfig appConfig,
             IContainer<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressContainer,
-            IFactoryBuilder<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
+            IFactoryRoot<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc> fitsImageStatisticsProgressFactory)
             : this(args.File, fitsImageManager, fitsImageStatisticsProgressContainer, fitsImageStatisticsProgressFactory)
         {
             fitsImage = imageLoader.LoadFit(args.File, args.MaxInputSize ?? appConfig.MaxImageSize, args.MaxWidth ?? appConfig.MaxImageWidth, args.MaxHeight ?? appConfig.MaxImageHeight)!;

@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.Services.Impl;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Composition;
@@ -28,6 +29,12 @@ using System.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
+    public class CSVExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of>
+    {
+        public CSVExporterConfiguratorRegistration() : base("csv", "CSV", new ICSVExporterConfiguratorViewModel.Of()) { }
+    }
+
     [Export(typeof(ICSVExporterConfiguratorViewModel)), TransientReuse]
     public class CSVExporterConfiguratorViewModel : BaseExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel
     {

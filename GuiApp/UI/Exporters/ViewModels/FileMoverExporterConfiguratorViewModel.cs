@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.Services.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
@@ -31,6 +32,12 @@ using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
+    [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
+    public class FileMoverExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of>
+    {
+        public FileMoverExporterConfiguratorRegistration() : base("file_mover", "File Mover", new IFileMoverExporterConfiguratorViewModel.Of()) { }
+    }
+
     [Export(typeof(IFileMoverExporterConfiguratorViewModel)), TransientReuse]
     public class FileMoverExporterConfiguratorViewModel : RatingThresholdExporterConfiguratorViewModel<float>, IFileMoverExporterConfiguratorViewModel
     {

@@ -18,11 +18,10 @@
 
 using ReactiveUI;
 using System.Reactive;
-using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters
 {
-    public interface IVoyagerExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
+    public interface IVoyagerExporterConfiguratorViewModel : IExporterConfiguratorViewModel
     {
         public record Of();
 

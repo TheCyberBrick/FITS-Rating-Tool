@@ -90,7 +90,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         private JobRunnerViewModel(IJobRunnerViewModel.Of args,
             IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressContainer,
             IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressTempContainer,
-            IFactoryBuilder<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
+            IFactoryRoot<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
         {
             jobRunnerProgressContainer.ToSingletonWithObservable().Subscribe(x => Progress = x);
 

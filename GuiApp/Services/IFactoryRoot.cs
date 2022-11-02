@@ -20,7 +20,7 @@ using System;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public interface IFactoryBuilder<T, Template> : IDisposable
+    public interface IFactoryRoot<T, Template> : IDisposable
         where T : class
     {
         /// <summary>
@@ -35,8 +35,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         /// <summary>
         /// Creates a factory whose instance construction and destruction is delegated to the caller of this method.
-        /// The created instances' lifetime is at most this builder's lifetime. When the builder is disposed, all the factories it created are disposed and all the
-        /// instances it created are deconstructed. Hence, the caller of this method is responsible for the deconstruction of the created instances by disposing this factory builder.
+        /// The created instances' lifetime is at most this object's lifetime. When this factory root is disposed, all the factories it created are disposed and all the
+        /// instances it created are deconstructed. Hence, the caller of this method is responsible for the deconstruction of the created instances by disposing this factory root.
         /// However, the consumer of the factory may and should also trigger the deconstruction of the instances on its own when they're no longer needed.
         /// </summary>
         /// <param name="templateConstructor">Function that returns the template to construct the instance from. May return <see langword="null"/> to dispose the factory.</param>
@@ -71,7 +71,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         /// <summary>
         /// Creates a new instance. The <paramref name="instanceConstructor"/> may or may not be used to construct the instance. However, if <paramref name="instanceConstructor"/> is used to
-        /// construct the instance, then <paramref name="instanceDestructor"/> will be called exactly once when <paramref name="disposable"/> is disposed and/or the owning factory builder is disposed.
+        /// construct the instance, then <paramref name="instanceDestructor"/> will be called exactly once when <paramref name="disposable"/> is disposed and/or the owning factory root is disposed.
         /// The caller is responsible for the deconstruction of the created instance by disposing <paramref name="disposable"/> when it is no longer needed.
         /// </summary>
         /// <param name="instanceConstructor">Function that constructs the instance from a template.</param>
@@ -104,7 +104,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         /// <summary>
         /// Creates a new instance. The caller should deconstruct the created instance by disposing <paramref name="disposable"/>
-        /// when it is no longer needed, otherwise the instance will stay around until the owning factory builder is disposed.
+        /// when it is no longer needed, otherwise the instance will stay around until the owning factory root is disposed.
         /// </summary>
         /// <param name="disposable">Object to dispose when the instance is no longer needed.</param>
         /// <returns></returns>

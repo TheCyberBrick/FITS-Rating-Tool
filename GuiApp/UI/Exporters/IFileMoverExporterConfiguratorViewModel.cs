@@ -16,11 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Services;
-
 namespace FitsRatingTool.GuiApp.UI.Exporters
 {
-    public interface IFileMoverExporterConfiguratorViewModel : IExporterConfiguratorManager.IExporterConfiguratorViewModel
+    public interface IFileMoverExporterConfiguratorViewModel : IExporterConfiguratorViewModel
     {
         public record Of();
 

@@ -18,31 +18,19 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using System;
-using System.Collections.Generic;
 
-namespace FitsRatingTool.GuiApp.Services
+namespace FitsRatingTool.GuiApp.UI.Exporters
 {
-    public interface IExporterConfiguratorManager
+    public interface IExporterConfiguratorViewModel
     {
-        public interface IExporterConfiguratorViewModel
-        {
-            bool IsValid { get; }
+        bool IsValid { get; }
 
-            string CreateConfig();
+        string CreateConfig();
 
-            IEvaluationExporter CreateExporter(IEvaluationExporterContext ctx);
+        IEvaluationExporter CreateExporter(IEvaluationExporterContext ctx);
 
-            event EventHandler ConfigurationChanged;
+        event EventHandler ConfigurationChanged;
 
-            bool TryLoadConfig(string config);
-        }
-
-        public record FactoryInfo(string Name, IDelegatedFactory<IExporterConfiguratorViewModel> Factory);
-
-        IEnumerable<KeyValuePair<string, FactoryInfo>> Factories { get; }
-
-        bool Register(string id, FactoryInfo factoryInfo);
-
-        FactoryInfo? Get(string id);
+        bool TryLoadConfig(string config);
     }
 }

@@ -218,7 +218,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             IGroupingManager groupingManager,
             IEvaluationManager evaluationManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
-            IFactoryBuilder<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
+            IFactoryRoot<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
         {
             this.manager = manager;
             this.groupingManager = groupingManager;

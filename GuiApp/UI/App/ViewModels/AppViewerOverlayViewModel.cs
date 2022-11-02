@@ -94,9 +94,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.Of args,
             IFitsImageManager fitsImageManager,
             IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer,
-            IFactoryBuilder<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile> fitsImageViewerFactory,
-            IFactoryBuilder<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
-            IFactoryBuilder<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
+            IFactoryRoot<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile> fitsImageViewerFactory,
+            IFactoryRoot<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
+            IFactoryRoot<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
             this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
 
