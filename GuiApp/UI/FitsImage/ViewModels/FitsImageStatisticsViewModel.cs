@@ -18,7 +18,7 @@
 
 using DryIocAttributes;
 using FitsRatingTool.FitsLoader.Models;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.ComponentModel.Composition;

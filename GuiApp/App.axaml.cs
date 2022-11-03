@@ -24,6 +24,7 @@ using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI;
 using FitsRatingTool.GuiApp.UI.App;
 using FitsRatingTool.GuiApp.UI.App.Windows;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp
 {

@@ -17,6 +17,7 @@
 */
 
 using Avalonia.Controls;
+using FitsRatingTool.IoC;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -25,46 +26,46 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public static class IWindowManagerExtensions
     {
-        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, ITemplatedFactory<TData, TTemplate> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
+        public static bool Show<TWindow, TData, TParameter>(this IWindowManager manager, IParameterizedFactory<TData, TParameter> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.Show<TWindow, TData, TTemplate>(container => factory.Instantiate(container.Instantiate), showMultiple, out window, filter, parent);
+            return manager.Show<TWindow, TData, TParameter>(container => factory.Instantiate(container.Instantiate), showMultiple, out window, filter, parent);
         }
 
-        public static bool Show<TWindow, TData, TTemplate>(this IWindowManager manager, TTemplate template, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
+        public static bool Show<TWindow, TData, TParameter>(this IWindowManager manager, TParameter parameter, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.Show<TWindow, TData, TTemplate>(container => container.Instantiate(template), showMultiple, out window, filter, parent);
+            return manager.Show<TWindow, TData, TParameter>(container => container.Instantiate(parameter), showMultiple, out window, filter, parent);
         }
 
-        public static bool ShowDialog<TWindow, TData, TTemplate>(this IWindowManager manager, ITemplatedFactory<TData, TTemplate> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+        public static bool ShowDialog<TWindow, TData, TParameter>(this IWindowManager manager, IParameterizedFactory<TData, TParameter> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.ShowDialog<TWindow, TData, TTemplate>(container => factory.Instantiate(container.Instantiate), showMultiple, parent, out window, out task, filter);
+            return manager.ShowDialog<TWindow, TData, TParameter>(container => factory.Instantiate(container.Instantiate), showMultiple, parent, out window, out task, filter);
         }
 
-        public static bool ShowDialog<TWindow, TData, TTemplate>(this IWindowManager manager, TTemplate template, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+        public static bool ShowDialog<TWindow, TData, TParameter>(this IWindowManager manager, TParameter parameter, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.ShowDialog<TWindow, TData, TTemplate>(container => container.Instantiate(template), showMultiple, parent, out window, out task, filter);
+            return manager.ShowDialog<TWindow, TData, TParameter>(container => container.Instantiate(parameter), showMultiple, parent, out window, out task, filter);
         }
 
-        public static bool ShowDialog<TWindow, TData, TTemplate, R>(this IWindowManager manager, ITemplatedFactory<TData, TTemplate> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
+        public static bool ShowDialog<TWindow, TData, TParameter, R>(this IWindowManager manager, IParameterizedFactory<TData, TParameter> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.ShowDialog<TWindow, TData, TTemplate, R>(container => factory.Instantiate(container.Instantiate), showMultiple, parent, out window, out task, filter);
+            return manager.ShowDialog<TWindow, TData, TParameter, R>(container => factory.Instantiate(container.Instantiate), showMultiple, parent, out window, out task, filter);
         }
 
-        public static bool ShowDialog<TWindow, TData, TTemplate, R>(this IWindowManager manager, TTemplate template, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
+        public static bool ShowDialog<TWindow, TData, TParameter, R>(this IWindowManager manager, TParameter parameter, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
-            return manager.ShowDialog<TWindow, TData, TTemplate, R>(container => container.Instantiate(template), showMultiple, parent, out window, out task, filter);
+            return manager.ShowDialog<TWindow, TData, TParameter, R>(container => container.Instantiate(parameter), showMultiple, parent, out window, out task, filter);
         }
     }
 }

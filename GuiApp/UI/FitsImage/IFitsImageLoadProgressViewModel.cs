@@ -18,8 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Progress;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {

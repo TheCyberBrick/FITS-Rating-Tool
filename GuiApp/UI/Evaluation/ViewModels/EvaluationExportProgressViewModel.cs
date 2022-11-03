@@ -33,6 +33,7 @@ using System.Reactive.Linq;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.GuiApp.UI.Exporters;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {

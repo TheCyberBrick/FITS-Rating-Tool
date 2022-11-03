@@ -16,22 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
-    public class ContainerRoot<T, Template> : IContainerRoot<T, Template>
-        where T : class
+    public class ContainerRoot<Instance, Parameter> : IContainerRoot<Instance, Parameter>
+        where Instance : class
     {
-        private readonly Func<IContainer<T, Template>> containerFactory;
+        private readonly Func<IContainer<Instance, Parameter>> containerFactory;
 
-        public ContainerRoot(Func<IContainer<T, Template>> containerFactory)
+        public ContainerRoot(Func<IContainer<Instance, Parameter>> containerFactory)
         {
             this.containerFactory = containerFactory;
         }
 
-        public IDisposable Initialize(out IContainer<T, Template> container)
+        public IDisposable Initialize(out IContainer<Instance, Parameter> container)
         {
             container = containerFactory.Invoke();
 
@@ -46,10 +45,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public IDisposable Instantiate(Template template, out IContainer<T, Template> container, out T instance)
+        public IDisposable Instantiate(Parameter parameter, out IContainer<Instance, Parameter> container, out Instance instance)
         {
             var disposable = Initialize(out container);
-            instance = container.Instantiate(template);
+            instance = container.Instantiate(parameter);
             return disposable;
         }
     }

@@ -17,8 +17,8 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Exporters;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;

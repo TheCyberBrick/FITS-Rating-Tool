@@ -24,6 +24,7 @@ using FitsRatingTool.Common.Services;
 using FitsRatingTool.FitsLoader.Models;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -205,7 +206,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, IFitsImageStatisticsViewModel?> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 
@@ -275,7 +276,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             {
                 if (IsImageDataValid)
                 {
-                    return fitsImageStatisticsProgressFactory.Templated(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
+                    return fitsImageStatisticsProgressFactory.Parameterized(new IFitsImageStatisticsProgressViewModel.OfTaskFunc(callback => () => Task.Run(() =>
                     {
                         if (InvalidateStatisticsAndPhotometry || !fitsImage.GetStatistics(out var stats))
                         {

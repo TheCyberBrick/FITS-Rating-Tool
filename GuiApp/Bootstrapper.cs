@@ -22,8 +22,9 @@ using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.Services.Impl;
+using FitsRatingTool.IoC;
+using FitsRatingTool.IoC.Impl;
 
 namespace FitsRatingTool.GuiApp
 {
@@ -47,7 +48,7 @@ namespace FitsRatingTool.GuiApp
             container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Transient);
             container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
 
-            // App
+            // IoC
             container.Register(typeof(IContainer<,>), typeof(Container<,>), Reuse.Transient);
             container.Register(typeof(IContainerRoot<,>), typeof(ContainerRoot<,>), Reuse.Transient);
             container.Register(typeof(IFactoryRoot<,>), typeof(FactoryRoot<,>), Reuse.Transient, setup: Setup.With(allowDisposableTransient: true));

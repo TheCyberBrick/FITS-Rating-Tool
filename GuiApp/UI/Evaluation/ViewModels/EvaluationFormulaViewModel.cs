@@ -33,6 +33,7 @@ using Avalonia.Collections;
 using FitsRatingTool.GuiApp.Models;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {

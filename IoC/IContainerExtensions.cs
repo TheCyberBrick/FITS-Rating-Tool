@@ -16,33 +16,30 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services
+namespace FitsRatingTool.IoC
 {
     public static class IContainerExtensions
     {
-        public static T GetAny<T, Template>(this IContainer<T, Template> container)
-            where T : class
+        public static Instance GetAny<Instance, Parameter>(this IContainer<Instance, Parameter> container)
+            where Instance : class
         {
             return container.FirstOrDefault() ?? throw new InvalidOperationException("No instance");
         }
-        public static T? GetAnyOrDefault<T, Template>(this IContainer<T, Template> container)
-            where T : class
+        public static Instance? GetAnyOrDefault<Instance, Parameter>(this IContainer<Instance, Parameter> container)
+            where Instance : class
         {
             return container.FirstOrDefault();
         }
 
-        public static void Inject<T, Template>(this IContainer<T, Template> container, Template template, Action<T>? consumer = null)
-            where T : class
+        public static void Inject<Instance, Parameter>(this IContainer<Instance, Parameter> container, Parameter parameter, Action<Instance>? consumer = null)
+            where Instance : class
         {
             void activate()
             {
-                var instance = container.Instantiate(template);
+                var instance = container.Instantiate(parameter);
                 consumer?.Invoke(instance);
             }
             if (!container.IsInitialized)
@@ -60,8 +57,8 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
-        public static IDisposable BindTo<T, Template>(this IContainer<T, Template> container, ICollection<T> collection)
-            where T : class
+        public static IDisposable BindTo<Instance, Parameter>(this IContainer<Instance, Parameter> container, ICollection<Instance> collection)
+            where Instance : class
         {
             void onCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
@@ -74,7 +71,7 @@ namespace FitsRatingTool.GuiApp.Services
                 {
                     foreach (var item in e.OldItems)
                     {
-                        collection.Remove((T)item);
+                        collection.Remove((Instance)item);
                     }
                 }
 
@@ -82,7 +79,7 @@ namespace FitsRatingTool.GuiApp.Services
                 {
                     foreach (var item in e.NewItems)
                     {
-                        collection.Add((T)item);
+                        collection.Add((Instance)item);
                     }
                 }
             }
@@ -92,8 +89,8 @@ namespace FitsRatingTool.GuiApp.Services
             return Disposable.Create(() => container.CollectionChanged -= onCollectionChanged);
         }
 
-        public static IDisposable DestroyWithDisposable<T, Template>(this IContainer<T, Template> container, T instance)
-            where T : class
+        public static IDisposable DestroyWithDisposable<Instance, Parameter>(this IContainer<Instance, Parameter> container, Instance instance)
+            where Instance : class
         {
             return Disposable.Create(() => container.Destroy(instance));
         }

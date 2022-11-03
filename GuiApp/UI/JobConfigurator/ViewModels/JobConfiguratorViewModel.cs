@@ -39,6 +39,7 @@ using System.Text;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.GuiApp.UI.Exporters;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {

@@ -20,6 +20,7 @@ using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;

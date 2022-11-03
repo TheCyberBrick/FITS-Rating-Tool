@@ -16,12 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
     public class ComponentRegistry<T> : IComponentRegistry<T>, IDisposable
         where T : class

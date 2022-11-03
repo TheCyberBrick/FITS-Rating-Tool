@@ -22,7 +22,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using DryIocAttributes;
 using FitsRatingTool.GuiApp.Models;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {

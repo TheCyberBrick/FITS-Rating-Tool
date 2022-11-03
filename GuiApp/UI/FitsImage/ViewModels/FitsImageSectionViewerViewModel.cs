@@ -17,7 +17,7 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System.ComponentModel.Composition;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageSectionViewerViewModel;

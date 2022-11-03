@@ -27,6 +27,7 @@ using System.Text;
 using FitsRatingTool.GuiApp.Services;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {

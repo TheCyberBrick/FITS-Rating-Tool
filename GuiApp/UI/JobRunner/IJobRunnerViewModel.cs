@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System.Reactive;
 
@@ -49,7 +49,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner
         ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        ReactiveCommand<Unit, ITemplatedFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 

@@ -36,6 +36,7 @@ using FitsRatingTool.GuiApp.Utils;
 using static FitsRatingTool.GuiApp.UI.FitsImage.IFitsImageViewerViewModel;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
@@ -247,7 +248,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 
         public ReactiveCommand<Unit, Unit> CalculateStatistics { get; }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IFitsImageStatisticsProgressViewModel, IFitsImageStatisticsProgressViewModel.OfTaskFunc>?> CalculateStatisticsWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> CalculateStatisticsWithProgressDialog { get; }
 

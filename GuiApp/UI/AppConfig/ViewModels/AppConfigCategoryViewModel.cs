@@ -17,7 +17,7 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 

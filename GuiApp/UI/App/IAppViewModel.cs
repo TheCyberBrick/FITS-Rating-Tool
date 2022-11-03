@@ -29,7 +29,7 @@ using FitsRatingTool.GuiApp.UI.FileTable;
 using FitsRatingTool.GuiApp.UI.AppConfig;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using Avalonia.Collections;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.App
 {
@@ -38,7 +38,7 @@ namespace FitsRatingTool.GuiApp.UI.App
         public record Of();
 
         #region +++ Misc +++
-        ReactiveCommand<Unit, ITemplatedFactory<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IFileTableViewModel, IFileTableViewModel.Of>> ShowFileTable { get; }
 
         ReactiveCommand<Unit, Unit> HideFileTable { get; }
 
@@ -46,7 +46,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         ReactiveCommand<Unit, Unit> ShowAboutDialog { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
         #endregion
 
         #region +++ Images +++
@@ -72,7 +72,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         Interaction<Unit, IEnumerable<string>> LoadImagesOpenFileDialog { get; }
 
-        ReactiveCommand<IEnumerable<string>, ITemplatedFactory<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
+        ReactiveCommand<IEnumerable<string>, IParameterizedFactory<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles>> LoadImagesWithProgress { get; }
 
         ReactiveCommand<IEnumerable<string>, Unit> LoadImagesWithProgressDialog { get; }
 
@@ -88,35 +88,35 @@ namespace FitsRatingTool.GuiApp.UI.App
         #endregion
 
         #region +++ Evaluation +++
-        ReactiveCommand<Unit, ITemplatedFactory<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IFitsImageAllStatisticsProgressViewModel, IFitsImageAllStatisticsProgressViewModel.OfFiles>> CalculateAllStatisticsWithProgress { get; }
 
         ReactiveCommand<Unit, Unit> CalculateAllStatisticsWithProgressDialog { get; }
 
         Interaction<IFitsImageAllStatisticsProgressViewModel, Unit> CalculateAllStatisticsProgressDialog { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IEvaluationTableViewModel, IEvaluationTableViewModel.Of>> ShowEvaluationTable { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of>> ShowEvaluationFormula { get; }
 
         ReactiveCommand<Unit, Unit> ShowEvaluationTableAndFormula { get; }
 
         ReactiveCommand<Unit, Unit> HideEvaluationTableAndFormula { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
         #endregion
 
         #region +++ Job Configurator +++
-        ReactiveCommand<Unit, ITemplatedFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of>> ShowJobConfigurator { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile>> ShowJobConfiguratorWithOpenFileDialog { get; }
 
         Interaction<Unit, string> JobConfiguratorOpenFileDialog { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IJobRunnerViewModel, IJobRunnerViewModel.Of>> ShowJobRunner { get; }
         #endregion
 
         #region +++ Instrument Profiles +++
-        ReactiveCommand<Unit, ITemplatedFactory<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of>> ShowInstrumentProfileConfigurator { get; }
 
         IAppProfileSelectorViewModel AppProfileSelector { get; }
         #endregion

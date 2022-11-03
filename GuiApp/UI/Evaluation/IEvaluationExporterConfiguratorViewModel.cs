@@ -16,8 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Exporters;
+using FitsRatingTool.IoC;
 using System;
 using System.Collections.Generic;
 

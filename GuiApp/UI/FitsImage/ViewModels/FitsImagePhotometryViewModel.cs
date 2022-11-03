@@ -18,7 +18,7 @@
 
 using DryIocAttributes;
 using FitsRatingTool.FitsLoader.Models;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels

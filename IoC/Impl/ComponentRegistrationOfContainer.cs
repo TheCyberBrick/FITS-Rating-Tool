@@ -16,43 +16,42 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.ComponentModel.Composition;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
-    public abstract class ComponentRegistrationOfContainer<Base, CT, CTemplate> : IComponentRegistration<Base>
+    public abstract class ComponentRegistrationOfContainer<Base, CInstance, CParameter> : IComponentRegistration<Base>
         where Base : class
-        where CT : class, Base
+        where CInstance : class, Base
     {
         public virtual string Id { get; }
 
         public virtual string Name { get; }
 
-        protected virtual CTemplate Template { get; }
+        protected virtual CParameter Parameter { get; }
 
         protected virtual bool IsSingleUse { get; set; } = false;
 
         [Import]
-        protected Func<IFactoryRoot<CT, CTemplate>> RootFactory { get; private set; } = null!;
+        protected Func<IFactoryRoot<CInstance, CParameter>> RootFactory { get; private set; } = null!;
 
         // NB: This container's parent is the component registry
         [Import]
-        protected IContainer<CT, CTemplate> Container { get; set; } = null!;
+        protected IContainer<CInstance, CParameter> Container { get; set; } = null!;
 
-        public ComponentRegistrationOfContainer(string id, string name, CTemplate template)
+        public ComponentRegistrationOfContainer(string id, string name, CParameter parameter)
         {
             Id = id;
             Name = name;
-            Template = template;
+            Parameter = parameter;
         }
 
         public IDelegatedFactory<Base> CreateFactory(CompositeDisposable disposable)
         {
             var root = RootFactory.Invoke();
             disposable.Add(root);
-            return root.Delegated(Template, t =>
+            return root.Delegated(Parameter, t =>
             {
                 CheckInitialized();
                 return Container.Instantiate(t);

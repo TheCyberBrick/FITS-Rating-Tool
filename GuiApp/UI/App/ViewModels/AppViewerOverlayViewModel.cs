@@ -20,6 +20,7 @@ using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.ComponentModel.Composition;
@@ -82,11 +83,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _cornerViewer, value);
         }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>> ShowExternalViewer { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>> ShowExternalViewer { get; }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
         private readonly IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer;
@@ -126,7 +127,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     }
                 });
 
-            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Templated(new IAppExternalFitsImageViewerViewModel.OfFile(Viewer?.File)));
+            ShowExternalViewer = ReactiveCommand.Create(() => fitsImageViewerFactory.Parameterized(new IAppExternalFitsImageViewerViewModel.OfFile(Viewer?.File)));
 
             // TODO Temp
             // Need to reimplement these properlywith image selector VM
@@ -134,14 +135,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             // TODO Temp
             // See above
-            ShowExternalCornerViewer = ReactiveCommand.Create(() => fitsImageCornerViewerFactory.Templated(new IFitsImageCornerViewerViewModel.OfViewer(Viewer)).AndThen(vm =>
+            ShowExternalCornerViewer = ReactiveCommand.Create(() => fitsImageCornerViewerFactory.Parameterized(new IFitsImageCornerViewerViewModel.OfViewer(Viewer)).AndThen(vm =>
             {
                 vm.Percentage = CornerViewerPercentage;
             }));
 
             // TODO Temp
             // See above
-            ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Templated(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
+            ShowExternalImageAnalysis = ReactiveCommand.Create(() => imageAnalysisFactory.Parameterized(new IImageAnalysisViewModel.OfFile(Viewer.File!)), this.WhenAnyValue(x => x.Viewer.File, (string? x) => x != null));
         }
 
         private void UpdateCornerViewer()

@@ -16,9 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.ImageAnalysis;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System.Reactive;
 
@@ -38,10 +38,10 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         IFitsImageCornerViewerViewModel? CornerViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>> ShowExternalViewer { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IAppExternalFitsImageViewerViewModel, IAppExternalFitsImageViewerViewModel.OfFile>> ShowExternalViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer>> ShowExternalCornerViewer { get; }
 
-        ReactiveCommand<Unit, ITemplatedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
+        ReactiveCommand<Unit, IParameterizedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
     }
 }

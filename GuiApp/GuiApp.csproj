@@ -308,6 +308,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Exporters\Exporters.csproj" />
+    <ProjectReference Include="..\IoC\IoC.csproj" />
     <ProjectReference Include="..\VoyagerAPI\VoyagerAPI.csproj" />
   </ItemGroup>
   <ItemGroup>

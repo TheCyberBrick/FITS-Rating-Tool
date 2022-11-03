@@ -17,7 +17,7 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.ComponentModel.Composition;
@@ -77,7 +77,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
         public ReactiveCommand<Unit, Unit> Run { get; }
 
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob>> RunWithProgress { get; }
 
         public ReactiveCommand<Unit, Unit> RunWithProgressDialog { get; }
 
@@ -159,7 +159,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
                 }
             }, canRun);
 
-            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Templated(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
+            RunWithProgress = ReactiveCommand.Create(() => jobRunnerProgressFactory.Parameterized(new IJobRunnerProgressViewModel.OfJob(JobConfigFile, Path)), canRun);
 
             RunWithProgressDialog = ReactiveCommand.CreateFromTask(async () =>
             {

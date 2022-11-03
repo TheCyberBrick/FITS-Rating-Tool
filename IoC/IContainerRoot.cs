@@ -16,15 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
-
-namespace FitsRatingTool.GuiApp.Services
+namespace FitsRatingTool.IoC
 {
-    public interface IContainerRoot<T, Template>
-        where T : class
+    public interface IContainerRoot<Instance, Parameter>
+        where Instance : class
     {
-        IDisposable Initialize(out IContainer<T, Template> container);
+        IDisposable Initialize(out IContainer<Instance, Parameter> container);
 
-        IDisposable Instantiate(Template template, out IContainer<T, Template> container, out T instance);
+        IDisposable Instantiate(Parameter parameter, out IContainer<Instance, Parameter> container, out Instance instance);
     }
 }

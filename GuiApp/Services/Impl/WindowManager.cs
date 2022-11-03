@@ -20,6 +20,7 @@ using Avalonia;
 using Avalonia.Controls;
 using DryIoc;
 using DryIocAttributes;
+using FitsRatingTool.IoC;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -45,7 +46,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.resolver = resolver;
         }
 
-        public bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter, Window? parent)
+        public bool Show<TWindow, TData, TParameter>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter, Window? parent)
             where TWindow : Window
             where TData : class
         {
@@ -64,7 +65,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return false;
         }
 
-        public bool ShowDialog<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+        public bool ShowDialog<TWindow, TData, TParameter>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
@@ -77,7 +78,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return false;
         }
 
-        public bool ShowDialog<TWindow, TData, TTemplate, R>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
+        public bool ShowDialog<TWindow, TData, TParameter, R>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class
         {
@@ -90,7 +91,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return false;
         }
 
-        private bool ShowImpl<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Func<TWindow, bool>? filter, [NotNullWhen(true)] out TWindow? outWindow)
+        private bool ShowImpl<TWindow, TData, TParameter>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, Func<TWindow, bool>? filter, [NotNullWhen(true)] out TWindow? outWindow)
             where TWindow : Window
             where TData : class
         {
@@ -125,7 +126,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             if (window != null)
             {
-                var containerRoot = resolver.Resolve<IContainerRoot<TData, TTemplate>>();
+                var containerRoot = resolver.Resolve<IContainerRoot<TData, TParameter>>();
 
                 var disposable = containerRoot.Initialize(out var container);
 

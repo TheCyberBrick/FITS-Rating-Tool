@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.FitsImage;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;

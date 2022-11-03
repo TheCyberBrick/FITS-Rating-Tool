@@ -21,7 +21,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System;
 using System.Reactive.Linq;
-using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage
 {

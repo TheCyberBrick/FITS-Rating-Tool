@@ -28,6 +28,7 @@ using FitsRatingTool.GuiApp.UI.Progress;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using System.ComponentModel.Composition;
 using DryIocAttributes;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {

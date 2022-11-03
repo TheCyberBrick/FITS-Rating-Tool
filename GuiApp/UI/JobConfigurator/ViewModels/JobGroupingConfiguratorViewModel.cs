@@ -25,9 +25,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.UI.Evaluation;
-using FitsRatingTool.GuiApp.Services;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {

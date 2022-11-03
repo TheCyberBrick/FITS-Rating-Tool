@@ -16,41 +16,38 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-using System;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
-    public class FactoryRoot<T, Template> : IFactoryRoot<T, Template>
-        where T : class
+    public class FactoryRoot<Instance, Parameter> : IFactoryRoot<Instance, Parameter>
+        where Instance : class
     {
-        private abstract class GenericFactory : IGenericFactory<T, Template>, IDisposable
+        private abstract class GenericFactory : IGenericFactory<Instance, Parameter>, IDisposable
         {
             public bool IsSingleUse { get; private set; }
 
-            public Type InstanceType => typeof(T);
+            public Type InstanceType => typeof(Instance);
 
-            public Type TemplateType => typeof(Template);
+            public Type ParameterType => typeof(Parameter);
 
             private bool expired;
 
-            private readonly Func<Template?> templateConstructor;
+            private readonly Func<Parameter?> parameterConstructor;
 
-            public GenericFactory(Func<Template?> templateConstructor, bool isSingleUse)
+            public GenericFactory(Func<Parameter?> parameterConstructor, bool isSingleUse)
             {
-                this.templateConstructor = templateConstructor;
+                this.parameterConstructor = parameterConstructor;
                 IsSingleUse = isSingleUse;
             }
 
-            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => AndThen(action);
+            IFactoryBase<Instance> IFactoryBase<Instance>.AndThen(Action<Instance> action) => AndThen(action);
 
-            public abstract IGenericFactory<T, Template> AndThen(Action<T> action);
+            public abstract IGenericFactory<Instance, Parameter> AndThen(Action<Instance> action);
 
-            public abstract T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable);
+            public abstract Instance Instantiate(Func<Parameter, Instance> instanceConstructor, Action<Instance> instanceDestructor, out IDisposable disposable);
 
-            protected T InstantiateInternal(Func<Template, T?> instanceConstructor)
+            protected Instance InstantiateInternal(Func<Parameter, Instance?> instanceConstructor)
             {
                 CheckExpired();
 
@@ -59,15 +56,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     Expire();
                 }
 
-                var template = templateConstructor.Invoke();
+                var parameter = parameterConstructor.Invoke();
 
-                if (template == null)
+                if (parameter == null)
                 {
                     Dispose();
                     CheckExpired();
                 }
 
-                var instance = instanceConstructor.Invoke(template!);
+                var instance = instanceConstructor.Invoke(parameter!);
 
                 if (instance == null)
                 {
@@ -94,17 +91,17 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             public abstract void Dispose();
         }
 
-        private class TemplatedFactory : GenericFactory, ITemplatedFactory<T, Template>
+        private class ParameterizedFactory : GenericFactory, IParameterizedFactory<Instance, Parameter>
         {
-            public TemplatedFactory(Func<Template?> templateConstructor, bool isSingleUse) : base(templateConstructor, isSingleUse)
+            public ParameterizedFactory(Func<Parameter?> parameterConstructor, bool isSingleUse) : base(parameterConstructor, isSingleUse)
             {
             }
 
-            ITemplatedFactory<T, Template> ITemplatedFactory<T, Template>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
+            IParameterizedFactory<Instance, Parameter> IParameterizedFactory<Instance, Parameter>.AndThen(Action<Instance> action) => new ChildParameterizedFactory(this, action);
 
-            public override IGenericFactory<T, Template> AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
+            public override IGenericFactory<Instance, Parameter> AndThen(Action<Instance> action) => new ChildParameterizedFactory(this, action);
 
-            public T Instantiate(Func<Template, T> instanceConstructor)
+            public Instance Instantiate(Func<Parameter, Instance> instanceConstructor)
             {
                 lock (this)
                 {
@@ -112,7 +109,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
-            public override T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            public override Instance Instantiate(Func<Parameter, Instance> instanceConstructor, Action<Instance> instanceDestructor, out IDisposable disposable)
             {
                 var newInstance = Instantiate(instanceConstructor);
                 disposable = Disposable.Create(() => instanceDestructor.Invoke(newInstance));
@@ -128,37 +125,37 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class ChildTemplatedFactory : ITemplatedFactory<T, Template>
+        private class ChildParameterizedFactory : IParameterizedFactory<Instance, Parameter>
         {
             public bool IsSingleUse => parent.IsSingleUse;
 
             public Type InstanceType => parent.InstanceType;
 
-            public Type TemplateType => parent.TemplateType;
+            public Type ParameterType => parent.ParameterType;
 
-            private readonly ITemplatedFactory<T, Template> parent;
-            private readonly Action<T> action;
+            private readonly IParameterizedFactory<Instance, Parameter> parent;
+            private readonly Action<Instance> action;
 
-            public ChildTemplatedFactory(ITemplatedFactory<T, Template> parent, Action<T> action)
+            public ChildParameterizedFactory(IParameterizedFactory<Instance, Parameter> parent, Action<Instance> action)
             {
                 this.parent = parent;
                 this.action = action;
             }
 
-            public ITemplatedFactory<T, Template> AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
+            public IParameterizedFactory<Instance, Parameter> AndThen(Action<Instance> action) => new ChildParameterizedFactory(this, action);
 
-            IGenericFactory<T, Template> IGenericFactory<T, Template>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
+            IGenericFactory<Instance, Parameter> IGenericFactory<Instance, Parameter>.AndThen(Action<Instance> action) => new ChildParameterizedFactory(this, action);
 
-            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => new ChildTemplatedFactory(this, action);
+            IFactoryBase<Instance> IFactoryBase<Instance>.AndThen(Action<Instance> action) => new ChildParameterizedFactory(this, action);
 
-            public T Instantiate(Func<Template, T> instanceConstructor)
+            public Instance Instantiate(Func<Parameter, Instance> instanceConstructor)
             {
                 var newInstance = parent.Instantiate(instanceConstructor);
                 action.Invoke(newInstance);
                 return newInstance;
             }
 
-            public T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            public Instance Instantiate(Func<Parameter, Instance> instanceConstructor, Action<Instance> instanceDestructor, out IDisposable disposable)
             {
                 var newInstance = parent.Instantiate(instanceConstructor, instanceDestructor, out disposable);
                 action.Invoke(newInstance);
@@ -168,18 +165,18 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private class DelegatedFactoryDisposer : IDisposable
         {
-            private readonly List<T> instances = new();
+            private readonly List<Instance> instances = new();
 
-            private readonly FactoryRoot<T, Template> factory;
-            private readonly Action<T> instanceDestructor;
+            private readonly FactoryRoot<Instance, Parameter> factory;
+            private readonly Action<Instance> instanceDestructor;
 
-            public DelegatedFactoryDisposer(FactoryRoot<T, Template> factory, Action<T> instanceDestructor)
+            public DelegatedFactoryDisposer(FactoryRoot<Instance, Parameter> factory, Action<Instance> instanceDestructor)
             {
                 this.instanceDestructor = instanceDestructor;
                 this.factory = factory;
             }
 
-            public void AddInstance(T instance)
+            public void AddInstance(Instance instance)
             {
                 lock (this)
                 {
@@ -189,7 +186,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
-            public void RemoveInstance(T instance)
+            public void RemoveInstance(Instance instance)
             {
                 lock (this)
                 {
@@ -224,24 +221,24 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class DelegatedFactory : GenericFactory, IDelegatedFactory<T, Template>
+        private class DelegatedFactory : GenericFactory, IDelegatedFactory<Instance, Parameter>
         {
-            private readonly Func<Template, T?> instanceConstructor;
+            private readonly Func<Parameter, Instance?> instanceConstructor;
             private readonly DelegatedFactoryDisposer disposer;
 
-            public DelegatedFactory(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, bool isSingleUse, DelegatedFactoryDisposer disposer) : base(templateConstructor, isSingleUse)
+            public DelegatedFactory(Func<Parameter?> parameterConstructor, Func<Parameter, Instance?> instanceConstructor, bool isSingleUse, DelegatedFactoryDisposer disposer) : base(parameterConstructor, isSingleUse)
             {
                 this.instanceConstructor = instanceConstructor;
                 this.disposer = disposer;
             }
 
-            IDelegatedFactory<T, Template> IDelegatedFactory<T, Template>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            IDelegatedFactory<Instance, Parameter> IDelegatedFactory<Instance, Parameter>.AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            IDelegatedFactory<T> IDelegatedFactory<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            IDelegatedFactory<Instance> IDelegatedFactory<Instance>.AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            public override IGenericFactory<T, Template> AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            public override IGenericFactory<Instance, Parameter> AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            public T Instantiate(out IDisposable disposable)
+            public Instance Instantiate(out IDisposable disposable)
             {
                 lock (disposer)
                 {
@@ -255,7 +252,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
-            public override T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            public override Instance Instantiate(Func<Parameter, Instance> instanceConstructor, Action<Instance> instanceDestructor, out IDisposable disposable)
             {
                 return Instantiate(out disposable);
             }
@@ -271,39 +268,39 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class ChildDelegatedFactory : IDelegatedFactory<T, Template>
+        private class ChildDelegatedFactory : IDelegatedFactory<Instance, Parameter>
         {
             public bool IsSingleUse => parent.IsSingleUse;
 
             public Type InstanceType => parent.InstanceType;
 
-            public Type TemplateType => parent.TemplateType;
+            public Type ParameterType => parent.ParameterType;
 
-            private readonly IDelegatedFactory<T, Template> parent;
-            private readonly Action<T> action;
+            private readonly IDelegatedFactory<Instance, Parameter> parent;
+            private readonly Action<Instance> action;
 
-            public ChildDelegatedFactory(IDelegatedFactory<T, Template> parent, Action<T> action)
+            public ChildDelegatedFactory(IDelegatedFactory<Instance, Parameter> parent, Action<Instance> action)
             {
                 this.parent = parent;
                 this.action = action;
             }
 
-            public IDelegatedFactory<T, Template> AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            public IDelegatedFactory<Instance, Parameter> AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            IDelegatedFactory<T> IDelegatedFactory<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            IDelegatedFactory<Instance> IDelegatedFactory<Instance>.AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            IGenericFactory<T, Template> IGenericFactory<T, Template>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            IGenericFactory<Instance, Parameter> IGenericFactory<Instance, Parameter>.AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            IFactoryBase<T> IFactoryBase<T>.AndThen(Action<T> action) => new ChildDelegatedFactory(this, action);
+            IFactoryBase<Instance> IFactoryBase<Instance>.AndThen(Action<Instance> action) => new ChildDelegatedFactory(this, action);
 
-            public T Instantiate(Func<Template, T> instanceConstructor, Action<T> instanceDestructor, out IDisposable disposable)
+            public Instance Instantiate(Func<Parameter, Instance> instanceConstructor, Action<Instance> instanceDestructor, out IDisposable disposable)
             {
                 var newInstance = parent.Instantiate(instanceConstructor, instanceDestructor, out disposable);
                 action.Invoke(newInstance);
                 return newInstance;
             }
 
-            public T Instantiate(out IDisposable disposable)
+            public Instance Instantiate(out IDisposable disposable)
             {
                 var newInstance = parent.Instantiate(out disposable);
                 action.Invoke(newInstance);
@@ -316,17 +313,17 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private bool disposed;
 
-        public ITemplatedFactory<T, Template> Templated(Func<Template?> templateConstructor, bool isSingleUse)
+        public IParameterizedFactory<Instance, Parameter> Parameterized(Func<Parameter?> parameterConstructor, bool isSingleUse)
         {
-            var factory = new TemplatedFactory(templateConstructor, isSingleUse);
+            var factory = new ParameterizedFactory(parameterConstructor, isSingleUse);
             AddFactory(factory);
             return factory;
         }
 
-        public IDelegatedFactory<T, Template> Delegated(Func<Template?> templateConstructor, Func<Template, T?> instanceConstructor, Action<T> instanceDestructor, bool isSingleUse)
+        public IDelegatedFactory<Instance, Parameter> Delegated(Func<Parameter?> parameterConstructor, Func<Parameter, Instance?> instanceConstructor, Action<Instance> instanceDestructor, bool isSingleUse)
         {
             var disposer = new DelegatedFactoryDisposer(this, instanceDestructor);
-            var factory = new DelegatedFactory(templateConstructor, instanceConstructor, isSingleUse, disposer);
+            var factory = new DelegatedFactory(parameterConstructor, instanceConstructor, isSingleUse, disposer);
             AddFactory(factory);
             return factory;
         }

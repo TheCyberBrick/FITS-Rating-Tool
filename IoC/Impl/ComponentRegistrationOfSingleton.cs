@@ -16,12 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.ComponentModel.Composition;
 using System.Reactive;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
     public abstract class ComponentRegistrationOfSingleton<Base, Implementation> : IComponentRegistration<Base>
         where Base : class

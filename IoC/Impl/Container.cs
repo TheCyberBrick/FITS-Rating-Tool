@@ -17,21 +17,18 @@
 */
 
 using DryIoc;
-using ReactiveUI;
-using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 
-namespace FitsRatingTool.GuiApp.Services.Impl
+namespace FitsRatingTool.IoC.Impl
 {
-    public class Container<T, Template> : ReactiveObject, IContainer<T, Template>, IContainerLifecycle
-        where T : class
+    public class Container<Instance, Parameter> : IContainer<Instance, Parameter>, IContainerLifecycle, INotifyPropertyChanged, INotifyPropertyChanging
+        where Instance : class
     {
         private IContainerLifecycle? parent;
         private object? dependee;
@@ -42,7 +39,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public bool IsSingleton
         {
             get => _isSingleton;
-            private set => this.RaiseAndSetIfChanged(ref _isSingleton, value);
+            private set
+            {
+                if (_isSingleton != value)
+                {
+                    PropertyChanging?.Invoke(this, new(nameof(IsSingleton)));
+                    _isSingleton = value;
+                    PropertyChanged?.Invoke(this, new(nameof(IsSingleton)));
+                }
+            }
         }
 
         public int Count => instance2Scope.Count;
@@ -54,7 +59,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public bool IsInitialized
         {
             get => _initialized;
-            private set => this.RaiseAndSetIfChanged(ref _initialized, value);
+            private set
+            {
+                if (_initialized != value)
+                {
+                    PropertyChanging?.Invoke(this, new(nameof(IsInitialized)));
+                    _initialized = value;
+                    PropertyChanged?.Invoke(this, new(nameof(IsInitialized)));
+                }
+            }
         }
 
         private Action? _onInitialized;
@@ -64,15 +77,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             remove => _onInitialized -= value;
         }
 
-        private Action<T>? _onInstantiated;
-        public event Action<T> OnInstantiated
+        private Action<Instance>? _onInstantiated;
+        public event Action<Instance> OnInstantiated
         {
             add => _onInstantiated += value;
             remove => _onInstantiated -= value;
         }
 
-        private Action<T>? _onDestroyed;
-        public event Action<T> OnDestroyed
+        private Action<Instance>? _onDestroyed;
+        public event Action<Instance> OnDestroyed
         {
             add => _onDestroyed += value;
             remove => _onDestroyed -= value;
@@ -80,9 +93,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
+        public event PropertyChangingEventHandler? PropertyChanging;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        private readonly Dictionary<IResolverContext, T> scope2Instance = new();
-        private readonly ConcurrentDictionary<T, IResolverContext> instance2Scope = new();
+        private readonly Dictionary<IResolverContext, Instance> scope2Instance = new();
+        private readonly ConcurrentDictionary<Instance, IResolverContext> instance2Scope = new();
 
         private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> scope2Dependencies = new();
         private readonly HashSet<IResolverContext> scopes = new();
@@ -91,13 +106,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> loadingScope2Dependencies = new();
         private readonly HashSet<IResolverContext> loadingScopes = new();
 
-        private readonly HashSet<T> loadingInstances = new();
+        private readonly HashSet<Instance> loadingInstances = new();
 
-        private readonly ReplaySubject<T?> singletonSubject = new(bufferSize: 1);
+        private readonly ReplaySubject<Instance?> singletonSubject = new(bufferSize: 1);
 
         private object generationKey = new();
 
-        private T? singletonInstance;
+        private Instance? singletonInstance;
 
         private bool disposed;
 
@@ -106,7 +121,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly DryIoc.IContainer container;
         private readonly object? scopeName;
 
-        public Container(DryIoc.IContainer container, Func<IRegistrar<T, Template>, T> regCtor)
+        public Container(DryIoc.IContainer container, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
         {
             // Create child container so that the T registration
             // can be replaced/shadowed
@@ -178,13 +193,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public IContainer<T, Template> ToSingleton()
+        public IContainer<Instance, Parameter> ToSingleton()
         {
             ChangeToSingleton();
             return this;
         }
 
-        public IObservable<T?> ToSingletonWithObservable()
+        public IObservable<Instance?> ToSingletonWithObservable()
         {
             ChangeToSingleton();
             return singletonSubject;
@@ -216,7 +231,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             CheckReentrancy();
 
-            T? injectedInstance = null;
+            Instance? injectedInstance = null;
 
             lock (this)
             {
@@ -272,7 +287,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             (dependee as IContainerDependencyListener)?.OnAdded(dependency);
         }
 
-        public T Instantiate(Template template)
+        public Instance Instantiate(Parameter parameter)
         {
             CheckReentrancy();
 
@@ -286,7 +301,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                 if (!isContainerInitialized)
                 {
-                    throw new InvalidOperationException($"Cannot instantiate before container ({typeof(T).FullName}, {typeof(Template).FullName}) is initialized");
+                    throw new InvalidOperationException($"Cannot instantiate before container ({typeof(Instance).FullName}, {typeof(Parameter).FullName}) is initialized");
                 }
 
                 if (isContainerSingleton && singletonInstance == null)
@@ -309,7 +324,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             // passed by T to the registrar
             newScope = container.OpenScope(scopeName);
 
-            void destroyInstanceAndScope(T? instance)
+            void destroyInstanceAndScope(Instance? instance)
             {
                 if (instance != null)
                 {
@@ -331,7 +346,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
-            T? newInstance = null;
+            Instance? newInstance = null;
             try
             {
                 lock (this)
@@ -349,7 +364,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 // OnDependencyInjected receives the same scope
                 // instance so that it can track the dependencies
                 // properly
-                newInstance = newScope.Resolve<Func<Template, IResolverContext, T>>().Invoke(template, newScope);
+                newInstance = newScope.Resolve<Func<Parameter, IResolverContext, Instance>>().Invoke(parameter, newScope);
 
                 List<IContainerLifecycle>? dependencies = null;
 
@@ -373,7 +388,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                         ++reentrancyCount;
                         try
                         {
-                            this.RaisePropertyChanging(nameof(Count));
+                            PropertyChanging?.Invoke(this, new(nameof(Count)));
 
                             if (loadingScope2Dependencies.TryRemove(newScope, out dependencies))
                             {
@@ -384,7 +399,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                             scope2Instance.Add(newScope, newInstance);
                             instance2Scope.TryAdd(newInstance, newScope);
 
-                            this.RaisePropertyChanged(nameof(Count));
+                            PropertyChanged?.Invoke(this, new(nameof(Count)));
 
                             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newInstance));
                         }
@@ -485,7 +500,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        public bool Destroy(T instance)
+        public bool Destroy(Instance instance)
         {
             if (!isContainerInitialized)
             {
@@ -494,7 +509,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 return false;
             }
 
-            if (!instance2Scope.ContainsKey(instance) || (isContainerSingleton && singletonInstance != instance))
+            if (!instance2Scope.ContainsKey(instance) || isContainerSingleton && singletonInstance != instance)
             {
                 // Nothing to do if container doesn't contain the instance.
                 // Once removed, it'll never be in the container again
@@ -519,7 +534,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     ++reentrancyCount;
                     try
                     {
-                        this.RaisePropertyChanging(nameof(Count));
+                        PropertyChanging?.Invoke(this, new(nameof(Count)));
 
                         dependencies = scope2Dependencies.TryRemove(scope, out var v) ? v : Enumerable.Empty<IContainerLifecycle>();
 
@@ -527,7 +542,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                         scope2Instance.Remove(scope);
                         instance2Scope.TryRemove(instance, out var _);
 
-                        this.RaisePropertyChanged(nameof(Count));
+                        PropertyChanged?.Invoke(this, new(nameof(Count)));
 
                         CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, instance));
                     }
@@ -615,7 +630,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 if (dispose)
                 {
-                    throw new InvalidOperationException($"Cannot dispose before container ({typeof(T).FullName}, {typeof(Template).FullName}) is initialized");
+                    throw new InvalidOperationException($"Cannot dispose before container ({typeof(Instance).FullName}, {typeof(Parameter).FullName}) is initialized");
                 }
 
                 // There can't be any instances before container
@@ -623,7 +638,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 return null;
             }
 
-            if (Count == 0 || (isContainerSingleton && singletonInstance == null))
+            if (Count == 0 || isContainerSingleton && singletonInstance == null)
             {
                 // Nothing to do if container is already empty
                 return null;
@@ -631,7 +646,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             CheckReentrancy();
 
-            Dictionary<T, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)> oldInstances;
+            Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)> oldInstances;
             HashSet<IResolverContext> oldScopes;
 
             object newGenerationKey;
@@ -657,7 +672,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 // the container and instead be destroyed
                 newGenerationKey = generationKey = new object();
 
-                oldInstances = new Dictionary<T, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)>();
+                oldInstances = new Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)>();
                 foreach (var entry in scope2Instance)
                 {
                     oldInstances.Add(entry.Value, (scope2Dependencies.TryGetValue(entry.Key, out var dependencies) ? dependencies : Enumerable.Empty<IContainerLifecycle>(), entry.Key));
@@ -668,14 +683,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 ++reentrancyCount;
                 try
                 {
-                    this.RaisePropertyChanging(nameof(Count));
+                    PropertyChanging?.Invoke(this, new(nameof(Count)));
 
                     scope2Dependencies.Clear();
                     scopes.Clear();
                     scope2Instance.Clear();
                     instance2Scope.Clear();
 
-                    this.RaisePropertyChanged(nameof(Count));
+                    PropertyChanged?.Invoke(this, new(nameof(Count)));
 
                     CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
@@ -782,7 +797,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return newGenerationKey;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<Instance> GetEnumerator()
         {
             foreach (var entry in instance2Scope)
             {
@@ -798,7 +813,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private class Registrar : IRegistrar<T, Template>
+        private class Registrar : IRegistrar<Instance, Parameter>
         {
             private readonly DryIoc.IContainer container;
 
@@ -807,11 +822,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 this.container = container;
             }
 
-            public object ClassScopeName => ResolutionScopeName.Of<T>();
+            public object ClassScopeName => ResolutionScopeName.Of<Instance>();
 
             [DoesNotReturn]
             public void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null)
-                where TImpl : class, T
+                where TImpl : class, Instance
             {
                 // Register implementation with appropriate reuse and factory
 
@@ -822,7 +837,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                         throw new InvalidOperationException($"Constructor is not declared by {typeof(TImpl).FullName}");
                     }
 
-                    container.Register<T, TImpl>(reuse: Reuse.Scoped, made: Made.Of(constructor));
+                    container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(constructor));
                 }
                 else
                 {
@@ -842,11 +857,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                     if (instantiatorCtor != null)
                     {
-                        container.Register<T, TImpl>(reuse: Reuse.Scoped, made: Made.Of(instantiatorCtor));
+                        container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(instantiatorCtor));
                     }
                     else
                     {
-                        container.Register<T, TImpl>(reuse: Reuse.Scoped, made: Made.Of(FactoryMethod.Constructor(mostResolvable: true, includeNonPublic: true)));
+                        container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(FactoryMethod.Constructor(mostResolvable: true, includeNonPublic: true)));
                     }
                 }
 
@@ -869,8 +884,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private static class DependencyTracker
         {
-            public static IContainer<TT, TTemplate> CreateAndTrackDependency<TT, TTemplate>(IContainer<TT, TTemplate> container, IResolverContext scope, Action<IContainerLifecycle, IResolverContext> action)
-                where TT : class
+            public static IContainer<DInstance, DParameter> CreateAndTrackDependency<DInstance, DParameter>(IContainer<DInstance, DParameter> container, IResolverContext scope, Action<IContainerLifecycle, IResolverContext> action)
+                where DInstance : class
             {
                 if (container is IContainerLifecycle lifecycle)
                 {

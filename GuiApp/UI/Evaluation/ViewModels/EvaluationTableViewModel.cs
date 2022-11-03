@@ -34,6 +34,7 @@ using System.Reactive.Concurrency;
 using System.Collections;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -199,7 +200,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
 
 
-        public ReactiveCommand<Unit, ITemplatedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
+        public ReactiveCommand<Unit, IParameterizedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
 
 
 
@@ -291,7 +292,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
 
-            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Templated(new IEvaluationExporterViewModel.Of()));
+            ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Parameterized(new IEvaluationExporterViewModel.Of()));
 
             RemoveRecords = ReactiveCommand.CreateFromTask<IEnumerable>(async enumerable =>
             {

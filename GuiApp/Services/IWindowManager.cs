@@ -17,6 +17,7 @@
 */
 
 using Avalonia.Controls;
+using FitsRatingTool.IoC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -38,15 +39,15 @@ namespace FitsRatingTool.GuiApp.Services
 
         IEnumerable<Window> Windows { get; }
 
-        bool Show<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
+        bool Show<TWindow, TData, TParameter>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, [NotNullWhen(true)] out TWindow? window, Func<TWindow, bool>? filter = null, Window? parent = null)
             where TWindow : Window
             where TData : class;
 
-        bool ShowDialog<TWindow, TData, TTemplate>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
+        bool ShowDialog<TWindow, TData, TParameter>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class;
 
-        bool ShowDialog<TWindow, TData, TTemplate, R>(Func<IContainer<TData, TTemplate>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
+        bool ShowDialog<TWindow, TData, TParameter, R>(Func<IContainer<TData, TParameter>, TData> factory, bool showMultiple, Window parent, [NotNullWhen(true)] out TWindow? window, [NotNullWhen(true)] out Task<R>? task, Func<TWindow, bool>? filter = null)
             where TWindow : Window
             where TData : class;
 

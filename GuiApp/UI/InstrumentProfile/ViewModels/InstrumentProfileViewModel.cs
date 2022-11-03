@@ -20,6 +20,7 @@ using Avalonia.Collections;
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;

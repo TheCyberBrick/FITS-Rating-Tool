@@ -22,9 +22,9 @@ using System;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Progress.ViewModels;
 using FitsRatingTool.FitsLoader.Models;
-using FitsRatingTool.GuiApp.Services;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.IoC;
 
 namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
 {
