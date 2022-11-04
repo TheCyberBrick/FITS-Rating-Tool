@@ -16,17 +16,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using DryIoc;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Subjects;
 using System.Reflection;
 
 namespace FitsRatingTool.IoC.Impl
 {
+    [Export(typeof(IContainer<,>)), PartCreationPolicy(CreationPolicy.NonShared)]
     public class Container<Instance, Parameter> : IContainer<Instance, Parameter>, IContainerLifecycle, INotifyPropertyChanged, INotifyPropertyChanging
         where Instance : class
     {
@@ -96,15 +97,16 @@ namespace FitsRatingTool.IoC.Impl
         public event PropertyChangingEventHandler? PropertyChanging;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private readonly Dictionary<IResolverContext, Instance> scope2Instance = new();
-        private readonly ConcurrentDictionary<Instance, IResolverContext> instance2Scope = new();
+        private readonly Dictionary<IContainerResolver.IScope, Instance> scope2Instance = new();
+        private readonly ConcurrentDictionary<Instance, IContainerResolver.IScope> instance2Scope = new();
 
-        private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> scope2Dependencies = new();
-        private readonly HashSet<IResolverContext> scopes = new();
+        private readonly ConcurrentDictionary<IContainerResolver.IScope, List<IContainerLifecycle>> scope2Dependencies = new();
+        private readonly HashSet<IContainerResolver.IScope> scopes = new();
+        private readonly HashSet<object> scopeKeys = new();
 
 
-        private readonly ConcurrentDictionary<IResolverContext, List<IContainerLifecycle>> loadingScope2Dependencies = new();
-        private readonly HashSet<IResolverContext> loadingScopes = new();
+        private readonly ConcurrentDictionary<IContainerResolver.IScope, List<IContainerLifecycle>> loadingScope2Dependencies = new();
+        private readonly HashSet<object> loadingScopeKeys = new();
 
         private readonly HashSet<Instance> loadingInstances = new();
 
@@ -118,49 +120,29 @@ namespace FitsRatingTool.IoC.Impl
 
         private int reentrancyCount;
 
-        private readonly DryIoc.IContainer container;
+        private readonly IContainerResolver resolver;
         private readonly object? scopeName;
 
-        public Container(DryIoc.IContainer container, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
+        public Container(IContainerResolver resolver, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
         {
             // Create child container so that the T registration
             // can be replaced/shadowed
-            this.container = container = container.With(
-                container,
-                container.Rules.WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.Replace),
-                container.ScopeContext,
-                RegistrySharing.CloneButKeepCache,
-                container.SingletonScope,
-                container.CurrentScope,
-                IsRegistryChangePermitted.Permitted);
+            this.resolver = resolver = resolver.CreateChild();
 
             // Register initializer to track injected dependencies
-            container.Register<object>(
-                made: Made.Of(
-                    req => typeof(DependencyTracker)
-                        .SingleMethod(nameof(DependencyTracker.CreateAndTrackDependency))
-                        .MakeGenericMethod(req.ServiceType.GetGenericArguments()),
-                    parameters: Parameters.Of.Type(req => (Action<IContainerLifecycle, IResolverContext>)OnDependencyInjected)),
-                setup: Setup.DecoratorWith(
-                    r =>
-                    {
-                        lock (this)
-                        {
-                            return (scopes.Contains(r.Container) || loadingScopes.Contains(r.Container)) &&
-                                r.FactoryType != FactoryType.Wrapper &&
-                                r.ServiceType.IsGenericType &&
-                                typeof(IContainer<,>).IsAssignableFrom(r.ServiceType.GetGenericTypeDefinition());
-                        }
-                    },
-                    useDecorateeReuse: true,
-                    preventDisposal: true)
-                );
+            resolver.RegisterInitializer(OnDependencyInjected, key =>
+            {
+                lock (this)
+                {
+                    return scopeKeys.Contains(key) || loadingScopeKeys.Contains(key);
+                }
+            });
 
             // Invoke factory constructor to complete registration
             RegistrationCompletion? completion = null;
             try
             {
-                regCtor.Invoke(new Registrar(container));
+                regCtor.Invoke(new Registrar(resolver));
             }
             catch (RegistrationCompletion c)
             {
@@ -227,7 +209,7 @@ namespace FitsRatingTool.IoC.Impl
             IsSingleton = true;
         }
 
-        private void OnDependencyInjected(IContainerLifecycle lifecycle, IResolverContext scope)
+        private void OnDependencyInjected(IContainerLifecycle lifecycle, IContainerResolver.IScope scope)
         {
             CheckReentrancy();
 
@@ -237,7 +219,7 @@ namespace FitsRatingTool.IoC.Impl
             {
                 CheckDisposed();
 
-                if (!scopes.Contains(scope) && !loadingScopes.Contains(scope))
+                if (!scopeKeys.Contains(scope.Key) && !loadingScopeKeys.Contains(scope.Key))
                 {
                     throw new InvalidOperationException("Dependency was injected with unknown scope");
                 }
@@ -291,7 +273,7 @@ namespace FitsRatingTool.IoC.Impl
         {
             CheckReentrancy();
 
-            IResolverContext newScope;
+            IContainerResolver.IScope newScope;
             object? newGenerationKey;
             bool clearContainer = isContainerSingleton;
 
@@ -322,7 +304,7 @@ namespace FitsRatingTool.IoC.Impl
 
             // Open a new scope with the scope name previously
             // passed by T to the registrar
-            newScope = container.OpenScope(scopeName);
+            newScope = resolver.OpenScope(scopeName);
 
             void destroyInstanceAndScope(Instance? instance)
             {
@@ -338,6 +320,7 @@ namespace FitsRatingTool.IoC.Impl
                     lock (this)
                     {
                         disposeScope = scopes.Remove(newScope);
+                        scopeKeys.Remove(newScope.Key);
                     }
                     if (disposeScope)
                     {
@@ -356,7 +339,7 @@ namespace FitsRatingTool.IoC.Impl
                     // destroy the new instance or dispose the
                     // new scope because Instantiate will take
                     // care of the destruction
-                    loadingScopes.Add(newScope);
+                    loadingScopeKeys.Add(newScope.Key);
                 }
 
                 // Create a new instance.
@@ -364,7 +347,7 @@ namespace FitsRatingTool.IoC.Impl
                 // OnDependencyInjected receives the same scope
                 // instance so that it can track the dependencies
                 // properly
-                newInstance = newScope.Resolve<Func<Parameter, IResolverContext, Instance>>().Invoke(parameter, newScope);
+                newInstance = newScope.Resolve<Instance, Parameter>(parameter);
 
                 List<IContainerLifecycle>? dependencies = null;
 
@@ -374,7 +357,7 @@ namespace FitsRatingTool.IoC.Impl
                 {
                     CheckDisposed();
 
-                    loadingScopes.Remove(newScope);
+                    loadingScopeKeys.Remove(newScope.Key);
                     loadingInstances.Add(newInstance);
 
                     // Check if the container has been cleared
@@ -396,6 +379,7 @@ namespace FitsRatingTool.IoC.Impl
                             }
 
                             scopes.Add(newScope);
+                            scopeKeys.Add(newScope.Key);
                             scope2Instance.Add(newScope, newInstance);
                             instance2Scope.TryAdd(newInstance, newScope);
 
@@ -490,7 +474,7 @@ namespace FitsRatingTool.IoC.Impl
 
                 lock (this)
                 {
-                    loadingScopes.Remove(newScope);
+                    loadingScopeKeys.Remove(newScope.Key);
 
                     if (newInstance != null)
                     {
@@ -518,7 +502,7 @@ namespace FitsRatingTool.IoC.Impl
 
             CheckReentrancy();
 
-            IResolverContext? scope = null;
+            IContainerResolver.IScope? scope = null;
             IEnumerable<IContainerLifecycle>? dependencies = null;
 
             lock (this)
@@ -539,6 +523,7 @@ namespace FitsRatingTool.IoC.Impl
                         dependencies = scope2Dependencies.TryRemove(scope, out var v) ? v : Enumerable.Empty<IContainerLifecycle>();
 
                         scopes.Remove(scope);
+                        scopeKeys.Remove(scope.Key);
                         scope2Instance.Remove(scope);
                         instance2Scope.TryRemove(instance, out var _);
 
@@ -646,8 +631,8 @@ namespace FitsRatingTool.IoC.Impl
 
             CheckReentrancy();
 
-            Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)> oldInstances;
-            HashSet<IResolverContext> oldScopes;
+            Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IContainerResolver.IScope scope)> oldInstances;
+            HashSet<IContainerResolver.IScope> oldScopes;
 
             object newGenerationKey;
 
@@ -672,13 +657,13 @@ namespace FitsRatingTool.IoC.Impl
                 // the container and instead be destroyed
                 newGenerationKey = generationKey = new object();
 
-                oldInstances = new Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IResolverContext scope)>();
+                oldInstances = new Dictionary<Instance, (IEnumerable<IContainerLifecycle> dependencies, IContainerResolver.IScope scope)>();
                 foreach (var entry in scope2Instance)
                 {
                     oldInstances.Add(entry.Value, (scope2Dependencies.TryGetValue(entry.Key, out var dependencies) ? dependencies : Enumerable.Empty<IContainerLifecycle>(), entry.Key));
                 }
 
-                oldScopes = new HashSet<IResolverContext>(scopes);
+                oldScopes = new HashSet<IContainerResolver.IScope>(scopes);
 
                 ++reentrancyCount;
                 try
@@ -687,6 +672,7 @@ namespace FitsRatingTool.IoC.Impl
 
                     scope2Dependencies.Clear();
                     scopes.Clear();
+                    scopeKeys.Clear();
                     scope2Instance.Clear();
                     instance2Scope.Clear();
 
@@ -815,14 +801,14 @@ namespace FitsRatingTool.IoC.Impl
 
         private class Registrar : IRegistrar<Instance, Parameter>
         {
-            private readonly DryIoc.IContainer container;
+            private readonly IContainerResolver resolver;
 
-            public Registrar(DryIoc.IContainer container)
+            public Registrar(IContainerResolver resolver)
             {
-                this.container = container;
+                this.resolver = resolver;
             }
 
-            public object ClassScopeName => ResolutionScopeName.Of<Instance>();
+            public object ClassScopeName => resolver.GetClassScopeName<Instance>();
 
             [DoesNotReturn]
             public void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null)
@@ -836,34 +822,23 @@ namespace FitsRatingTool.IoC.Impl
                     {
                         throw new InvalidOperationException($"Constructor is not declared by {typeof(TImpl).FullName}");
                     }
-
-                    container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(constructor));
                 }
                 else
                 {
-                    ConstructorInfo? instantiatorCtor = null;
-
                     foreach (var ctor in typeof(TImpl).GetTypeInfo().DeclaredConstructors)
                     {
                         if (ctor.GetCustomAttribute<InstantiatorAttribute>() != null)
                         {
-                            if (instantiatorCtor != null)
+                            if (constructor != null)
                             {
                                 throw new InvalidOperationException($"Multiple instantiator constructors in {typeof(TImpl).FullName}");
                             }
-                            instantiatorCtor = ctor;
+                            constructor = ctor;
                         }
                     }
-
-                    if (instantiatorCtor != null)
-                    {
-                        container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(instantiatorCtor));
-                    }
-                    else
-                    {
-                        container.Register<Instance, TImpl>(reuse: Reuse.Scoped, made: Made.Of(FactoryMethod.Constructor(mostResolvable: true, includeNonPublic: true)));
-                    }
                 }
+
+                resolver.RegisterService<Instance, TImpl>(constructor);
 
                 throw new RegistrationCompletion(typeof(TImpl), scopeName);
             }
@@ -879,19 +854,6 @@ namespace FitsRatingTool.IoC.Impl
             {
                 RegisteredType = registeredType;
                 ScopeName = scopeName;
-            }
-        }
-
-        private static class DependencyTracker
-        {
-            public static IContainer<DInstance, DParameter> CreateAndTrackDependency<DInstance, DParameter>(IContainer<DInstance, DParameter> container, IResolverContext scope, Action<IContainerLifecycle, IResolverContext> action)
-                where DInstance : class
-            {
-                if (container is IContainerLifecycle lifecycle)
-                {
-                    action.Invoke(lifecycle, scope);
-                }
-                return container;
             }
         }
     }

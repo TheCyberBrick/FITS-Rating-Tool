@@ -35,11 +35,19 @@ namespace FitsRatingTool.IoC
         [Import]
         protected Func<IFactoryRoot<Implementation, Unit>> RootFactory { get; private set; } = null!;
 
-        public ComponentRegistrationOfSingleton(string id, string name, Implementation instance)
+        protected ComponentRegistrationOfSingleton(string id, string name, Implementation instance)
         {
             Id = id;
             Name = name;
             Instance = instance;
+        }
+
+        protected ComponentRegistrationOfSingleton(
+            Func<IFactoryRoot<Implementation, Unit>> rootFactory,
+            string id, string name, Implementation instance)
+            : this(id, name, instance)
+        {
+            RootFactory = rootFactory;
         }
 
         public IDelegatedFactory<Base> CreateFactory(CompositeDisposable disposable)

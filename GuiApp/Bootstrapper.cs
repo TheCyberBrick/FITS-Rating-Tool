@@ -49,10 +49,8 @@ namespace FitsRatingTool.GuiApp
             container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
 
             // IoC
-            container.Register(typeof(IContainer<,>), typeof(Container<,>), Reuse.Transient);
-            container.Register(typeof(IContainerRoot<,>), typeof(ContainerRoot<,>), Reuse.Transient);
-            container.Register(typeof(IFactoryRoot<,>), typeof(FactoryRoot<,>), Reuse.Transient, setup: Setup.With(allowDisposableTransient: true));
-            container.Register(typeof(IComponentRegistry<>), typeof(ComponentRegistry<>), Reuse.Transient, setup: Setup.With(allowDisposableTransient: true));
+            container.RegisterExports(typeof(IContainer<,>).Assembly);
+            container.Register(typeof(IContainerResolver), typeof(DryIoCContainerResolver), Reuse.Transient);
 
             // Exporters
             container.Register<ICSVEvaluationExporterFactory, CSVEvaluationExporterFactory>(Reuse.Singleton);

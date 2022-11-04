@@ -17,10 +17,12 @@
 */
 
 using System.Collections.Concurrent;
+using System.ComponentModel.Composition;
 using System.Reactive.Disposables;
 
 namespace FitsRatingTool.IoC.Impl
 {
+    [Export(typeof(IComponentRegistry<>)), PartCreationPolicy(CreationPolicy.NonShared)]
     public class ComponentRegistry<T> : IComponentRegistry<T>, IDisposable
         where T : class
     {
@@ -34,6 +36,8 @@ namespace FitsRatingTool.IoC.Impl
             reg.RegisterAndReturn<ComponentRegistry<T>>();
         }
 
+
+        private volatile bool disposed;
 
         public IEnumerable<string> Ids => registrations.Keys;
 
@@ -72,16 +76,20 @@ namespace FitsRatingTool.IoC.Impl
 
         public IComponentRegistration<T>? GetRegistration(string id)
         {
+            CheckDisposed();
             return registrations.TryGetValue(id, out var registration) ? registration.Registration : null;
         }
 
         public IDelegatedFactory<T>? GetFactory(string id)
         {
+            CheckDisposed();
             return registrations.TryGetValue(id, out var registration) ? registration.Factory : null;
         }
 
         public bool Register(IComponentRegistration<T> registration)
         {
+            CheckDisposed();
+
             var result = registrations.GetOrAdd(registration.Id, id =>
             {
                 var disposable = new CompositeDisposable();
@@ -99,8 +107,18 @@ namespace FitsRatingTool.IoC.Impl
             return result.Registration == registration;
         }
 
+        private void CheckDisposed()
+        {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(nameof(ComponentRegistry<T>));
+            }
+        }
+
         public void Dispose()
         {
+            disposed = true;
+
             while (!registrations.IsEmpty)
             {
                 foreach (var key in registrations.Keys)

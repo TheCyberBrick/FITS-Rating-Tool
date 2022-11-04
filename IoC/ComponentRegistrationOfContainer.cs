@@ -40,11 +40,21 @@ namespace FitsRatingTool.IoC
         [Import]
         protected IContainer<CInstance, CParameter> Container { get; set; } = null!;
 
-        public ComponentRegistrationOfContainer(string id, string name, CParameter parameter)
+        protected ComponentRegistrationOfContainer(string id, string name, CParameter parameter)
         {
             Id = id;
             Name = name;
             Parameter = parameter;
+        }
+
+        protected ComponentRegistrationOfContainer(
+            Func<IFactoryRoot<CInstance, CParameter>> rootFactory,
+            IContainer<CInstance, CParameter> container,
+            string id, string name, CParameter parameter)
+            : this(id, name, parameter)
+        {
+            RootFactory = rootFactory;
+            Container = container;
         }
 
         public IDelegatedFactory<Base> CreateFactory(CompositeDisposable disposable)

@@ -16,10 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.ComponentModel.Composition;
 using System.Reactive.Disposables;
 
 namespace FitsRatingTool.IoC.Impl
 {
+    [Export(typeof(IContainerRoot<,>)), PartCreationPolicy(CreationPolicy.NonShared)]
     public class ContainerRoot<Instance, Parameter> : IContainerRoot<Instance, Parameter>
         where Instance : class
     {
