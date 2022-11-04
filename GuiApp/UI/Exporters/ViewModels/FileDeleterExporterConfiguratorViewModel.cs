@@ -22,7 +22,6 @@ using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.IoC;
-using FitsRatingTool.IoC.Impl;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;

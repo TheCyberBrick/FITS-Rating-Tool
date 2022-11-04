@@ -20,7 +20,7 @@ using System.ComponentModel.Composition;
 using System.Reactive;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.IoC.Impl
+namespace FitsRatingTool.IoC
 {
     public abstract class ComponentRegistrationOfSingleton<Base, Implementation> : IComponentRegistration<Base>
         where Base : class

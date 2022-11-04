@@ -19,7 +19,7 @@
 using System.ComponentModel.Composition;
 using System.Reactive.Disposables;
 
-namespace FitsRatingTool.IoC.Impl
+namespace FitsRatingTool.IoC
 {
     public abstract class ComponentRegistrationOfContainer<Base, CInstance, CParameter> : IComponentRegistration<Base>
         where Base : class

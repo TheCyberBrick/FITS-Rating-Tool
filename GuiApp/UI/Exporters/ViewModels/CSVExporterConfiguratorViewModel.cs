@@ -21,7 +21,6 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.IoC;
-using FitsRatingTool.IoC.Impl;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Composition;
