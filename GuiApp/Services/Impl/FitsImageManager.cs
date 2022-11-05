@@ -85,6 +85,27 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
+            public double? Rating
+            {
+                get => manager.analysisRepository.GetRating(File);
+                set
+                {
+                    if (value != null)
+                    {
+                        EnsureInRepository();
+                        manager.analysisRepository.AddRating(File, value.Value);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Rating, false);
+                    }
+                    else
+                    {
+                        if (manager.analysisRepository.RemoveRating(File) != null)
+                        {
+                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Rating, true);
+                        }
+                    }
+                }
+            }
+
             public IFitsImageMetadata? Metadata
             {
                 get => manager.metadataRepository.GetMetadata(File);
@@ -270,6 +291,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 fileRepository.RemoveFile(file);
                 analysisRepository.RemoveStatistics(file);
                 analysisRepository.RemovePhotometry(file);
+                analysisRepository.RemoveRating(file);
                 metadataRepository.RemoveMetadata(file);
 
                 NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.DataType.File, true);

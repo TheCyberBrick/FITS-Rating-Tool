@@ -53,5 +53,15 @@ namespace FitsRatingTool.GuiApp.Repositories
 
         event EventHandler<RepositoryChangedEventArgs> PhotometryChanged;
         #endregion
+
+        #region +++ Ratings +++
+        void AddRating(string file, double rating);
+
+        double? GetRating(string file);
+
+        double? RemoveRating(string file);
+
+        event EventHandler<RepositoryChangedEventArgs> RatingsChanged;
+        #endregion
     }
 }

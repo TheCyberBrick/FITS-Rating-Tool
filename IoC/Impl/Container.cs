@@ -123,26 +123,13 @@ namespace FitsRatingTool.IoC.Impl
         private readonly IContainerResolver resolver;
         private readonly object? scopeName;
 
-        public Container(IContainerResolver resolver, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
+        public Container(IContainerResolver parentResolver, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
         {
-            // Create child container so that the T registration
-            // can be replaced/shadowed
-            this.resolver = resolver = resolver.CreateChild();
-
-            // Register initializer to track injected dependencies
-            resolver.RegisterInitializer(OnDependencyInjected, key =>
-            {
-                lock (this)
-                {
-                    return scopeKeys.Contains(key) || loadingScopeKeys.Contains(key);
-                }
-            });
-
             // Invoke factory constructor to complete registration
             RegistrationCompletion? completion = null;
             try
             {
-                regCtor.Invoke(new Registrar(resolver));
+                regCtor.Invoke(new Registrar(this, parentResolver));
             }
             catch (RegistrationCompletion c)
             {
@@ -156,6 +143,7 @@ namespace FitsRatingTool.IoC.Impl
                 throw new InvalidOperationException($"Constructor did not call {typeof(IRegistrar<,>).Name}.{nameof(Registrar.RegisterAndReturn)}");
             }
 
+            resolver = completion.Fork;
             scopeName = completion.ScopeName;
         }
 
@@ -207,6 +195,14 @@ namespace FitsRatingTool.IoC.Impl
             }
 
             IsSingleton = true;
+        }
+
+        private bool ContainsScope(object scopeKey)
+        {
+            lock (this)
+            {
+                return scopeKeys.Contains(scopeKey) || loadingScopeKeys.Contains(scopeKey);
+            }
         }
 
         private void OnDependencyInjected(IContainerLifecycle lifecycle, IContainerResolver.IScope scope)
@@ -623,9 +619,10 @@ namespace FitsRatingTool.IoC.Impl
                 return null;
             }
 
-            if (Count == 0 || isContainerSingleton && singletonInstance == null)
+            if (!dispose && (Count == 0 || isContainerSingleton && singletonInstance == null))
             {
                 // Nothing to do if container is already empty
+                // and doesn't need to be disposed
                 return null;
             }
 
@@ -769,15 +766,11 @@ namespace FitsRatingTool.IoC.Impl
                     }
 
                     singletonSubject.Dispose();
-                }
 
-                // Child container is not disposed because
-                // disposal of services is already handled
-                // by the scope, and disposing the child
-                // container would cause unintentional
-                // disposal of other services due to the
-                // container's scopes being shared instead
-                // of cloned
+                    // Allow resolver implementation to do
+                    // cleanup if necessary
+                    resolver.DestroyFork();
+                }
             }
 
             return newGenerationKey;
@@ -801,14 +794,16 @@ namespace FitsRatingTool.IoC.Impl
 
         private class Registrar : IRegistrar<Instance, Parameter>
         {
-            private readonly IContainerResolver resolver;
+            private readonly Container<Instance, Parameter> container;
+            private readonly IContainerResolver parentResolver;
 
-            public Registrar(IContainerResolver resolver)
+            public Registrar(Container<Instance, Parameter> container, IContainerResolver parentResolver)
             {
-                this.resolver = resolver;
+                this.container = container;
+                this.parentResolver = parentResolver;
             }
 
-            public object ClassScopeName => resolver.GetClassScopeName<Instance>();
+            public object ClassScopeName => parentResolver.GetClassScopeName<Instance>();
 
             [DoesNotReturn]
             public void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null)
@@ -838,9 +833,11 @@ namespace FitsRatingTool.IoC.Impl
                     }
                 }
 
-                resolver.RegisterService<Instance, TImpl>(constructor);
+                // Fork the resolver and register the constructor
+                // and initializer to it
+                var fork = parentResolver.Fork<Instance, TImpl>(constructor, container.OnDependencyInjected, container.ContainsScope);
 
-                throw new RegistrationCompletion(typeof(TImpl), scopeName);
+                throw new RegistrationCompletion(typeof(TImpl), scopeName, fork);
             }
         }
 
@@ -850,10 +847,13 @@ namespace FitsRatingTool.IoC.Impl
 
             public object? ScopeName { get; }
 
-            public RegistrationCompletion(Type registeredType, object? scopeName)
+            public IContainerResolver Fork { get; }
+
+            public RegistrationCompletion(Type registeredType, object? scopeName, IContainerResolver fork)
             {
                 RegisteredType = registeredType;
                 ScopeName = scopeName;
+                Fork = fork;
             }
         }
     }

@@ -34,6 +34,8 @@ namespace FitsRatingTool.GuiApp.Services
 
             IEnumerable<IFitsImagePhotometryViewModel>? Photometry { get; set; }
 
+            double? Rating { get; set; }
+
             IFitsImageMetadata? Metadata { get; set; }
 
             IEnumerable<IFitsImageContainer> ImageContainers { get; }
@@ -47,7 +49,7 @@ namespace FitsRatingTool.GuiApp.Services
         {
             public enum DataType
             {
-                File, Statistics, Photometry, Metadata, ImageContainers, Outdated
+                File, Statistics, Photometry, Rating, Metadata, ImageContainers, Outdated
             }
 
             public string File { get; }

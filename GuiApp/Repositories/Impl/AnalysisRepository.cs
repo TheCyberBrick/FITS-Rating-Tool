@@ -30,6 +30,7 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
     {
         private readonly ConcurrentDictionary<string, IEnumerable<IFitsImagePhotometryViewModel>> photometryRepository = new();
         private readonly ConcurrentDictionary<string, IFitsImageStatisticsViewModel> statisticsRepository = new();
+        private readonly ConcurrentDictionary<string, double> ratingsRepository = new();
 
         public void AddStatistics(string file, IFitsImageStatisticsViewModel statistics)
         {
@@ -59,14 +60,8 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
         private event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? _statisticsChanged;
         public event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? StatisticsChanged
         {
-            add
-            {
-                _statisticsChanged += value;
-            }
-            remove
-            {
-                _statisticsChanged -= value;
-            }
+            add => _statisticsChanged += value;
+            remove => _statisticsChanged -= value;
         }
 
         public void AddPhotometry(string file, IEnumerable<IFitsImagePhotometryViewModel> photometry)
@@ -98,14 +93,40 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
         private event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? _photometryChanged;
         public event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? PhotometryChanged
         {
-            add
+            add => _photometryChanged += value;
+            remove => _photometryChanged -= value;
+        }
+
+        public void AddRating(string file, double rating)
+        {
+            ratingsRepository.AddOrUpdate(file, rating, (file, old) => rating);
+            _ratingsChanged?.Invoke(this, new IAnalysisRepository.RepositoryChangedEventArgs(file));
+        }
+
+        public double? GetRating(string file)
+        {
+            if (ratingsRepository.TryGetValue(file, out var rating))
             {
-                _photometryChanged += value;
+                return rating;
             }
-            remove
+            return null;
+        }
+
+        public double? RemoveRating(string file)
+        {
+            if (ratingsRepository.Remove(file, out var rating))
             {
-                _photometryChanged -= value;
+                _ratingsChanged?.Invoke(this, new IAnalysisRepository.RepositoryChangedEventArgs(file));
+                return rating;
             }
+            return null;
+        }
+
+        private event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? _ratingsChanged;
+        public event EventHandler<IAnalysisRepository.RepositoryChangedEventArgs>? RatingsChanged
+        {
+            add => _ratingsChanged += value;
+            remove => _ratingsChanged -= value;
         }
     }
 }

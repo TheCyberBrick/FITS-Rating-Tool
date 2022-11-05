@@ -57,19 +57,6 @@ namespace FitsRatingTool.IoC.Impl
             this.container = container;
         }
 
-        public IContainerResolver CreateChild()
-        {
-            var childCnotainer = container.With(
-                container,
-                container.Rules.WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.Replace),
-                container.ScopeContext,
-                RegistrySharing.CloneButKeepCache,
-                container.SingletonScope,
-                container.CurrentScope,
-                IsRegistryChangePermitted.Permitted);
-            return new DryIoCContainerResolver(childCnotainer);
-        }
-
         public object GetClassScopeName<T>()
         {
             return ResolutionScopeName.Of<T>();
@@ -80,22 +67,20 @@ namespace FitsRatingTool.IoC.Impl
             return new Scope(this, container.OpenScope(scopeName));
         }
 
-        public void RegisterService<Service, Implementation>(ConstructorInfo? ctor = null)
-            where Implementation : Service
+        public IContainerResolver Fork<Service, Implementation>(ConstructorInfo? ctor, Action<IContainerLifecycle, IContainerResolver.IScope> initializer, Predicate<object> scopeKeyPredicate) where Implementation : Service
         {
-            if (ctor != null)
-            {
-                container.Register<Service, Implementation>(reuse: Reuse.Scoped, made: Made.Of(ctor));
-            }
-            else
-            {
-                container.Register<Service, Implementation>(reuse: Reuse.Scoped, made: Made.Of(FactoryMethod.Constructor(mostResolvable: true, includeNonPublic: true)));
-            }
-        }
+            // Create child container
+            var childContainer = container.With(
+                container,
+                container.Rules.WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.Replace),
+                container.ScopeContext,
+                RegistrySharing.CloneButKeepCache,
+                container.SingletonScope,
+                container.CurrentScope,
+                IsRegistryChangePermitted.Permitted);
 
-        public void RegisterInitializer(Action<IContainerLifecycle, IContainerResolver.IScope> initializer, Predicate<object> scopeKeyPredicate)
-        {
-            container.Register<object>(
+            // Register initializer
+            childContainer.Register<object>(
                 made: Made.Of(
                     req => typeof(Initializer)
                         .SingleMethod(nameof(Initializer.CreateAndInitialize))
@@ -109,6 +94,29 @@ namespace FitsRatingTool.IoC.Impl
                     useDecorateeReuse: true,
                     preventDisposal: true)
                 );
+
+            // Register service
+            if (ctor != null)
+            {
+                childContainer.Register<Service, Implementation>(reuse: Reuse.Scoped, made: Made.Of(ctor));
+            }
+            else
+            {
+                childContainer.Register<Service, Implementation>(reuse: Reuse.Scoped, made: Made.Of(FactoryMethod.Constructor(mostResolvable: true, includeNonPublic: true)));
+            }
+
+            return new DryIoCContainerResolver(childContainer);
+        }
+
+        public void DestroyFork()
+        {
+            // Child container is not disposed because
+            // disposal of services is already handled
+            // by the scope, and disposing the child
+            // container would cause unintentional
+            // disposal of other services (such as
+            // singletons) due to the container's
+            // scopes being shared instead of cloned
         }
 
         private static class Initializer
