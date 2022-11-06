@@ -1283,17 +1283,22 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             FitsImage = null;
             File = null;
 
-            foreach (var image in imageDisposables.Keys)
+            CancelLoadingTasks();
+
+            foreach (var disposables in imageDisposables.Values)
             {
-                if (imageDisposables.TryGetValue(image, out var disposables))
+                foreach (var disposable in disposables)
                 {
-                    foreach (var disposable in disposables)
-                    {
-                        disposable.Dispose();
-                    }
+                    disposable.Dispose();
                 }
             }
             imageDisposables.Clear();
+
+            foreach (var semaphore in imageSemaphores.Values)
+            {
+                semaphore.Dispose();
+            }
+            imageSemaphores.Clear();
         }
 
         public async Task UnloadAsync()
