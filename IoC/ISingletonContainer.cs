@@ -18,12 +18,8 @@
 
 namespace FitsRatingTool.IoC
 {
-    public interface IContainerLifecycleListener
+    public interface ISingletonContainer<Instance, Parameter> : IContainer<Instance, Parameter>, IObservable<Instance?>
+        where Instance : class
     {
-        void OnInstantiated();
-
-        void OnDestroying();
-
-        void OnDestroyed();
     }
 }

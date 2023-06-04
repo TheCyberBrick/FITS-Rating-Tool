@@ -24,6 +24,8 @@ namespace FitsRatingTool.IoC
     public interface IReadOnlyContainer<T> : IReadOnlyCollection<T>, INotifyPropertyChanged, INotifyPropertyChanging, INotifyCollectionChanged
         where T : class
     {
+        Type InstanceType { get; }
+
         bool IsInitialized { get; }
 
         event Action OnInitialized;

@@ -282,7 +282,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             this.jobConfigFactory = jobConfigFactory;
             this.groupingManager = groupingManager;
 
-            evaluationExporterConfiguratorContainer.ToSingleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm =>
+            evaluationExporterConfiguratorContainer.Singleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm =>
             {
                 EvaluationExporterConfigurator = vm;
                 EvaluationExporterConfigurator.ConfigurationChanged += (s, e) => UpdateJobConfig();
@@ -304,9 +304,9 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 defaultGroupingConfiguration = new GroupingConfiguration(true, true, false, false, false, false, 0, null);
             }
 
-            groupingConfiguratorContainer.ToSingleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm => GroupingConfigurator = vm);
+            groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm => GroupingConfigurator = vm);
 
-            evaluationFormulaContainer.ToSingleton().Inject(new IEvaluationFormulaViewModel.Of(), vm =>
+            evaluationFormulaContainer.Singleton().Inject(new IEvaluationFormulaViewModel.Of(), vm =>
             {
                 EvaluationFormula = vm;
                 EvaluationFormula.RatingFormula = evaluationManager.CurrentFormula;

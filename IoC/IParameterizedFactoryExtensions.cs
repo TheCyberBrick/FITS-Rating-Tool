@@ -18,17 +18,12 @@
 
 namespace FitsRatingTool.IoC
 {
-    public interface IContainer<Instance, Parameter> : IReadOnlyContainer<Instance>
-        where Instance : class
+    public static class IParameterizedFactoryExtensions
     {
-        Type ParameterType { get; }
-
-        ISingletonContainer<Instance, Parameter> Singleton();
-
-        Instance Instantiate(Parameter parameter);
-
-        bool Destroy(Instance instance);
-
-        void Destroy();
+        public static Instance Instantiate<Instance, Parameter>(this IParameterizedFactory<Instance, Parameter> factory, IContainer<Instance, Parameter> container)
+            where Instance : class
+        {
+            return factory.Instantiate(container.Instantiate);
+        }
     }
 }

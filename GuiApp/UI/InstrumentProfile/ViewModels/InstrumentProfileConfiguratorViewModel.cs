@@ -72,7 +72,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
-        private readonly IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer;
+        private readonly ISingletonContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer;
 
         private InstrumentProfileConfiguratorViewModel(IInstrumentProfileConfiguratorViewModel.Of args,
             IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
@@ -80,11 +80,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             IInstrumentProfileManager instrumentProfileManager)
         {
             this.instrumentProfileManager = instrumentProfileManager;
-            this.instrumentProfileContainer = instrumentProfileContainer;
+            this.instrumentProfileContainer = instrumentProfileContainer.Singleton();
 
-            instrumentProfileSelectorContainer.ToSingleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm => Selector = vm);
-
-            instrumentProfileContainer.ToSingleton();
+            instrumentProfileSelectorContainer.Singleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm => Selector = vm);
         }
 
         protected override void OnInstantiated()

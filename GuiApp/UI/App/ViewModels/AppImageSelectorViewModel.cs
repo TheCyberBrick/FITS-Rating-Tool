@@ -69,15 +69,15 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private bool isImageLoading;
 
         private readonly IFitsImageManager fitsImageManager;
-        private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
+        private readonly ISingletonContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
 
         private AppImageSelectorViewModel(IAppImageSelectorViewModel.Of args, IFitsImageManager fitsImageManager,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer)
         {
             this.fitsImageManager = fitsImageManager;
-            this.fitsImageContainer = fitsImageContainer.ToSingleton();
+            this.fitsImageContainer = fitsImageContainer.Singleton();
 
-            fitsImageContainer.ToSingletonWithObservable().Subscribe(vm => SelectedImage = vm);
+            this.fitsImageContainer.Subscribe(vm => SelectedImage = vm);
 
             // Select only full images by default
             SelectedImageFilter = i => i.OutDim.Width == i.ImageWidth && i.OutDim.Height == i.ImageHeight;

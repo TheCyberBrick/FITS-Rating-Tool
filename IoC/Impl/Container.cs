@@ -34,22 +34,14 @@ namespace FitsRatingTool.IoC.Impl
         private IContainerLifecycle? parent;
         private object? dependee;
 
+        public Type InstanceType => typeof(Instance);
+
+        public Type ParameterType => typeof(Parameter);
+
         private bool isContainerSingleton;
 
-        private bool _isSingleton;
-        public bool IsSingleton
-        {
-            get => _isSingleton;
-            private set
-            {
-                if (_isSingleton != value)
-                {
-                    PropertyChanging?.Invoke(this, new(nameof(IsSingleton)));
-                    _isSingleton = value;
-                    PropertyChanged?.Invoke(this, new(nameof(IsSingleton)));
-                }
-            }
-        }
+        private ISingletonContainer<Instance, Parameter>? singletonWrapper;
+        public bool IsSingleton => singletonWrapper != null;
 
         public int Count => instance2Scope.Count;
 
@@ -163,19 +155,7 @@ namespace FitsRatingTool.IoC.Impl
             }
         }
 
-        public IContainer<Instance, Parameter> ToSingleton()
-        {
-            ChangeToSingleton();
-            return this;
-        }
-
-        public IObservable<Instance?> ToSingletonWithObservable()
-        {
-            ChangeToSingleton();
-            return singletonSubject;
-        }
-
-        private void ChangeToSingleton()
+        public ISingletonContainer<Instance, Parameter> Singleton()
         {
             CheckReentrancy();
 
@@ -194,7 +174,14 @@ namespace FitsRatingTool.IoC.Impl
                 }
             }
 
-            IsSingleton = true;
+            if (singletonWrapper == null)
+            {
+                PropertyChanging?.Invoke(this, new(nameof(IsSingleton)));
+                singletonWrapper = new SingletonContainerWrapper<Instance, Parameter>(this, singletonSubject);
+                PropertyChanged?.Invoke(this, new(nameof(IsSingleton)));
+            }
+
+            return singletonWrapper;
         }
 
         private bool ContainsScope(object scopeKey)
@@ -409,7 +396,7 @@ namespace FitsRatingTool.IoC.Impl
                     }
 
                     // Notify instance about completed instantiation
-                    (newInstance as IContainerLifecycleListener)?.OnInstantiated();
+                    (newInstance as ILifecycleSubscriber)?.OnInstantiated();
 
                     // Notify listeners about added dependency
                     _onInstantiated?.Invoke(newInstance);
@@ -570,7 +557,7 @@ namespace FitsRatingTool.IoC.Impl
                     (dependee as IContainerDependencyListener)?.OnRemoved(instance);
 
                     // Notify instance of being destroyed
-                    (instance as IContainerLifecycleListener)?.OnDestroying();
+                    (instance as ILifecycleSubscriber)?.OnDestroying();
 
                     // Destroy removed dependencies
                     foreach (var dependency in dependencies)
@@ -579,7 +566,7 @@ namespace FitsRatingTool.IoC.Impl
                     }
 
                     // Notify instance of having been destroyed
-                    (instance as IContainerLifecycleListener)?.OnDestroyed();
+                    (instance as ILifecycleSubscriber)?.OnDestroyed();
 
                     // Notify listeners about destroyed dependency
                     _onDestroyed?.Invoke(instance);
@@ -723,7 +710,7 @@ namespace FitsRatingTool.IoC.Impl
                     (dependee as IContainerDependencyListener)?.OnRemoved(instance);
 
                     // Notify instance of being destroyed
-                    (instance as IContainerLifecycleListener)?.OnDestroying();
+                    (instance as ILifecycleSubscriber)?.OnDestroying();
 
                     // Destroy removed dependencies
                     foreach (var dependency in dependencies)
@@ -732,7 +719,7 @@ namespace FitsRatingTool.IoC.Impl
                     }
 
                     // Notify instance of having been destroyed
-                    (instance as IContainerLifecycleListener)?.OnDestroyed();
+                    (instance as ILifecycleSubscriber)?.OnDestroyed();
 
                     // Notify listeners about destroyed dependency
                     _onDestroyed?.Invoke(instance);

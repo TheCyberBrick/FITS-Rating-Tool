@@ -65,18 +65,20 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IAppImageSelectorViewModel, IAppImageSelectorViewModel.Of> appImageSelectorViewModel,
             IContainer<IFitsImageViewerViewModel, IFitsImageViewerViewModel.Of> fitsImageViewerContainer)
         {
-            appImageSelectorViewModel.ToSingleton().Inject(new IAppImageSelectorViewModel.Of(), vm =>
+            appImageSelectorViewModel.Singleton().Inject(new IAppImageSelectorViewModel.Of(), vm =>
             {
                 Selector = vm;
                 Selector.SelectedFile = selectedFile;
             });
 
-            fitsImageViewerContainer.ToSingleton().Inject(new IFitsImageViewerViewModel.Of(), vm => Viewer = vm);
+            fitsImageViewerContainer.Singleton().Inject(new IFitsImageViewerViewModel.Of(), vm => Viewer = vm);
         }
 
         protected override void OnInstantiated()
         {
-            this.WhenAnyValue(x => x.Selector.SelectedImage).Subscribe(image => Viewer.FitsImage = image);
+            // TODO Bind image or file?
+            //this.WhenAnyValue(x => x.Selector.SelectedImage).Subscribe(image => Viewer.FitsImage = image);
+            this.WhenAnyValue(x => x.Selector.SelectedFile).Subscribe(image => Viewer.File = image);
         }
     }
 }

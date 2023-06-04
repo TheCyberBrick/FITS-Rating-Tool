@@ -66,7 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private EvaluationExporterConfiguratorViewModel(IEvaluationExporterConfiguratorViewModel.Of args,
             IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
         {
-            exporterConfiguratorRegistryContainer.ToSingleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
+            exporterConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
             {
                 var exporterConfiguratorFactories = new List<ExporterConfiguratorFactory>();
 

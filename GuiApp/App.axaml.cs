@@ -47,7 +47,7 @@ namespace FitsRatingTool.GuiApp
             {
                 IContainerRoot<IAppViewModel, IAppViewModel.Of> appContainerRoot = container.Resolve<IContainerRoot<IAppViewModel, IAppViewModel.Of>>();
 
-                var disposable = appContainerRoot.Instantiate(new IAppViewModel.Of(), out var _, out var app);
+                var disposable = appContainerRoot.Instantiate(new IAppViewModel.Of(), out var app, true);
 
                 desktop.MainWindow = new AppWindow(container.Resolve<IWindowManager>(), container.Resolve<IOpenFileEventManager>())
                 {

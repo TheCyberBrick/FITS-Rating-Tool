@@ -90,7 +90,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         public ReactiveCommand<Unit, IParameterizedFactory<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile>> ShowExternalImageAnalysis { get; }
 
 
-        private readonly IContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer;
+        private readonly ISingletonContainer<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerContainer;
 
         private AppViewerOverlayViewModel(IAppViewerOverlayViewModel.Of args,
             IFitsImageManager fitsImageManager,
@@ -99,9 +99,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryRoot<IFitsImageCornerViewerViewModel, IFitsImageCornerViewerViewModel.OfViewer> fitsImageCornerViewerFactory,
             IFactoryRoot<IImageAnalysisViewModel, IImageAnalysisViewModel.OfFile> imageAnalysisFactory)
         {
-            this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer;
-
-            fitsImageCornerViewerContainer.ToSingletonWithObservable().Subscribe(vm => CornerViewer = vm);
+            this.fitsImageCornerViewerContainer = fitsImageCornerViewerContainer.Singleton();
+            this.fitsImageCornerViewerContainer.Subscribe(vm => CornerViewer = vm);
 
             this.WhenAnyValue(x => x.Viewer!.File).Subscribe(x =>
             {

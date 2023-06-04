@@ -24,9 +24,30 @@ using System.Collections.Generic;
 
 namespace FitsRatingTool.GuiApp.UI
 {
-    public class ViewModelBase : ReactiveObject, IActivatableViewModel, IContainerLifecycleListener, IContainerDependencyListener
+    public class ViewModelBase : ReactiveObject, IActivatableViewModel, ILifecyclePublisher, ILifecycleSubscriber, IContainerDependencyListener
     {
         public ViewModelActivator Activator { get; }
+
+        private Action? _onInstantiated;
+        event Action ILifecyclePublisher.OnInstantiated
+        {
+            add => _onInstantiated += value;
+            remove => _onInstantiated -= value;
+        }
+
+        private Action? _onDestroying;
+        event Action ILifecyclePublisher.OnDestroying
+        {
+            add => _onDestroying += value;
+            remove => _onDestroying -= value;
+        }
+
+        private Action? _onDestroyed;
+        event Action ILifecyclePublisher.OnDestroyed
+        {
+            add => _onDestroyed += value;
+            remove => _onDestroyed -= value;
+        }
 
         private readonly List<Action> cleanup = new();
         private readonly Dictionary<(object, string, object), Action> subscribedEvents = new();
@@ -63,16 +84,18 @@ namespace FitsRatingTool.GuiApp.UI
             }
         }
 
-        void IContainerLifecycleListener.OnInstantiated()
+        void ILifecycleSubscriber.OnInstantiated()
         {
             OnInstantiated();
+
+            _onInstantiated?.Invoke();
         }
 
         protected virtual void OnInstantiated()
         {
         }
 
-        void IContainerLifecycleListener.OnDestroying()
+        void ILifecycleSubscriber.OnDestroying()
         {
             foreach (var action in subscribedEvents.Values)
             {
@@ -87,15 +110,19 @@ namespace FitsRatingTool.GuiApp.UI
             cleanup.Clear();
 
             OnDestroying();
+
+            _onDestroying?.Invoke();
         }
 
         protected virtual void OnDestroying()
         {
         }
 
-        void IContainerLifecycleListener.OnDestroyed()
+        void ILifecycleSubscriber.OnDestroyed()
         {
             OnDestroyed();
+
+            _onDestroyed?.Invoke();
         }
 
         protected virtual void OnDestroyed()

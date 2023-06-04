@@ -32,9 +32,14 @@ namespace FitsRatingTool.IoC.Impl
             this.containerFactory = containerFactory;
         }
 
-        public IDisposable Initialize(out IContainer<Instance, Parameter> container)
+        public IDisposable Initialize(out IContainer<Instance, Parameter> container, bool singleton = false)
         {
             container = containerFactory.Invoke();
+
+            if (singleton)
+            {
+                container.Singleton();
+            }
 
             if (container is IContainerLifecycle lifecycle)
             {
@@ -45,13 +50,6 @@ namespace FitsRatingTool.IoC.Impl
             {
                 throw new InvalidOperationException($"Container does not implement {nameof(IContainerLifecycle)}");
             }
-        }
-
-        public IDisposable Instantiate(Parameter parameter, out IContainer<Instance, Parameter> container, out Instance instance)
-        {
-            var disposable = Initialize(out container);
-            instance = container.Instantiate(parameter);
-            return disposable;
         }
     }
 

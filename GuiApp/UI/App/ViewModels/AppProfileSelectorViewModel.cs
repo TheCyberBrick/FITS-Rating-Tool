@@ -53,7 +53,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
             IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
         {
-            instrumentProfileSelectorContainer.ToSingleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm =>
+            instrumentProfileSelectorContainer.Singleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm =>
             {
                 Selector = vm;
                 Selector.IsReadOnly = true;

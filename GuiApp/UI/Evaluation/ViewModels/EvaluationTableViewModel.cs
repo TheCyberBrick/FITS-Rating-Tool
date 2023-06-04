@@ -232,7 +232,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 defaultGroupingConfiguration = new GroupingConfiguration(true, false, false, false, false, false, 0, null);
             }
 
-            groupingConfiguratorContainer.ToSingleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
+            groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
             {
                 GroupingConfigurator = vm;
                 evaluationManager.CurrentFilterGroupingConfiguration = vm.GroupingConfiguration;

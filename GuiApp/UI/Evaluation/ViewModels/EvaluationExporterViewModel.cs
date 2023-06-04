@@ -59,9 +59,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 this.WhenAnyValue(x => x.EvaluationExporterConfigurator.ExporterConfigurator!.IsValid).Prepend(false).DefaultIfEmpty(false),
                 (a, b) => a != null && b);
 
-            evaluationExporterConfiguratorContainer.ToSingleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm => EvaluationExporterConfigurator = vm);
+            evaluationExporterConfiguratorContainer.Singleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm => EvaluationExporterConfigurator = vm);
 
-            evaluationExportProgressContainer.ToSingleton();
+            evaluationExportProgressContainer.Singleton();
 
             ExportWithProgress = ReactiveCommand.Create(() =>
             {

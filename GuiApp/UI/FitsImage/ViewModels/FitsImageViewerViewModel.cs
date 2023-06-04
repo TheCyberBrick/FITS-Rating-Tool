@@ -360,7 +360,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageHistogramContainer;
-        private readonly IContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageStretchedHistogramContainer;
+        private readonly ISingletonContainer<IFitsImageHistogramViewModel, IFitsImageHistogramViewModel.OfData> fitsImageStretchedHistogramContainer;
         private readonly IStarSampler starSampler;
 
 
@@ -377,13 +377,13 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
             this.manager = manager;
             this.fitsImageContainer = fitsImageContainer;
             this.fitsImageHistogramContainer = fitsImageHistogramContainer;
-            this.fitsImageStretchedHistogramContainer = fitsImageStretchedHistogramContainer;
+            this.fitsImageStretchedHistogramContainer = fitsImageStretchedHistogramContainer.Singleton();
             this.starSampler = starSampler;
 
-            fitsImageSectionContainer.ToSingletonWithObservable().Subscribe(vm => PeekViewer = vm);
+            fitsImageSectionContainer.Singleton().Subscribe(vm => PeekViewer = vm);
 
-            fitsImageHistogramContainer.ToSingletonWithObservable().Subscribe(vm => Histogram = vm);
-            fitsImageStretchedHistogramContainer.ToSingletonWithObservable().Subscribe(vm => StretchedHistogram = vm);
+            fitsImageHistogramContainer.Singleton().Subscribe(vm => Histogram = vm);
+            this.fitsImageStretchedHistogramContainer.Subscribe(vm => StretchedHistogram = vm);
 
             MaxInputSize = appConfig.MaxImageSize;
             MaxWidth = appConfig.MaxImageWidth;

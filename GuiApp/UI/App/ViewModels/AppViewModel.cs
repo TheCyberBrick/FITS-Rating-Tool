@@ -236,12 +236,12 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             this.appViewerOverlayContainer = appViewerOverlayContainer;
             this.appViewerOverlayFactory = appViewerOverlayFactory;
 
-            multiImageViewerContainer.ToSingleton().Inject(new IFitsImageMultiViewerViewModel.Of(), vm =>
+            multiImageViewerContainer.Singleton().Inject(new IFitsImageMultiViewerViewModel.Of(), vm =>
             {
                 MultiViewer = vm;
             });
 
-            appProfileSelectorContainer.ToSingleton().Inject(new IAppProfileSelectorViewModel.Of(), vm => AppProfileSelector = vm);
+            appProfileSelectorContainer.Singleton().Inject(new IAppProfileSelectorViewModel.Of(), vm => AppProfileSelector = vm);
 
             ShowFileTable = ReactiveCommand.Create(() => fileTableFactory.Parameterized(new IFileTableViewModel.Of()));
             HideFileTable = ReactiveCommand.Create(() => { });

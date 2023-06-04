@@ -92,7 +92,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
             IContainer<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressTempContainer,
             IFactoryRoot<IJobRunnerProgressViewModel, IJobRunnerProgressViewModel.OfJob> jobRunnerProgressFactory)
         {
-            jobRunnerProgressContainer.ToSingletonWithObservable().Subscribe(x => Progress = x);
+            jobRunnerProgressContainer.Singleton().Subscribe(x => Progress = x);
 
             var canRun = this.WhenAnyValue(x => x.JobConfigFile, x => x.Path, (a, b) => a.Length > 0 && b.Length > 0);
 

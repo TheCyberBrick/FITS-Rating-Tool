@@ -106,7 +106,7 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
             path = args.Path;
             this.standaloneEvaluationService = standaloneEvaluationService;
 
-            exporterConfiguratorRegistryContainer.ToSingleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
+            exporterConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
             {
                 foreach (var id in registry.Ids)
                 {

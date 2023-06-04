@@ -128,9 +128,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 var containerRoot = resolver.Resolve<IContainerRoot<TData, TParameter>>();
 
-                var disposable = containerRoot.Initialize(out var container);
-
-                window.DataContext = factory.Invoke(container);
+                var disposable = containerRoot.Instantiate(factory, out var instance, true);
+                window.DataContext = instance;
 
                 windows[type] = list ??= new();
                 list.Add(window);

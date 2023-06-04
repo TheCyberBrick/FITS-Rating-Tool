@@ -21,8 +21,6 @@ namespace FitsRatingTool.IoC
     public interface IContainerRoot<Instance, Parameter>
         where Instance : class
     {
-        IDisposable Initialize(out IContainer<Instance, Parameter> container);
-
-        IDisposable Instantiate(Parameter parameter, out IContainer<Instance, Parameter> container, out Instance instance);
+        IDisposable Initialize(out IContainer<Instance, Parameter> container, bool singleton = false);
     }
 }

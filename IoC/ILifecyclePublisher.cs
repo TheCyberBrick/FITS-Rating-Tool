@@ -18,17 +18,12 @@
 
 namespace FitsRatingTool.IoC
 {
-    public interface IContainer<Instance, Parameter> : IReadOnlyContainer<Instance>
-        where Instance : class
+    public interface ILifecyclePublisher
     {
-        Type ParameterType { get; }
+        event Action OnInstantiated;
 
-        ISingletonContainer<Instance, Parameter> Singleton();
+        event Action OnDestroying;
 
-        Instance Instantiate(Parameter parameter);
-
-        bool Destroy(Instance instance);
-
-        void Destroy();
+        event Action OnDestroyed;
     }
 }
