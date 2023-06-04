@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.1.46" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta1" />
-    <PackageReference Include="org.matheval" Version="1.0.0.2" />
+    <PackageReference Include="org.matheval" Version="1.0.0.3" />
   </ItemGroup>
 
   <ItemGroup>
