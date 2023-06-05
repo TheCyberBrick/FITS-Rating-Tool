@@ -34,6 +34,7 @@ using FitsRatingTool.GuiApp.Models;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.IoC;
+using System.Reactive.Concurrency;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -117,9 +118,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationService evaluationService;
         private readonly IEvaluationManager evaluationManager;
         private readonly IGroupingManager groupingManager;
+        private readonly IInstrumentProfileManager instrumentProfileManager;
 
         private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IGroupingManager groupingManager)
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IGroupingManager groupingManager,
+            IInstrumentProfileManager instrumentProfileManager)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
@@ -207,6 +210,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             });
 
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationFormulaViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, EvaluationFormulaViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, EvaluationFormulaViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.RecordChanged), OnProfileChanged);
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
@@ -215,6 +221,32 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             {
                 UpdateGroupKeys(evaluationManager.CurrentGrouping, args.File);
             }
+        }
+
+        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs args)
+        {
+            HandleProfileChanged();
+        }
+
+        private void OnProfileChanged(object? sender, IInstrumentProfileManager.RecordChangedEventArgs args)
+        {
+            if (args.AddedOrUpdated && args.ProfileId == instrumentProfileManager.CurrentProfile?.Id)
+            {
+                HandleProfileChanged();
+            }
+        }
+
+        private void HandleProfileChanged()
+        {
+            async void update()
+            {
+                if (RatingFormula != null)
+                {
+                    await UpdateEvaluatorInstanceAsync(RatingFormula);
+                }
+            }
+
+            RxApp.MainThreadScheduler.Schedule(() => update());
         }
 
         private void UpdateGroupingConfiguration(GroupingConfiguration configuration)
@@ -262,13 +294,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             }
         }
 
-        private async Task<Unit> UpdateEvaluatorInstanceAsync(string formula, CancellationToken cancel = default)
+        private async Task<Unit> UpdateEvaluatorInstanceAsync(string? formula, CancellationToken cancel = default)
         {
             IEvaluationService.IEvaluator? evaluatorInstance = null;
 
             bool errored;
 
-            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, out evaluatorInstance, out var errorMessage) && errorMessage != null)
+            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, instrumentProfileManager.CurrentProfile?.ValueOverrides, out evaluatorInstance, out var errorMessage) && errorMessage != null)
             {
                 errored = true;
                 RatingFormulaError = errorMessage;

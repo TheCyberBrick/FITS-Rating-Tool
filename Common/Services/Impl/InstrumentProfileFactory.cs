@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
@@ -34,6 +35,18 @@ namespace FitsRatingTool.Common.Services.Impl
 
                 [JsonProperty(PropertyName = "value", Required = Required.Always)]
                 public double Value { get; set; }
+            }
+
+            public class JsonValueOverrideSpecification
+            {
+                [JsonProperty(PropertyName = "keyword", Required = Required.Always)]
+                public string Keyword { get; set; } = null!;
+
+                [JsonProperty(PropertyName = "default_value", Required = Required.Always)]
+                public double DefaultValue { get; set; } = 0;
+
+                [JsonProperty(PropertyName = "exclude_from_aggregate_functions_if_not_found", NullValueHandling = NullValueHandling.Ignore)]
+                public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; } = false;
             }
 
             [JsonProperty(PropertyName = "id", Required = Required.Always)]
@@ -112,6 +125,50 @@ namespace FitsRatingTool.Common.Services.Impl
 
             [JsonIgnore]
             IReadOnlyList<IReadOnlyInstrumentProfile.IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
+
+            [JsonProperty(PropertyName = "value_overrides", NullValueHandling = NullValueHandling.Ignore)]
+            private Dictionary<string, JsonValueOverrideSpecification>? _serializedValueOverrides;
+            [JsonIgnore]
+            private Dictionary<string, ValueOverrideSpecification>? _cachedValueOverrides;
+            [JsonIgnore]
+            public IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides
+            {
+                get
+                {
+                    if (_cachedValueOverrides != null)
+                    {
+                        return _cachedValueOverrides;
+                    }
+                    _cachedValueOverrides = null;
+                    if (_serializedValueOverrides != null)
+                    {
+                        _cachedValueOverrides = new();
+                        foreach (var entry in _serializedValueOverrides)
+                        {
+                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification(entry.Value.Keyword, entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound);
+                        }
+                    }
+                    return _cachedValueOverrides;
+                }
+                set
+                {
+                    _cachedValueOverrides = null;
+                    _serializedValueOverrides = null;
+                    if (value != null)
+                    {
+                        _serializedValueOverrides = new();
+                        foreach (var entry in value)
+                        {
+                            _serializedValueOverrides.Add(entry.Key, new JsonValueOverrideSpecification
+                            {
+                                Keyword = entry.Value.Keyword,
+                                DefaultValue = entry.Value.DefaultValue,
+                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
+                            });
+                        }
+                    }
+                }
+            }
 
             public InstrumentProfile(string profileId)
             {

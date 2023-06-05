@@ -17,7 +17,6 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Common.Models.FitsImage;
 
 namespace FitsRatingTool.Common.Services
 {
@@ -32,13 +31,15 @@ namespace FitsRatingTool.Common.Services
             IEvaluator Clone();
 
 
-            public delegate Task EvaluationConsumer(IFitsImageStatistics statistics, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
+            public delegate Task EvaluationConsumer(EvaluationItem item, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
             public delegate void EventConsumer(Evaluation.Event e);
 
 
-            Task EvaluateAsync(IEnumerable<IFitsImageStatistics> statistics, int parallelTasks, EvaluationConsumer evaluationConsumer, EventConsumer? eventConsumer = default, CancellationToken cancellationToken = default);
+            Task EvaluateAsync(IEnumerable<EvaluationItem> items, int parallelTasks, EvaluationConsumer evaluationConsumer, EventConsumer? eventConsumer = default, CancellationToken cancellationToken = default);
         }
 
-        bool Build(string formula, out IEvaluator? evaluator, out string? formulaErrorMessage);
+        bool Build(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverrides, out IEvaluator? evaluator, out string? formulaErrorMessage);
+
+        IDictionary<string, ValueOverride> GetValueOverridesFromHeader(IReadOnlyDictionary<string, ValueOverrideSpecification> defaultValueOverrides, Func<string, string?> header);
     }
 }

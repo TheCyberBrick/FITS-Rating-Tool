@@ -68,6 +68,18 @@ namespace FitsRatingTool.Common.Services.Impl
                 public string Config { get; set; } = null!;
             }
 
+            public class JsonValueOverrideSpecification
+            {
+                [JsonProperty(PropertyName = "keyword", Required = Required.Always)]
+                public string Keyword { get; set; } = null!;
+
+                [JsonProperty(PropertyName = "default_value", Required = Required.Always)]
+                public double DefaultValue { get; set; } = 0;
+
+                [JsonProperty(PropertyName = "exclude_from_aggregate_functions_if_not_found", NullValueHandling = NullValueHandling.Ignore)]
+                public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; } = false;
+            }
+
 
             [JsonIgnore]
             private string[] _evaluationFormulaLines = default!;
@@ -221,6 +233,50 @@ namespace FitsRatingTool.Common.Services.Impl
                                 Id = cfg.Id,
                                 Config = cfg.Config
                             };
+                        }
+                    }
+                }
+            }
+
+            [JsonProperty(PropertyName = "value_overrides", NullValueHandling = NullValueHandling.Ignore)]
+            private Dictionary<string, JsonValueOverrideSpecification>? _serializedValueOverrides;
+            [JsonIgnore]
+            private Dictionary<string, ValueOverrideSpecification>? _cachedValueOverrides;
+            [JsonIgnore]
+            public IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides
+            {
+                get
+                {
+                    if (_cachedValueOverrides != null)
+                    {
+                        return _cachedValueOverrides;
+                    }
+                    _cachedValueOverrides = null;
+                    if (_serializedValueOverrides != null)
+                    {
+                        _cachedValueOverrides = new();
+                        foreach (var entry in _serializedValueOverrides)
+                        {
+                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification(entry.Value.Keyword, entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound);
+                        }
+                    }
+                    return _cachedValueOverrides;
+                }
+                set
+                {
+                    _cachedValueOverrides = null;
+                    _serializedValueOverrides = null;
+                    if (value != null)
+                    {
+                        _serializedValueOverrides = new();
+                        foreach (var entry in value)
+                        {
+                            _serializedValueOverrides.Add(entry.Key, new JsonValueOverrideSpecification
+                            {
+                                Keyword = entry.Value.Keyword,
+                                DefaultValue = entry.Value.DefaultValue,
+                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
+                            });
                         }
                     }
                 }

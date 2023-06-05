@@ -100,12 +100,18 @@ namespace FitsRatingTool.Common.Services.Impl
             return true;
         }
 
-        private async Task<Tuple<IFitsImageStatistics, string?>?> LoadAndCalculateStatisticsAsync(string file, IReadOnlyJobConfig jobConfig, Filters? filters, AsyncSemaphore ioThrottle, int index, IGroupingManager.IGrouping grouping, IBatchEvaluationService.ICache? cache, IBatchEvaluationService.EventConsumer? eventConsumer = null, CancellationToken cancellationToken = default)
+        private async Task<(IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, ValueOverride>? ValueOverrides)?> LoadAndCalculateStatisticsAsync(
+            string file, IReadOnlyJobConfig jobConfig, Filters? filters,
+            AsyncSemaphore ioThrottle, int index, IGroupingManager.IGrouping grouping,
+            IBatchEvaluationService.ICache? cache,
+            IBatchEvaluationService.EventConsumer? eventConsumer = null,
+            CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             IFitsImageStatistics? stats = null;
             string? groupKey = null;
+            IDictionary<string, ValueOverride>? valueOverrides = null;
 
             try
             {
@@ -159,15 +165,17 @@ namespace FitsRatingTool.Common.Services.Impl
                             });
                         }
 
-                        // Check if file should be loaded, otherwise skip
-                        if (!ShouldLoadFile(file, jobConfig, filters, grouping, groupMatch, keyword =>
+                        Func<string, string?> headerMap = keyword =>
                         {
                             if (cachedHeader.TryGetValue(keyword, out var value))
                             {
                                 return value;
                             }
                             return null;
-                        }))
+                        };
+
+                        // Check if file should be loaded, otherwise skip
+                        if (!ShouldLoadFile(file, jobConfig, filters, grouping, groupMatch, headerMap))
                         {
                             eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, true, true));
                             return null;
@@ -192,9 +200,15 @@ namespace FitsRatingTool.Common.Services.Impl
                         // the image needs to be analyzed again
                         if (hasAllMeasurements)
                         {
+                            // Get value overrides
+                            if (jobConfig.ValueOverrides != null)
+                            {
+                                valueOverrides = evaluationService.GetValueOverridesFromHeader(jobConfig.ValueOverrides, headerMap);
+                            }
+
                             eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, true, false));
 
-                            return Tuple.Create((IFitsImageStatistics)new Stats(cachedStats), cachedGroupKey);
+                            return (new Stats(cachedStats), cachedGroupKey, valueOverrides);
                         }
                     }
                 }
@@ -225,15 +239,17 @@ namespace FitsRatingTool.Common.Services.Impl
                         });
                         groupKey = groupMatch != null ? groupMatch.GroupKey : null;
 
-                        // And check if file should be loaded, otherwise skip
-                        if (!ShouldLoadFile(file, jobConfig, filters, grouping, groupMatch, keyword =>
+                        Func<string, string?> headerMap = keyword =>
                         {
                             if (image.Header.TryGetValue(keyword, out var header))
                             {
                                 return header.Value;
                             }
                             return null;
-                        }))
+                        };
+
+                        // And check if file should be loaded, otherwise skip
+                        if (!ShouldLoadFile(file, jobConfig, filters, grouping, groupMatch, headerMap))
                         {
                             // Skip
                             eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, false, true));
@@ -264,6 +280,14 @@ namespace FitsRatingTool.Common.Services.Impl
                             }
 
                             return null;
+                        }
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        // Get value overrides
+                        if (jobConfig.ValueOverrides != null)
+                        {
+                            valueOverrides = evaluationService.GetValueOverridesFromHeader(jobConfig.ValueOverrides, headerMap);
                         }
 
                         cancellationToken.ThrowIfCancellationRequested();
@@ -368,10 +392,10 @@ namespace FitsRatingTool.Common.Services.Impl
                 eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, false, false, ex));
             }
 
-            return stats != null ? Tuple.Create(stats, groupKey) : null;
+            return stats != null ? (stats, groupKey, valueOverrides) : null;
         }
 
-        private IEvaluationService.IEvaluator? BuildEvaluator(string formula, out string? errorMessage, IBatchEvaluationService.EventConsumer? eventConsumer = null)
+        private IEvaluationService.IEvaluator? BuildEvaluator(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverrides, out string? errorMessage, IBatchEvaluationService.EventConsumer? eventConsumer = null)
         {
             eventConsumer?.Invoke(new BatchEvaluation.Event(BatchEvaluation.Phase.InitStart));
 
@@ -379,7 +403,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             try
             {
-                if (!evaluationService.Build(formula, out evaluator, out errorMessage) || evaluator == null)
+                if (!evaluationService.Build(formula, defaultValueOverrides, out evaluator, out errorMessage) || evaluator == null)
                 {
                     if (errorMessage != null)
                     {
@@ -405,7 +429,12 @@ namespace FitsRatingTool.Common.Services.Impl
             return evaluator;
         }
 
-        public async Task EvaluateAsync(IReadOnlyJobConfig jobConfig, List<string> files, IBatchEvaluationService.EvaluationConsumer evaluationConsumer, IBatchEvaluationService.ICache? cache = null, IBatchEvaluationService.EventConsumer? eventConsumer = null, CancellationToken cancellationToken = default)
+        public async Task EvaluateAsync(
+            IReadOnlyJobConfig jobConfig, List<string> files,
+            IBatchEvaluationService.EvaluationConsumer evaluationConsumer,
+            IBatchEvaluationService.ICache? cache = null,
+            IBatchEvaluationService.EventConsumer? eventConsumer = null,
+            CancellationToken cancellationToken = default)
         {
             if (jobConfig.ParallelTasks <= 0)
             {
@@ -440,15 +469,15 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var grouping = groupingManager.BuildGrouping(jobConfig.GroupingKeys != null ? jobConfig.GroupingKeys.ToArray() : Array.Empty<string>());
 
-            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, out var errorMessage, eventConsumer);
+            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, jobConfig.ValueOverrides, out var errorMessage, eventConsumer);
 
             if (evaluator == null)
             {
                 throw new IBatchEvaluationService.InvalidConfigException(errorMessage, null);
             }
 
-            ConcurrentDictionary<string, Tuple<IFitsImageStatistics, int>> fileToStatistics = new();
-            ConcurrentDictionary<IFitsImageStatistics, Tuple<string, int, string>> statisticsToFile = new();
+            ConcurrentDictionary<string, (IFitsImageStatistics Statistics, int Index, IDictionary<string, ValueOverride>? ValueOverrides)> fileToStatistics = new();
+            ConcurrentDictionary<IFitsImageStatistics, (string File, int Index, string GroupKey)> statisticsToFile = new();
 
             ConcurrentDictionary<string, List<string>> groups = new();
 
@@ -462,14 +491,15 @@ namespace FitsRatingTool.Common.Services.Impl
                 {
                     yield return o => async ct =>
                     {
-                        var tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, ioThrottle, index, grouping, cache, eventConsumer, ct));
-                        if (tuple != null)
+                        (IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, ValueOverride> ValueOverrides)? tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, ioThrottle, index, grouping, cache, eventConsumer, ct));
+                        if (tuple.HasValue)
                         {
-                            var stats = tuple.Item1;
-                            var groupKey = tuple.Item2 ?? "All";
+                            var stats = tuple.Value.Statistics;
+                            var groupKey = tuple.Value.GroupKey ?? "All";
+                            var valueOverride = tuple.Value.ValueOverrides;
 
-                            fileToStatistics.TryAdd(file, Tuple.Create(stats, index));
-                            statisticsToFile.TryAdd(stats, Tuple.Create(file, index, groupKey));
+                            fileToStatistics.TryAdd(file, (stats, index, valueOverride));
+                            statisticsToFile.TryAdd(stats, (file, index, groupKey));
 
                             var groupFiles = groups.GetOrAdd(groupKey, _ => new());
                             lock (groupFiles)
@@ -515,47 +545,48 @@ namespace FitsRatingTool.Common.Services.Impl
                             {
                                 if (ee.StepIndex == 0)
                                 {
-                                    eventConsumer?.Invoke(new BatchEvaluation.EvaluationEvent(BatchEvaluation.Phase.EvaluationStart, statisticsToFile[ee.Stats].Item1, statisticsToFile[ee.Stats].Item2, i, n, groupKey, groupSize));
+                                    eventConsumer?.Invoke(new BatchEvaluation.EvaluationEvent(BatchEvaluation.Phase.EvaluationStart, statisticsToFile[ee.Item.Statistics].File, statisticsToFile[ee.Item.Statistics].Index, i, n, groupKey, groupSize));
                                 }
 
-                                eventConsumer?.Invoke(new BatchEvaluation.EvaluationStepEvent(BatchEvaluation.Phase.EvaluationStepStart, statisticsToFile[ee.Stats].Item1, statisticsToFile[ee.Stats].Item2, i, n, groupKey, groupSize, ee.StepIndex, ee.StepCount));
+                                eventConsumer?.Invoke(new BatchEvaluation.EvaluationStepEvent(BatchEvaluation.Phase.EvaluationStepStart, statisticsToFile[ee.Item.Statistics].File, statisticsToFile[ee.Item.Statistics].Index, i, n, groupKey, groupSize, ee.StepIndex, ee.StepCount));
                             }
 
                             if (e.Phase == Evaluation.Phase.EvaluationStepEnd)
                             {
-                                eventConsumer?.Invoke(new BatchEvaluation.EvaluationStepEvent(BatchEvaluation.Phase.EvaluationStepEnd, statisticsToFile[ee.Stats].Item1, statisticsToFile[ee.Stats].Item2, i, n, groupKey, groupSize, ee.StepIndex, ee.StepCount));
+                                eventConsumer?.Invoke(new BatchEvaluation.EvaluationStepEvent(BatchEvaluation.Phase.EvaluationStepEnd, statisticsToFile[ee.Item.Statistics].File, statisticsToFile[ee.Item.Statistics].Index, i, n, groupKey, groupSize, ee.StepIndex, ee.StepCount));
 
                                 if (ee.StepIndex == ee.StepCount - 1)
                                 {
-                                    eventConsumer?.Invoke(new BatchEvaluation.EvaluationEvent(BatchEvaluation.Phase.EvaluationEnd, statisticsToFile[ee.Stats].Item1, statisticsToFile[ee.Stats].Item2, i, n, groupKey, groupSize));
+                                    eventConsumer?.Invoke(new BatchEvaluation.EvaluationEvent(BatchEvaluation.Phase.EvaluationEnd, statisticsToFile[ee.Item.Statistics].File, statisticsToFile[ee.Item.Statistics].Index, i, n, groupKey, groupSize));
                                 }
                             }
                         }
                     };
                 }
 
-                IEnumerable<IFitsImageStatistics> evaluateTaskGenerator()
+                IEnumerable<EvaluationItem> evaluateTaskGenerator()
                 {
                     foreach (var file in groupFiles)
                     {
-                        yield return fileToStatistics[file].Item1;
+                        var stats = fileToStatistics[file];
+                        yield return new EvaluationItem(stats.Statistics, stats.ValueOverrides);
                     }
                 }
 
-                await evaluator.EvaluateAsync(evaluateTaskGenerator(), jobConfig.ParallelTasks, async (stats, variableValues, value, ct) =>
+                await evaluator.EvaluateAsync(evaluateTaskGenerator(), jobConfig.ParallelTasks, async (item, variableValues, value, ct) =>
                 {
-                    var tuple = statisticsToFile[stats];
+                    var tuple = statisticsToFile[item.Statistics];
                     try
                     {
-                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationStart, tuple.Item1, tuple.Item2));
+                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationStart, tuple.File, tuple.Index));
 
-                        await evaluationConsumer.Invoke(tuple.Item1, tuple.Item3, variableValues, value, ct);
+                        await evaluationConsumer.Invoke(tuple.File, tuple.GroupKey, variableValues, value, ct);
 
-                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationEnd, tuple.Item1, tuple.Item2));
+                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationEnd, tuple.File, tuple.Index));
                     }
                     catch (Exception ex)
                     {
-                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationEnd, tuple.Item1, tuple.Item2, ex));
+                        eventConsumer?.Invoke(new BatchEvaluation.FileEvent(BatchEvaluation.Phase.ConsumeEvaluationEnd, tuple.File, tuple.Index, ex));
                     }
                 }, internalEventConsumer, cancellationToken);
 

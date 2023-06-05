@@ -18,12 +18,14 @@
 
 using Avalonia.Collections;
 using DryIocAttributes;
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reactive;
@@ -186,6 +188,30 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         }
 
         IReadOnlyList<IReadOnlyInstrumentProfile.IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
+
+
+        // TODO Need an editable object
+        public AvaloniaDictionary<string, ValueOverrideSpecification> ValueOverrides { get; } = new();
+
+        IReadOnlyDictionary<string, ValueOverrideSpecification>? IInstrumentProfile.ValueOverrides
+        {
+            // TODO Is this oK?
+            get => new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
+            set
+            {
+                ValueOverrides.Clear();
+                if (value != null)
+                {
+                    foreach (var entry in value)
+                    {
+                        ValueOverrides.Add(entry.Key, entry.Value);
+                    }
+                }
+            }
+        }
+
+        // TODO Is this oK?
+        IReadOnlyDictionary<string, ValueOverrideSpecification>? IReadOnlyInstrumentProfile.ValueOverrides => new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
 
 
         private bool _isModified;

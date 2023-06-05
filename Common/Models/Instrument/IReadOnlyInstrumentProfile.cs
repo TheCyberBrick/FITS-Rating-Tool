@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Evaluation;
+
 namespace FitsRatingTool.Common.Models.Instrument
 {
     public interface IReadOnlyInstrumentProfile
@@ -44,5 +46,7 @@ namespace FitsRatingTool.Common.Models.Instrument
         float? PixelSizeInMicrons { get; }
 
         IReadOnlyList<IReadOnlyConstant> Constants { get; }
+
+        IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides { get; }
     }
 }

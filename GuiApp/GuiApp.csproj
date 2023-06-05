@@ -88,7 +88,7 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.11" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.11" />
-    <PackageReference Include="DryIoc.dll" Version="5.0.2" />
+    <PackageReference Include="DryIoc.dll" Version="5.4.0" />
     <PackageReference Include="DryIoc.MefAttributedModel.dll" Version="7.0.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-Preview1" />

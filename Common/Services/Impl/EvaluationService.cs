@@ -21,7 +21,7 @@ using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using org.matheval;
-using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using static FitsRatingTool.Common.Models.FitsImage.IFitsImageStatistics;
@@ -40,11 +40,14 @@ namespace FitsRatingTool.Common.Services.Impl
             private readonly EvaluationService evaluator;
             private readonly List<Variable> variables;
 
-            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula)
+            private readonly Dictionary<string, ValueOverride> defaultValueOverrides;
+
+            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula, Dictionary<string, ValueOverride> defaultValueOverrides)
             {
                 Formula = formula;
                 this.evaluator = evaluator;
                 this.variables = variables;
+                this.defaultValueOverrides = defaultValueOverrides;
             }
 
             public IEvaluationService.IEvaluator Clone()
@@ -59,14 +62,15 @@ namespace FitsRatingTool.Common.Services.Impl
                     clonedVariables.Add(clonedVariable);
                 }
 
-                return new Evaluator(evaluator, clonedVariables, Formula);
+                return new Evaluator(evaluator, clonedVariables, Formula, defaultValueOverrides);
             }
 
             private async Task EvaluateAsync(
                 int n,
                 int startVarIndex, int endVarIndex,
                 bool statisticsRequired,
-                IFitsImageStatistics stats,
+                EvaluationItem item,
+                Dictionary<string, ValueOverride> defaultValueOverrides,
                 Dictionary<string, StatsInfo> additionalStatistics,
                 Dictionary<string, StatsInfo> additionalVariablesStatistics,
                 Dictionary<string, double> evaluatedVariables,
@@ -77,7 +81,7 @@ namespace FitsRatingTool.Common.Services.Impl
             {
                 for (int i = startVarIndex; i <= endVarIndex; ++i)
                 {
-                    eventConsumer?.Invoke(new Evaluation.EvaluationStepEvent(Evaluation.Phase.EvaluationStepStart, i, n, stats));
+                    eventConsumer?.Invoke(new Evaluation.EvaluationStepEvent(Evaluation.Phase.EvaluationStepStart, i, n, item));
 
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -88,7 +92,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         throw new InvalidOperationException("Variable expression is null");
                     }
 
-                    SetStatsBindings(variable.Expression, stats, additionalStatistics);
+                    SetStatsBindings(variable.Expression, item, defaultValueOverrides, additionalStatistics);
 
                     foreach (var v in evaluatedVariables)
                     {
@@ -116,9 +120,17 @@ namespace FitsRatingTool.Common.Services.Impl
                         {
                             foreach (var measurementClass in MeasurementClasses)
                             {
-                                if (stats.GetValue(measurementClass.Value, out var val))
+                                if (GetItemValue(item, measurementClass.Value, measurementClass.Name, excludeOverrides: true, isAggregateFunction: false, defaultValueOverrides, out var val))
                                 {
                                     yield return KeyValuePair.Create(measurementClass.Name, val);
+                                }
+                            }
+
+                            foreach (var entry in defaultValueOverrides)
+                            {
+                                if (GetItemValue(item, null, entry.Key, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var val))
+                                {
+                                    yield return KeyValuePair.Create(entry.Key, val);
                                 }
                             }
 
@@ -127,7 +139,7 @@ namespace FitsRatingTool.Common.Services.Impl
                                 var name = entry.Key;
                                 var value = entry.Value;
 
-                                double sigma = value.mad > 0 && stats.GetValue(value.measurement, out var svalue) ? (svalue - value.median) / value.mad : 0;
+                                double sigma = value.mad > 0 && GetItemValue(item, value.measurement, name, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var svalue) ? (svalue - value.median) / value.mad : 0;
                                 yield return KeyValuePair.Create(name + "Sigma", sigma);
 
                                 yield return KeyValuePair.Create(name + "Min", value.min);
@@ -153,7 +165,7 @@ namespace FitsRatingTool.Common.Services.Impl
                                 yield return KeyValuePair.Create(name + "Median", value.median);
                             }
                         }
-                        await consumer.Invoke(stats, variableValuesEnumerable(), result, cancellationToken);
+                        await consumer.Invoke(item, variableValuesEnumerable(), result, cancellationToken);
                     }
                     else if (i == endVarIndex && statisticsRequired)
                     {
@@ -163,11 +175,14 @@ namespace FitsRatingTool.Common.Services.Impl
                         }
                     }
 
-                    eventConsumer?.Invoke(new Evaluation.EvaluationStepEvent(Evaluation.Phase.EvaluationStepEnd, i, n, stats));
+                    eventConsumer?.Invoke(new Evaluation.EvaluationStepEvent(Evaluation.Phase.EvaluationStepEnd, i, n, item));
                 }
             }
 
-            private async Task<Dictionary<string, StatsInfo>> PrecomputeAdditionalStatisticsAsync(IEnumerable<IFitsImageStatistics> statistics, IEvaluationService.IEvaluator.EventConsumer? eventConsumer = default, CancellationToken cancellationToken = default)
+            private async Task<Dictionary<string, StatsInfo>> PrecomputeAdditionalStatisticsAsync(
+                IEnumerable<EvaluationItem> items,
+                IEvaluationService.IEvaluator.EventConsumer? eventConsumer = default,
+                CancellationToken cancellationToken = default)
             {
                 HashSet<Task<Tuple<string, StatsInfo>>> tasks = new();
 
@@ -181,7 +196,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            CalculateStatistics(measurement, statistics, out var min, out var max, out var median, out var mad, cancellationToken);
+                            CalculateStatistics(measurement, name, items, defaultValueOverrides, out var min, out var max, out var median, out var mad, cancellationToken);
                             return Tuple.Create(name, new StatsInfo(measurement, min, max, median, mad));
                         }));
                     }
@@ -241,7 +256,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 return additionalStatistics;
             }
 
-            public async Task EvaluateAsync(IEnumerable<IFitsImageStatistics> statistics, int parallelTasks,
+            public async Task EvaluateAsync(IEnumerable<EvaluationItem> items, int parallelTasks,
                 IEvaluationService.IEvaluator.EvaluationConsumer consumer, IEvaluationService.IEvaluator.EventConsumer? eventConsumer = default,
                 CancellationToken cancellationToken = default)
             {
@@ -250,16 +265,16 @@ namespace FitsRatingTool.Common.Services.Impl
                 int startVarIndex = 0;
                 int endVarIndex = 0;
 
-                Dictionary<string, StatsInfo> additionalStatistics = await PrecomputeAdditionalStatisticsAsync(statistics, eventConsumer, cancellationToken);
+                Dictionary<string, StatsInfo> additionalStatistics = await PrecomputeAdditionalStatisticsAsync(items, eventConsumer, cancellationToken);
 
                 // Additional variable statistics are computed on the fly because they might
                 // depend on other variables
                 Dictionary<string, StatsInfo> additionalVariablesStatistics = new();
 
-                Dictionary<IFitsImageStatistics, Dictionary<string, double>> evaluatedVariablesMap = new();
-                foreach (var stats in statistics)
+                Dictionary<EvaluationItem, Dictionary<string, double>> evaluatedVariablesMap = new();
+                foreach (var item in items)
                 {
-                    evaluatedVariablesMap.Add(stats, new());
+                    evaluatedVariablesMap.Add(item, new());
                 }
 
                 List<Evaluator> evaluatorPool = new();
@@ -304,12 +319,12 @@ namespace FitsRatingTool.Common.Services.Impl
                     // Evaluate statistics in parallel
                     IEnumerable<Func<Evaluator, Func<CancellationToken, Task>>> taskGenerator()
                     {
-                        foreach (var stats in statistics)
+                        foreach (var item in items)
                         {
                             yield return instance => ct => Task.Run(async () => await instance.EvaluateAsync(
                                 n, startVarIndex, endVarIndex,
-                                statisticsRequired, stats, additionalStatistics, additionalVariablesStatistics,
-                                evaluatedVariablesMap[stats], consumer, intermediateResults, eventConsumer, ct));
+                                statisticsRequired, item, defaultValueOverrides, additionalStatistics, additionalVariablesStatistics,
+                                evaluatedVariablesMap[item], consumer, intermediateResults, eventConsumer, ct));
                         }
                     }
                     await PooledResourceTaskRunner.RunAsync(evaluatorPool, taskGenerator(), cancellationToken);
@@ -407,6 +422,25 @@ namespace FitsRatingTool.Common.Services.Impl
             new MeasurementClass("Residual", MeasurementType.ResidualMean, MeasurementType.ResidualMax, MeasurementType.ResidualMin, MeasurementType.ResidualMean, MeasurementType.ResidualMedian, MeasurementType.ResidualMAD)
         };
 
+        private static bool GetItemValue(EvaluationItem item, MeasurementType? measurement, string name, bool excludeOverrides, bool isAggregateFunction, Dictionary<string, ValueOverride> defaultValueOverrides, out double value)
+        {
+            value = 0;
+
+            if ((item.ValueOverrides != null && item.ValueOverrides.TryGetValue(name, out var valueOverride)) || defaultValueOverrides.TryGetValue(name, out valueOverride))
+            {
+                if (excludeOverrides || (isAggregateFunction && valueOverride.ExcludeFromAggregateFunctions))
+                {
+                    return false;
+                }
+
+                value = valueOverride.Value;
+
+                return true;
+            }
+
+            return item.Statistics.GetValue(measurement, out value);
+        }
+
         private static void CalculateStatistics(List<double> values, double min, double max, out double median, out double mad, CancellationToken cancellationToken = default)
         {
             int i = values.Count;
@@ -447,7 +481,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static void CalculateStatistics(MeasurementType measurement, IEnumerable<IFitsImageStatistics> statistics, out double min, out double max, out double median, out double mad, CancellationToken cancellationToken = default)
+        private static void CalculateStatistics(MeasurementType measurement, string name, IEnumerable<EvaluationItem> items, Dictionary<string, ValueOverride> defaultValueOverrides, out double min, out double max, out double median, out double mad, CancellationToken cancellationToken = default)
         {
             int i = 0;
             min = double.MaxValue;
@@ -456,9 +490,9 @@ namespace FitsRatingTool.Common.Services.Impl
             var values = new List<double>();
 
             int j = 0;
-            foreach (var fstats in statistics)
+            foreach (var item in items)
             {
-                if (fstats.GetValue(measurement, out var fvalue))
+                if (GetItemValue(item, measurement, name, excludeOverrides: false, isAggregateFunction: true, defaultValueOverrides, out var fvalue))
                 {
                     ++i;
                     values.Add(fvalue);
@@ -475,11 +509,11 @@ namespace FitsRatingTool.Common.Services.Impl
             CalculateStatistics(values, min, max, out median, out mad, cancellationToken);
         }
 
-        private static void SetAdditionalStatsBindings(Expression expression, MeasurementType measurement, string name, IFitsImageStatistics stats, IDictionary<string, StatsInfo> additionalStatisticsCache)
+        private static void SetAdditionalStatsBindings(Expression expression, MeasurementType? measurement, string name, EvaluationItem item, Dictionary<string, ValueOverride> defaultValueOverrides, IDictionary<string, StatsInfo> additionalStatisticsCache)
         {
             if (additionalStatisticsCache.TryGetValue(name, out var tuple))
             {
-                double sigma = tuple.mad > 0 && stats.GetValue(measurement, out var svalue) ? (svalue - tuple.median) / tuple.mad : 0;
+                double sigma = tuple.mad > 0 && GetItemValue(item, measurement, name, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var svalue) ? (svalue - tuple.median) / tuple.mad : 0;
                 expression.Bind(name + "Sigma", sigma);
 
                 expression.Bind(name + "Min", tuple.min);
@@ -496,50 +530,82 @@ namespace FitsRatingTool.Common.Services.Impl
             expression.Bind(name + "Median", 1.123456 + rng.NextDouble());
         }
 
-        private static void SetStatsBindings(Expression expression, IFitsImageStatistics stats, IDictionary<string, StatsInfo> additionalStatistics)
+        private static void SetStatsBindings(Expression expression, EvaluationItem item, Dictionary<string, ValueOverride> defaultValueOverrides, IDictionary<string, StatsInfo> additionalStatistics)
         {
             foreach (var measurementClass in MeasurementClasses)
             {
-                SetAdditionalStatsBindings(expression, measurementClass.Value, measurementClass.Name, stats, additionalStatistics);
-
-                foreach (var measurementName in measurementClass.Measurements.Keys)
+                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
                 {
-                    if (!measurementName.Equals(measurementClass.Name))
+                    SetAdditionalStatsBindings(expression, measurementClass.Value, measurementClass.Name, item, defaultValueOverrides, additionalStatistics);
+
+                    foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
-                        SetAdditionalStatsBindings(expression, measurementClass.Measurements[measurementName], measurementName, stats, additionalStatistics);
+                        if (!measurementName.Equals(measurementClass.Name))
+                        {
+                            SetAdditionalStatsBindings(expression, measurementClass.Measurements[measurementName], measurementName, item, defaultValueOverrides, additionalStatistics);
+                        }
                     }
                 }
             }
 
+            foreach (var entry in defaultValueOverrides)
+            {
+                SetAdditionalStatsBindings(expression, null, entry.Key, item, defaultValueOverrides, additionalStatistics);
+            }
+
             foreach (var measurementClass in MeasurementClasses)
             {
-                foreach (var measurementName in measurementClass.Measurements.Keys)
+                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
                 {
-                    var measurement = measurementClass.Measurements[measurementName];
+                    foreach (var measurementName in measurementClass.Measurements.Keys)
+                    {
+                        var measurement = measurementClass.Measurements[measurementName];
 
-                    expression.Bind(measurementName, stats.GetValue(measurement, out var value) ? value : 0.0);
+                        expression.Bind(measurementName, GetItemValue(item, measurement, measurementName, excludeOverrides: true, isAggregateFunction: false, defaultValueOverrides, out var value) ? value : 0.0);
+                    }
                 }
+            }
+
+            foreach (var entry in defaultValueOverrides)
+            {
+                expression.Bind(entry.Key, GetItemValue(item, null, entry.Key, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var value) ? value : 0.0);
             }
         }
 
-        private static void SetStatsBindingsCheck(Expression expression, Random rng)
+        private static void SetStatsBindingsCheck(Expression expression, Dictionary<string, ValueOverride> defaultValueOverrides, Random rng)
         {
             foreach (var measurementClass in MeasurementClasses)
             {
-                SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
-
-                foreach (var measurementName in measurementClass.Measurements.Keys)
+                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
                 {
-                    SetAdditionalStatsBindingsCheck(expression, measurementName, rng);
+                    SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
+
+                    foreach (var measurementName in measurementClass.Measurements.Keys)
+                    {
+                        SetAdditionalStatsBindingsCheck(expression, measurementName, rng);
+                    }
                 }
+            }
+
+            foreach (var entry in defaultValueOverrides)
+            {
+                SetAdditionalStatsBindingsCheck(expression, entry.Key, rng);
             }
 
             foreach (var measurementClass in MeasurementClasses)
             {
-                foreach (var measurementName in measurementClass.Measurements.Keys)
+                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
                 {
-                    expression.Bind(measurementName, 1.123456 + rng.NextDouble());
+                    foreach (var measurementName in measurementClass.Measurements.Keys)
+                    {
+                        expression.Bind(measurementName, 1.123456 + rng.NextDouble());
+                    }
                 }
+            }
+
+            foreach (var entry in defaultValueOverrides)
+            {
+                expression.Bind(entry.Key, 1.123456 + rng.NextDouble());
             }
         }
 
@@ -632,7 +698,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private bool BuildVariable(Variable variable, List<Variable> variables, out string? errorMessage)
+        private bool BuildVariable(Variable variable, List<Variable> variables, Dictionary<string, ValueOverride> defaultValueOverrides, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -662,7 +728,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var rng = new Random();
 
-            SetStatsBindingsCheck(variable.Expression, rng);
+            SetStatsBindingsCheck(variable.Expression, defaultValueOverrides, rng);
 
             foreach (var var in variables)
             {
@@ -706,8 +772,17 @@ namespace FitsRatingTool.Common.Services.Impl
             return true;
         }
 
-        public bool Build(string formula, out IEvaluationService.IEvaluator? evaluator, out string? errorMessage)
+        public bool Build(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverridesIn, out IEvaluationService.IEvaluator? evaluator, out string? errorMessage)
         {
+            Dictionary<string, ValueOverride> defaultValueOverrides = new();
+            if (defaultValueOverridesIn != null)
+            {
+                foreach (var entry in defaultValueOverridesIn)
+                {
+                    defaultValueOverrides.Add(entry.Key, new ValueOverride(entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound));
+                }
+            }
+
             bool canDefineVariables = true;
             var variableDefinitionRegex = new Regex("^[\\s]*[A-Za-z0-9]+[\\s]*:=");
             Variable? currentVariableDefinition = null;
@@ -799,7 +874,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             foreach (Variable variable in variables)
             {
-                if (!BuildVariable(variable, evaluatedVariables, out errorMessage))
+                if (!BuildVariable(variable, evaluatedVariables, defaultValueOverrides, out errorMessage))
                 {
                     return false;
                 }
@@ -807,8 +882,33 @@ namespace FitsRatingTool.Common.Services.Impl
                 evaluatedVariables.Add(variable);
             }
 
-            evaluator = new Evaluator(this, variables, formula);
+            evaluator = new Evaluator(this, variables, formula, defaultValueOverrides);
             return true;
+        }
+
+        public IDictionary<string, ValueOverride> GetValueOverridesFromHeader(IReadOnlyDictionary<string, ValueOverrideSpecification> defaultValueOverrides, Func<string, string?> header)
+        {
+            Dictionary<string, ValueOverride> valueOverrides = new();
+
+            foreach (var entry in defaultValueOverrides)
+            {
+                var name = entry.Key;
+                var keyword = entry.Value.Keyword;
+                var defaultOverride = entry.Value;
+
+                var valueStr = header.Invoke(keyword);
+
+                if (double.TryParse(valueStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+                {
+                    valueOverrides.Add(name, new ValueOverride(value, false));
+                }
+                else
+                {
+                    valueOverrides.Add(name, new ValueOverride(defaultOverride.DefaultValue, defaultOverride.ExcludeFromAggregateFunctionsIfNotFound));
+                }
+            }
+
+            return valueOverrides;
         }
     }
 }

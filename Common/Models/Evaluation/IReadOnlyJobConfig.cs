@@ -71,5 +71,7 @@ namespace FitsRatingTool.Common.Models.Evaluation
         int MaxImageHeight { get; }
 
         IReadOnlyCollection<ExporterConfig>? Exporters { get; }
+
+        IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides { get; }
     }
 }

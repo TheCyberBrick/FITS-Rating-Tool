@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
+using FitsRatingTool.Common.Models.Evaluation;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
@@ -44,12 +45,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IEvaluationService evaluationService;
         private readonly IFitsImageManager manager;
         private readonly IGroupingManager groupingManager;
+        private readonly IInstrumentProfileManager instrumentProfileManager;
 
-        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IGroupingManager groupingManager, IAppConfig appConfig)
+        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IGroupingManager groupingManager, IAppConfig appConfig, IInstrumentProfileManager instrumentProfileManager)
         {
             this.evaluationService = evaluationService;
             this.manager = manager;
             this.groupingManager = groupingManager;
+            this.instrumentProfileManager = instrumentProfileManager;
 
             CurrentGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
 
@@ -70,6 +73,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             };
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationManager>(manager, nameof(manager.RecordChanged), OnRecordChanged);
+
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, EvaluationManager>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, EvaluationManager>(instrumentProfileManager, nameof(instrumentProfileManager.RecordChanged), OnProfileChanged);
 
             LoadDefaultFormula(appConfig);
         }
@@ -126,6 +132,33 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
+        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs args)
+        {
+            HandleProfileChanged();
+        }
+
+        private void OnProfileChanged(object? sender, IInstrumentProfileManager.RecordChangedEventArgs args)
+        {
+            if (args.AddedOrUpdated && args.ProfileId == instrumentProfileManager.CurrentProfile?.Id)
+            {
+                HandleProfileChanged();
+            }
+        }
+
+        private void HandleProfileChanged()
+        {
+            // Invalidate cached formula and evaluator because
+            // variables may now (no longer) be available
+            cachedEvaluator = null;
+            cachedEvaluatorFormula = CurrentFormula;
+
+            // TODO Should this always update?
+            if (AutoUpdateRatings)
+            {
+                ScheduleUpdateRatings();
+            }
+        }
+
         private void ScheduleUpdateRatings(string? specificGroupKey = null)
         {
             async void update(string? specificGroupKey = null)
@@ -140,6 +173,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             var evaluatorInstance = evaluator;
 
+            var defaultValueOverrides = instrumentProfileManager.CurrentProfile?.ValueOverrides;
+
             if (evaluatorInstance == null)
             {
                 if (cachedEvaluatorFormula != null && cachedEvaluatorFormula.Equals(CurrentFormula))
@@ -151,7 +186,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     cachedEvaluator = null;
                     cachedEvaluatorFormula = CurrentFormula;
 
-                    if (cachedEvaluatorFormula != null && evaluationService.Build(cachedEvaluatorFormula, out var newEvaluatorInstance, out var _) && newEvaluatorInstance != null)
+                    if (cachedEvaluatorFormula != null && evaluationService.Build(cachedEvaluatorFormula, defaultValueOverrides, out var newEvaluatorInstance, out var _) && newEvaluatorInstance != null)
                     {
                         evaluatorInstance = cachedEvaluator = newEvaluatorInstance;
                     }
@@ -162,7 +197,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 var currentGrouping = CurrentGrouping;
 
-                Dictionary<string, List<IFitsImageStatisticsViewModel>> groups = new();
+                Dictionary<string, List<EvaluationItem>> groups = new();
 
                 foreach (var file in manager.Files)
                 {
@@ -174,6 +209,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                         if (stats != null)
                         {
+                            IDictionary<string, ValueOverride>? valueOverrides = null;
+
                             string? groupKey = null;
                             if (currentGrouping != null && !currentGrouping.IsAll)
                             {
@@ -186,6 +223,23 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                                     {
                                         groupKey = match.GroupKey;
                                     }
+
+                                    if (defaultValueOverrides != null)
+                                    {
+                                        Func<string, string?> headerMap = keyword =>
+                                        {
+                                            foreach (var record in metadata.Header)
+                                            {
+                                                if (record.Keyword == keyword)
+                                                {
+                                                    return record.Value;
+                                                }
+                                            }
+                                            return null;
+                                        };
+
+                                        valueOverrides = evaluationService.GetValueOverridesFromHeader(defaultValueOverrides, headerMap);
+                                    }
                                 }
                             }
                             groupKey ??= "All";
@@ -197,7 +251,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                                     groups.Add(groupKey, statistics = new());
                                 }
 
-                                statistics.Add(stats);
+                                statistics.Add(new EvaluationItem(stats, valueOverrides));
                             }
                         }
                     }
@@ -210,15 +264,15 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private async Task UpdateRatingsForGroupAsync(IEvaluationService.IEvaluator evaluatorInstance, List<IFitsImageStatisticsViewModel> statistics)
+        private async Task UpdateRatingsForGroupAsync(IEvaluationService.IEvaluator evaluatorInstance, List<EvaluationItem> items)
         {
             try
             {
                 ConcurrentDictionary<IFitsImageStatisticsViewModel, double> results = new();
 
-                await evaluatorInstance.EvaluateAsync(statistics, 16, (stats, variableValues, result, ct) =>
+                await evaluatorInstance.EvaluateAsync(items, 16, (item, variableValues, result, ct) =>
                 {
-                    results.TryAdd((IFitsImageStatisticsViewModel)stats, result);
+                    results.TryAdd((IFitsImageStatisticsViewModel)item.Statistics, result);
                     return Task.CompletedTask;
                 });
 

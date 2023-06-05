@@ -103,14 +103,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IFitsImageManager fitsImageManager;
         private readonly IEvaluationManager evaluationManager;
         private readonly IEvaluationService evaluationService;
+        private readonly IInstrumentProfileManager instrumentProfileManager;
 
-        private EvaluationExportProgressViewModel(IEvaluationExportProgressViewModel.OfExporter args, IFitsImageManager fitsImageManager, IEvaluationManager evaluationManager, IEvaluationService evaluationService) : base(null)
+        private EvaluationExportProgressViewModel(
+            IEvaluationExportProgressViewModel.OfExporter args, IFitsImageManager fitsImageManager,
+            IEvaluationManager evaluationManager, IEvaluationService evaluationService,
+            IInstrumentProfileManager instrumentProfileManager) : base(null)
         {
             this.exporterId = args.ExporterId;
             this.exporterConfigurator = args.ExporterConfigurator;
             this.fitsImageManager = fitsImageManager;
             this.evaluationManager = evaluationManager;
             this.evaluationService = evaluationService;
+            this.instrumentProfileManager = instrumentProfileManager;
         }
 
         protected override Func<Task<Result<ExportResult>>> CreateTask(ProgressSynchronizationContext synchronizationContext)
@@ -167,12 +172,14 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     var grouping = evaluationManager.CurrentGrouping;
                     var evaluationFormula = evaluationManager.CurrentFormula;
 
-                    if (!evaluationService.Build(evaluationFormula ?? "", out var evaluator, out var formulaErrorMessage) || evaluator == null)
+                    var defaultValueOverrides = instrumentProfileManager.CurrentProfile?.ValueOverrides;
+
+                    if (!evaluationService.Build(evaluationFormula ?? "", defaultValueOverrides, out var evaluator, out var formulaErrorMessage) || evaluator == null)
                     {
                         return CreateCancellation(new ExportResult("Invalid evaluation formula"));
                     }
 
-                    var groups = new Dictionary<string, List<IFitsImageStatisticsViewModel>>();
+                    var groups = new Dictionary<string, List<EvaluationItem>>();
                     var files = new Dictionary<IFitsImageStatisticsViewModel, string>();
 
                     int numFiles = fitsImageManager.Files.Count;
@@ -196,12 +203,31 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                                 var groupMatch = grouping != null ? grouping.GetGroupMatch(metadata) : null;
                                 var groupKey = groupMatch != null ? groupMatch.GroupKey : "All";
 
+                                IDictionary<string, ValueOverride>? valueOverrides = null;
+
+                                if (defaultValueOverrides != null)
+                                {
+                                    Func<string, string?> headerMap = keyword =>
+                                    {
+                                        foreach (var record in metadata.Header)
+                                        {
+                                            if (record.Keyword == keyword)
+                                            {
+                                                return record.Value;
+                                            }
+                                        }
+                                        return null;
+                                    };
+
+                                    valueOverrides = evaluationService.GetValueOverridesFromHeader(defaultValueOverrides, headerMap);
+                                }
+
                                 if (!groups.TryGetValue(groupKey, out var group))
                                 {
                                     groups.Add(groupKey, group = new());
                                 }
 
-                                group.Add(stats);
+                                group.Add(new EvaluationItem(stats, valueOverrides));
                                 files.Add(stats, file);
 
                                 ++numToExport;
@@ -223,9 +249,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
                         try
                         {
-                            await evaluator.EvaluateAsync(statistics, 8, async (stats, variableValues, value, ct) =>
+                            await evaluator.EvaluateAsync(statistics, 8, async (item, variableValues, value, ct) =>
                             {
-                                var file = files[(IFitsImageStatisticsViewModel)stats];
+                                var file = files[(IFitsImageStatisticsViewModel)item.Statistics];
 
                                 ReportProgress(new EvaluationExportProgress
                                 {

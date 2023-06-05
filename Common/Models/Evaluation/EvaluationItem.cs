@@ -16,20 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Instrument;
+using FitsRatingTool.Common.Models.FitsImage;
 
-namespace FitsRatingTool.Common.Services
+namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IInstrumentProfileFactory : IConfigFactory<IInstrumentProfile, IReadOnlyInstrumentProfile, IInstrumentProfileFactory.IBuilder>
-    {
-        public interface IBuilder : IConfigBuilder<IInstrumentProfile>
-        {
-            IBuilder Id(string profileId);
-        }
+    public record ValueOverrideSpecification(string Keyword, double DefaultValue, bool ExcludeFromAggregateFunctionsIfNotFound);
 
-        public class InvalidInstrumentProfileException : Exception
-        {
-            public InvalidInstrumentProfileException(string? message, Exception? innerException) : base(message, innerException) { }
-        }
-    }
+    public record ValueOverride(double Value, bool ExcludeFromAggregateFunctions);
+
+    public record EvaluationItem(IFitsImageStatistics Statistics, IDictionary<string, ValueOverride>? ValueOverrides);
 }

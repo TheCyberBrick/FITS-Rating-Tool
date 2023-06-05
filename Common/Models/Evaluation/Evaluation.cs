@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.Common.Services;
 
 namespace FitsRatingTool.Common.Models.Evaluation
 {
@@ -50,17 +51,17 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         public class EvaluationStepEvent : Event
         {
-            public IFitsImageStatistics Stats { get; }
+            public EvaluationItem Item { get; }
 
             public int StepIndex { get; }
 
             public int StepCount { get; }
 
-            public EvaluationStepEvent(Phase phase, int stepIndex, int stepCount, IFitsImageStatistics stats) : base(phase)
+            public EvaluationStepEvent(Phase phase, int stepIndex, int stepCount, EvaluationItem item) : base(phase)
             {
                 StepIndex = stepIndex;
                 StepCount = stepCount;
-                Stats = stats;
+                Item = item;
             }
         }
     }
