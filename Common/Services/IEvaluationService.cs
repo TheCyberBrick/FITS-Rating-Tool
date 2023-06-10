@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
+using FitsRatingTool.Common.Models.Instrument;
 
 namespace FitsRatingTool.Common.Services
 {

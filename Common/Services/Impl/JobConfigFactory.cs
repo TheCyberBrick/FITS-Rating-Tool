@@ -17,6 +17,7 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
+using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -257,7 +258,12 @@ namespace FitsRatingTool.Common.Services.Impl
                         _cachedValueOverrides = new();
                         foreach (var entry in _serializedValueOverrides)
                         {
-                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification(entry.Value.Keyword, entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound);
+                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification 
+                            {
+                                Keyword = entry.Value.Keyword,
+                                DefaultValue = entry.Value.DefaultValue,
+                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
+                            };
                         }
                     }
                     return _cachedValueOverrides;

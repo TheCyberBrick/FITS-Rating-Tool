@@ -16,11 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.FitsImage;
-
-namespace FitsRatingTool.Common.Models.Evaluation
+namespace FitsRatingTool.Common.Models.Instrument
 {
-    public record ValueOverride(double Value, bool ExcludeFromAggregateFunctions);
+    public interface IReadOnlyConstant
+    {
+        string Name { get; }
 
-    public record EvaluationItem(IFitsImageStatistics Statistics, IDictionary<string, ValueOverride>? ValueOverrides);
+        double Value { get; }
+    }
 }

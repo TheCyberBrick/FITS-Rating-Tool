@@ -16,17 +16,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
-
 namespace FitsRatingTool.Common.Models.Instrument
 {
     public interface IReadOnlyInstrumentProfile
     {
-        public interface IReadOnlyConstant
+        public interface IReadOnlyValueOverrideSpecification
         {
-            string Name { get; }
+            string Keyword { get; }
 
-            double Value { get; }
+            double DefaultValue { get; }
+
+            bool ExcludeFromAggregateFunctionsIfNotFound { get; }
         }
 
         string Id { get; }

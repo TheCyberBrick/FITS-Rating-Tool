@@ -16,24 +16,24 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
-
 namespace FitsRatingTool.Common.Models.Instrument
 {
     public interface IInstrumentProfile : IReadOnlyInstrumentProfile
     {
-        public interface IConstant : IReadOnlyConstant
-        {
-            new string Name { get; set; }
-
-            new double Value { get; set; }
-        }
-
         public class Constant : IConstant
         {
             public string Name { get; set; } = "";
 
             public double Value { get; set; }
+        }
+
+        public interface IValueOverrideSpecification : IReadOnlyValueOverrideSpecification
+        {
+            new string Keyword { get; set; }
+
+            new double DefaultValue { get; set; }
+
+            new bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
         }
 
         new string Id { get; set; }

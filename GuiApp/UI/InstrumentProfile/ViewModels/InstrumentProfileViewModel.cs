@@ -171,7 +171,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         public AvaloniaList<IInstrumentProfileViewModel.IConstantViewModel> Constants { get; } = new();
 
-        IReadOnlyList<IInstrumentProfile.IConstant> IInstrumentProfile.Constants
+        IReadOnlyList<IConstant> IInstrumentProfile.Constants
         {
             get => Constants;
             set
@@ -187,16 +187,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             }
         }
 
-        IReadOnlyList<IReadOnlyInstrumentProfile.IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
+        IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
 
 
         // TODO Need an editable object
         public AvaloniaDictionary<string, ValueOverrideSpecification> ValueOverrides { get; } = new();
 
+        private IReadOnlyDictionary<string, ValueOverrideSpecification>? _readOnlyValueOverrides;
+        private IReadOnlyDictionary<string, ValueOverrideSpecification> ReadOnlyValueOverrides => _readOnlyValueOverrides ??= new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
+
         IReadOnlyDictionary<string, ValueOverrideSpecification>? IInstrumentProfile.ValueOverrides
         {
-            // TODO Is this oK?
-            get => new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
+            get => ReadOnlyValueOverrides;
             set
             {
                 ValueOverrides.Clear();
@@ -210,8 +212,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             }
         }
 
-        // TODO Is this oK?
-        IReadOnlyDictionary<string, ValueOverrideSpecification>? IReadOnlyInstrumentProfile.ValueOverrides => new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
+        IReadOnlyDictionary<string, ValueOverrideSpecification>? IReadOnlyInstrumentProfile.ValueOverrides => ReadOnlyValueOverrides;
 
 
         private bool _isModified;

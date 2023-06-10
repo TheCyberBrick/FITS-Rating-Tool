@@ -122,7 +122,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             copy.ElectronsPerADU = profile.ElectronsPerADU;
             copy.PixelSizeInMicrons = profile.PixelSizeInMicrons;
 
-            var constants = new List<IInstrumentProfile.IConstant>();
+            var constants = new List<IConstant>();
 
             foreach (var constant in profile.Constants)
             {

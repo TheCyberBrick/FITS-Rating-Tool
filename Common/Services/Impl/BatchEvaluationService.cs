@@ -18,6 +18,7 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.FitsImage;
+using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using System.Collections.Concurrent;

@@ -28,7 +28,7 @@ namespace FitsRatingTool.Common.Services.Impl
     {
         private class InstrumentProfile : IInstrumentProfile
         {
-            private class JsonConstant : IInstrumentProfile.IConstant
+            private class JsonConstant : IConstant
             {
                 [JsonProperty(PropertyName = "name", Required = Required.Always)]
                 public string Name { get; set; } = null!;
@@ -76,9 +76,9 @@ namespace FitsRatingTool.Common.Services.Impl
             [JsonProperty(PropertyName = "constants", NullValueHandling = NullValueHandling.Ignore)]
             private JsonConstant[]? _serializedConstants;
             [JsonIgnore]
-            private IInstrumentProfile.IConstant[]? _cachedConstants;
+            private IConstant[]? _cachedConstants;
             [JsonIgnore]
-            public IReadOnlyList<IInstrumentProfile.IConstant> Constants
+            public IReadOnlyList<IConstant> Constants
             {
                 get
                 {
@@ -124,7 +124,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
 
             [JsonIgnore]
-            IReadOnlyList<IReadOnlyInstrumentProfile.IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
+            IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
 
             [JsonProperty(PropertyName = "value_overrides", NullValueHandling = NullValueHandling.Ignore)]
             private Dictionary<string, JsonValueOverrideSpecification>? _serializedValueOverrides;
@@ -145,7 +145,12 @@ namespace FitsRatingTool.Common.Services.Impl
                         _cachedValueOverrides = new();
                         foreach (var entry in _serializedValueOverrides)
                         {
-                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification(entry.Value.Keyword, entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound);
+                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification
+                            {
+                                Keyword = entry.Value.Keyword,
+                                DefaultValue = entry.Value.DefaultValue,
+                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
+                            };
                         }
                     }
                     return _cachedValueOverrides;

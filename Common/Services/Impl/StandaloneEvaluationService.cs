@@ -72,7 +72,7 @@ namespace FitsRatingTool.Common.Services.Impl
             return null;
         }
 
-        private void LoadConfig(string jobConfigFile, out IJobConfig jobConfig, out string workingDir, out Cache? cache)
+        private void LoadConfig(string jobConfigFile, out IReadOnlyJobConfig jobConfig, out string workingDir, out Cache? cache)
         {
             jobConfig = jobConfigFactory.Load(File.ReadAllText(jobConfigFile, Encoding.UTF8));
 
@@ -87,8 +87,8 @@ namespace FitsRatingTool.Common.Services.Impl
 
             if (jobConfig.CachePath != null)
             {
-                jobConfig.CachePath = Environment.ExpandEnvironmentVariables(jobConfig.CachePath);
-                string cachePath = (Path.IsPathRooted(jobConfig.CachePath) ? "" : workingDir) + jobConfig.CachePath;
+                string cachePath = Environment.ExpandEnvironmentVariables(jobConfig.CachePath);
+                cachePath = (Path.IsPathRooted(cachePath) ? "" : workingDir) + cachePath;
 
                 try
                 {
@@ -231,8 +231,8 @@ namespace FitsRatingTool.Common.Services.Impl
 
                 if (jobConfig.OutputLogsPath != null)
                 {
-                    jobConfig.OutputLogsPath = Environment.ExpandEnvironmentVariables(jobConfig.OutputLogsPath);
-                    var logPath = (Path.IsPathRooted(jobConfig.OutputLogsPath) ? "" : workingDir) + jobConfig.OutputLogsPath;
+                    string logPath = Environment.ExpandEnvironmentVariables(jobConfig.OutputLogsPath);
+                    logPath = (Path.IsPathRooted(logPath) ? "" : workingDir) + logPath;
 
                     try
                     {
