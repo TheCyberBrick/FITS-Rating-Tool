@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <ProductName>FITS Rating Tool</ProductName>
     <Authors>TheCyberBrick</Authors>
-    <Copyright>Copyright © 2022 TheCyberBrick</Copyright>
+    <Copyright>Copyright © 2022-2023 TheCyberBrick</Copyright>
     <AssemblyTitle>FITS Rating Tool Component</AssemblyTitle>
     <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
   </PropertyGroup>

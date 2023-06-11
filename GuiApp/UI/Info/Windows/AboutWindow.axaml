@@ -63,7 +63,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </StackPanel>
       <StackPanel Grid.Row="1" Grid.Column="1">
         <TextBox Classes="readonly" Foreground="#FFECECEC" MinHeight="0" Padding="2 1 2 1" xml:space="preserve">
-Version 0.0.1
+Version 0.1.0
 Copyright © 2022 TheCyberBrick.
 Licensed under the GNU General
 Public License 3.
