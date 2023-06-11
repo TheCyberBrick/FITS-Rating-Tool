@@ -172,9 +172,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     var grouping = evaluationManager.CurrentGrouping;
                     var evaluationFormula = evaluationManager.CurrentFormula;
 
-                    var defaultValueOverrides = instrumentProfileManager.CurrentProfile?.ValueOverrides;
+                    var variables = instrumentProfileManager.CurrentProfile?.Variables;
 
-                    if (!evaluationService.Build(evaluationFormula ?? "", defaultValueOverrides, out var evaluator, out var formulaErrorMessage) || evaluator == null)
+                    if (!evaluationService.Build(evaluationFormula ?? "", variables, out var evaluator, out var formulaErrorMessage) || evaluator == null)
                     {
                         return CreateCancellation(new ExportResult("Invalid evaluation formula"));
                     }
@@ -203,9 +203,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                                 var groupMatch = grouping != null ? grouping.GetGroupMatch(metadata) : null;
                                 var groupKey = groupMatch != null ? groupMatch.GroupKey : "All";
 
-                                IDictionary<string, ValueOverride>? valueOverrides = null;
+                                IDictionary<string, Constant>? constants = null;
 
-                                if (defaultValueOverrides != null)
+                                if (variables != null)
                                 {
                                     Func<string, string?> headerMap = keyword =>
                                     {
@@ -219,7 +219,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                                         return null;
                                     };
 
-                                    valueOverrides = evaluationService.GetValueOverridesFromHeader(defaultValueOverrides, headerMap);
+                                    constants = await evaluationService.EvaluateVariablesAsync(variables, file, headerMap);
                                 }
 
                                 if (!groups.TryGetValue(groupKey, out var group))
@@ -227,7 +227,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                                     groups.Add(groupKey, group = new());
                                 }
 
-                                group.Add(new EvaluationItem(stats, valueOverrides));
+                                group.Add(new EvaluationItem(stats, constants));
                                 files.Add(stats, file);
 
                                 ++numToExport;

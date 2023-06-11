@@ -186,6 +186,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IAppConfig appConfig;
         private readonly IVoyagerIntegration voyagerIntegration;
+        private readonly IEvaluationExporterManager evaluationExporterManager;
 
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer;
@@ -208,6 +209,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IAppConfig appConfig,
             IAppConfigManager appConfigManager,
             IVoyagerIntegration voyagerIntegration,
+            IEvaluationExporterManager evaluationExporterManager,
             IContainer<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> multiImageViewerContainer,
             IContainer<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> imageLoadProgressContainer,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
@@ -226,11 +228,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryRoot<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> jobConfiguratorFromFileFactory,
             IFactoryRoot<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerFactory,
             IFactoryRoot<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory,
-            IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory)
+            IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory,
+            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
         {
             this.manager = manager;
             this.appConfig = appConfig;
             this.voyagerIntegration = voyagerIntegration;
+            this.evaluationExporterManager = evaluationExporterManager;
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
             this.appViewerOverlayContainer = appViewerOverlayContainer;
@@ -459,6 +463,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             SubscribeToEvent<IAppConfigManager, IAppConfigManager.ValueChangedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValueChanged), OnConfigChanged);
             SubscribeToEvent<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
 
+            exporterConfiguratorRegistryContainer.Singleton().Do(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), RegisterExporters);
+
             RxApp.MainThreadScheduler.Schedule(Initialize);
 
             if (openFileEventManager.LaunchFilePath != null)
@@ -503,6 +509,38 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     item.Scale = ThumbnailScale;
                 }
             });
+        }
+
+        private void RegisterExporters(IComponentRegistry<IExporterConfiguratorViewModel> configuratorRegistry)
+        {
+            foreach (var id in configuratorRegistry.Ids)
+            {
+                var factory = configuratorRegistry.GetFactory(id);
+
+                if (factory != null)
+                {
+                    evaluationExporterManager.Register(id, (ctx, config) =>
+                    {
+                        var exporter = factory.Do(configurator =>
+                        {
+                            if (configurator.TryLoadConfig(config))
+                            {
+                                return configurator.CreateExporter(ctx);
+                            }
+                            return null;
+                        });
+
+                        if (exporter != null)
+                        {
+                            return exporter;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Failed loading exporter config");
+                        }
+                    });
+                }
+            }
         }
 
         private async Task ApplySettingsAsync()

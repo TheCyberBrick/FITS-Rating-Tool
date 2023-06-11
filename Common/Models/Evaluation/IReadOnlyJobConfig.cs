@@ -16,8 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Instrument;
-
 namespace FitsRatingTool.Common.Models.Evaluation
 {
     public interface IReadOnlyJobConfig
@@ -74,6 +72,6 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         IReadOnlyCollection<ExporterConfig>? Exporters { get; }
 
-        IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides { get; }
+        IReadOnlyList<IReadOnlyVariable>? Variables { get; }
     }
 }

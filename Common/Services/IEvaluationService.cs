@@ -17,7 +17,6 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Common.Models.Instrument;
 
 namespace FitsRatingTool.Common.Services
 {
@@ -39,8 +38,8 @@ namespace FitsRatingTool.Common.Services
             Task EvaluateAsync(IEnumerable<EvaluationItem> items, int parallelTasks, EvaluationConsumer evaluationConsumer, EventConsumer? eventConsumer = default, CancellationToken cancellationToken = default);
         }
 
-        bool Build(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverrides, out IEvaluator? evaluator, out string? formulaErrorMessage);
+        bool Build(string formula, IReadOnlyList<IReadOnlyVariable>? variables, out IEvaluator? evaluator, out string? formulaErrorMessage);
 
-        IDictionary<string, ValueOverride> GetValueOverridesFromHeader(IReadOnlyDictionary<string, ValueOverrideSpecification> defaultValueOverrides, Func<string, string?> header);
+        Task<IDictionary<string, Constant>> EvaluateVariablesAsync(IReadOnlyList<IReadOnlyVariable> variables, string file, Func<string, string?> header);
     }
 }

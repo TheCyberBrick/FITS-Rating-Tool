@@ -16,12 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IVariable : IReadOnlyVariable
+    public enum VariableType
     {
-        new string Name { get; set; }
-
-        new double DefaultValue { get; set; }
+        Constant,
+        Keyword
     }
 }

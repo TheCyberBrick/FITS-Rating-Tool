@@ -16,12 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IConstant : IReadOnlyConstant
-    {
-        new string Name { get; set; }
-
-        new double Value { get; set; }
-    }
+    public record Constant(string Name, double Value, bool ExcludeFromAggregateFunctions);
 }

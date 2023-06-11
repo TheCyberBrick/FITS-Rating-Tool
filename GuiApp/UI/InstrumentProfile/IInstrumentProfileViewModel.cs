@@ -23,19 +23,24 @@ using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 {
-    public interface IInstrumentProfileViewModel : IInstrumentProfile
+    public interface IInstrumentProfileViewModel /*: IInstrumentProfile*/
     {
         public record OfProfile(IReadOnlyInstrumentProfile? Profile = null);
 
 
-        public interface IConstantViewModel : IConstant
+        // TODO Temp
+        public string Name { get; set; }
+        public string Id { get; set; }
+
+        //TODO Remove
+        /*public interface IConstantViewModel : IConstant
         {
             IInstrumentProfileViewModel Profile { get; }
 
             bool IsNameValid { get; }
 
             ReactiveCommand<Unit, Unit> Remove { get; }
-        }
+        }*/
 
 
 
@@ -57,7 +62,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         IReadOnlyInstrumentProfile? SourceProfile { get; }
 
-        new AvaloniaList<IConstantViewModel> Constants { get; }
+        // TODO Remove
+        //new AvaloniaList<IConstantViewModel> Constants { get; }
 
         bool IsIdValid { get; }
 

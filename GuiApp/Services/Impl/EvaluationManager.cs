@@ -173,7 +173,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             var evaluatorInstance = evaluator;
 
-            var defaultValueOverrides = instrumentProfileManager.CurrentProfile?.ValueOverrides;
+            var variables = instrumentProfileManager.CurrentProfile?.Variables;
 
             if (evaluatorInstance == null)
             {
@@ -186,7 +186,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     cachedEvaluator = null;
                     cachedEvaluatorFormula = CurrentFormula;
 
-                    if (cachedEvaluatorFormula != null && evaluationService.Build(cachedEvaluatorFormula, defaultValueOverrides, out var newEvaluatorInstance, out var _) && newEvaluatorInstance != null)
+                    if (cachedEvaluatorFormula != null && evaluationService.Build(cachedEvaluatorFormula, variables, out var newEvaluatorInstance, out var _) && newEvaluatorInstance != null)
                     {
                         evaluatorInstance = cachedEvaluator = newEvaluatorInstance;
                     }
@@ -209,7 +209,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                         if (stats != null)
                         {
-                            IDictionary<string, ValueOverride>? valueOverrides = null;
+                            IDictionary<string, Constant>? constants = null;
 
                             string? groupKey = null;
                             if (currentGrouping != null && !currentGrouping.IsAll)
@@ -224,7 +224,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                                         groupKey = match.GroupKey;
                                     }
 
-                                    if (defaultValueOverrides != null)
+                                    if (variables != null)
                                     {
                                         Func<string, string?> headerMap = keyword =>
                                         {
@@ -238,7 +238,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                                             return null;
                                         };
 
-                                        valueOverrides = evaluationService.GetValueOverridesFromHeader(defaultValueOverrides, headerMap);
+                                        constants = await evaluationService.EvaluateVariablesAsync(variables, file, headerMap);
                                     }
                                 }
                             }
@@ -251,7 +251,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                                     groups.Add(groupKey, statistics = new());
                                 }
 
-                                statistics.Add(new EvaluationItem(stats, valueOverrides));
+                                statistics.Add(new EvaluationItem(stats, constants));
                             }
                         }
                     }

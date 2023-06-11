@@ -16,12 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Instrument
-{
-    public interface IReadOnlyConstant
-    {
-        string Name { get; }
+using FitsRatingTool.Common.Models.Evaluation;
+using System.Diagnostics.CodeAnalysis;
 
-        double Value { get; }
+namespace FitsRatingTool.Common.Services
+{
+    public interface IVariableManager
+    {
+        delegate IVariable VariableFactory(string config);
+
+
+        IReadOnlyDictionary<string, VariableFactory> Variables { get; }
+
+        bool Register(string id, VariableFactory variableFactory);
+
+        bool Unregister(string id);
+
+        bool TryCreateVariable(string id, string config, [NotNullWhen(true)] out IVariable? variable);
     }
 }

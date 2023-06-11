@@ -41,7 +41,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             reg.RegisterAndReturn<InstrumentProfileViewModel>();
         }
 
-        private class ConstantViewModel : ViewModelBase, IInstrumentProfileViewModel.IConstantViewModel
+        // TODO Remove
+        /*private class ConstantViewModel : ViewModelBase, IInstrumentProfileViewModel.IConstantViewModel
         {
             public IInstrumentProfileViewModel Profile { get; }
 
@@ -79,7 +80,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             {
                 return name.Length > 0 && char.IsLetter(name[0]) && name.All(x => char.IsLetterOrDigit(x));
             }
-        }
+        }*/
 
         private string _id = "";
         public string Id
@@ -168,8 +169,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         }
 
 
+        // TODO Remove
 
-        public AvaloniaList<IInstrumentProfileViewModel.IConstantViewModel> Constants { get; } = new();
+        /*public AvaloniaList<IInstrumentProfileViewModel.IConstantViewModel> Constants { get; } = new();
 
         IReadOnlyList<IConstant> IInstrumentProfile.Constants
         {
@@ -187,32 +189,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             }
         }
 
-        IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
-
-
-        // TODO Need an editable object
-        public AvaloniaDictionary<string, ValueOverrideSpecification> ValueOverrides { get; } = new();
-
-        private IReadOnlyDictionary<string, ValueOverrideSpecification>? _readOnlyValueOverrides;
-        private IReadOnlyDictionary<string, ValueOverrideSpecification> ReadOnlyValueOverrides => _readOnlyValueOverrides ??= new ReadOnlyDictionary<string, ValueOverrideSpecification>(ValueOverrides);
-
-        IReadOnlyDictionary<string, ValueOverrideSpecification>? IInstrumentProfile.ValueOverrides
-        {
-            get => ReadOnlyValueOverrides;
-            set
-            {
-                ValueOverrides.Clear();
-                if (value != null)
-                {
-                    foreach (var entry in value)
-                    {
-                        ValueOverrides.Add(entry.Key, entry.Value);
-                    }
-                }
-            }
-        }
-
-        IReadOnlyDictionary<string, ValueOverrideSpecification>? IReadOnlyInstrumentProfile.ValueOverrides => ReadOnlyValueOverrides;
+        IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;*/
 
 
         private bool _isModified;
@@ -258,6 +235,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         public ReactiveCommand<Unit, Unit> Reset { get; }
 
+        // TODO Remove
+        //public AvaloniaList<IConstantViewModel> Constants => throw new NotImplementedException();
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
 
@@ -271,7 +250,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             AddConstant = ReactiveCommand.Create(() =>
             {
-                CreateConstant();
+                // TODO Remove
+                //CreateConstant();
             });
 
             Reset = ReactiveCommand.Create(() =>
@@ -305,11 +285,12 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             this.WhenAnyValue(x => x.IsPixelSizeInMicronsEnabled).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.PixelSizeInMicrons).Subscribe(_ => IsModified = true);
 
-            Constants.CollectionChanged += (sender, e) =>
+            //TODO Remove
+            /*Constants.CollectionChanged += (sender, e) =>
             {
                 IsModified = true;
                 ValidateConstants();
-            };
+            };*/
 
             if (args.Profile != null)
             {
@@ -381,18 +362,20 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 IsPixelSizeInMicronsEnabled = false;
             }
 
-            Constants.Clear();
-            foreach (var constant in profile.Constants)
+            // TODO Remove
+            /*Constants.Clear();
+            foreach (var constant in profile.Variables)
             {
                 var constantVm = CreateConstant();
                 constantVm.Name = constant.Name;
                 constantVm.Value = constant.Value;
-            }
+            }*/
 
             IsModified = false;
         }
 
-        private ConstantViewModel CreateConstant()
+        // TODO Remove
+        /*private ConstantViewModel CreateConstant()
         {
             var constant = new ConstantViewModel(this);
 
@@ -404,7 +387,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             Constants.Add(constant);
 
             return constant;
-        }
+        }*/
 
         public bool ResetToSourceProfile()
         {
@@ -419,14 +402,15 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private void ValidateConstants()
         {
             bool valid = true;
-            foreach (var constant in Constants)
+            // TODO Remove
+            /*foreach (var constant in Constants)
             {
                 if (!constant.IsNameValid)
                 {
                     valid = false;
                     break;
                 }
-            }
+            }*/
             IsConstantNameValid = valid;
         }
     }

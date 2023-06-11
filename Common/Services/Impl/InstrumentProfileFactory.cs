@@ -19,7 +19,7 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json.Converters;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
@@ -28,26 +28,44 @@ namespace FitsRatingTool.Common.Services.Impl
     {
         private class InstrumentProfile : IInstrumentProfile
         {
-            private class JsonConstant : IConstant
+            private class JsonVariable
             {
+                [JsonProperty(PropertyName = "type", Required = Required.Always)]
+                [JsonConverter(typeof(StringEnumConverter))]
+                public VariableType Type { get; set; }
+
                 [JsonProperty(PropertyName = "name", Required = Required.Always)]
                 public string Name { get; set; } = null!;
 
-                [JsonProperty(PropertyName = "value", Required = Required.Always)]
-                public double Value { get; set; }
-            }
-
-            public class JsonValueOverrideSpecification
-            {
-                [JsonProperty(PropertyName = "keyword", Required = Required.Always)]
-                public string Keyword { get; set; } = null!;
-
                 [JsonProperty(PropertyName = "default_value", Required = Required.Always)]
-                public double DefaultValue { get; set; } = 0;
+                public double DefaultValue { get; set; }
+
+                [JsonProperty(PropertyName = "keyword", NullValueHandling = NullValueHandling.Ignore)]
+                public string Keyword { get; set; } = "";
 
                 [JsonProperty(PropertyName = "exclude_from_aggregate_functions_if_not_found", NullValueHandling = NullValueHandling.Ignore)]
                 public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; } = false;
+
+                public IVariable Build()
+                {
+                    switch (Type)
+                    {
+                        default:
+                        case VariableType.Constant:
+                            return new ConstantVariable(Name)
+                            {
+                                DefaultValue = DefaultValue
+                            };
+                        case VariableType.Keyword:
+                            return new KeywordVariable(Name, Keyword)
+                            {
+                                DefaultValue = DefaultValue,
+                                ExcludeFromAggregateFunctionsIfNotFound = ExcludeFromAggregateFunctionsIfNotFound
+                            };
+                    }
+                }
             }
+
 
             [JsonProperty(PropertyName = "id", Required = Required.Always)]
             public string Id { get; set; }
@@ -73,107 +91,60 @@ namespace FitsRatingTool.Common.Services.Impl
             [JsonProperty(PropertyName = "pixel_size", NullValueHandling = NullValueHandling.Ignore)]
             public float? PixelSizeInMicrons { get; set; }
 
-            [JsonProperty(PropertyName = "constants", NullValueHandling = NullValueHandling.Ignore)]
-            private JsonConstant[]? _serializedConstants;
+            [JsonProperty(PropertyName = "variables", NullValueHandling = NullValueHandling.Ignore)]
+            private JsonVariable[]? _serializedVariables;
             [JsonIgnore]
-            private IConstant[]? _cachedConstants;
+            private IVariable[]? _cachedVariables;
             [JsonIgnore]
-            public IReadOnlyList<IConstant> Constants
+            public IReadOnlyList<IVariable> Variables
             {
                 get
                 {
-                    if (_cachedConstants != null)
+                    if (_cachedVariables != null)
                     {
-                        return _cachedConstants;
+                        return _cachedVariables;
                     }
-                    _cachedConstants = null;
-                    if (_serializedConstants != null)
+                    _cachedVariables = null;
+                    if (_serializedVariables != null)
                     {
-                        _cachedConstants = new IInstrumentProfile.Constant[_serializedConstants.Length];
+                        _cachedVariables = new IVariable[_serializedVariables.Length];
                         int i = 0;
-                        foreach (var constant in _serializedConstants)
+                        foreach (var constant in _serializedVariables)
                         {
-                            _cachedConstants[i++] = new IInstrumentProfile.Constant()
-                            {
-                                Name = constant.Name,
-                                Value = constant.Value
-                            };
+                            _cachedVariables[i++] = constant.Build();
                         }
                     }
-                    _cachedConstants ??= Array.Empty<IInstrumentProfile.Constant>();
-                    return _cachedConstants;
+                    _cachedVariables ??= Array.Empty<IVariable>();
+                    return _cachedVariables;
                 }
                 set
                 {
-                    _cachedConstants = null;
-                    _serializedConstants = null;
+                    _cachedVariables = null;
+                    _serializedVariables = null;
                     if (value != null)
                     {
-                        _serializedConstants = new JsonConstant[value.Count];
+                        _serializedVariables = new JsonVariable[value.Count];
                         int i = 0;
                         foreach (var constant in value)
                         {
-                            _serializedConstants[i++] = new JsonConstant
+                            var jsonVar = new JsonVariable();
+                            // TODO 
+                            if (constant is IKeywordVariable kwVar)
                             {
-                                Name = constant.Name,
-                                Value = constant.Value
-                            };
+                                jsonVar.Type = VariableType.Keyword;
+                                jsonVar.Keyword = kwVar.Keyword;
+                                jsonVar.ExcludeFromAggregateFunctionsIfNotFound = kwVar.ExcludeFromAggregateFunctionsIfNotFound;
+                            }
+                            jsonVar.Name = constant.Name;
+                            jsonVar.DefaultValue = constant.DefaultValue;
+                            _serializedVariables[i++] = jsonVar;
                         }
                     }
                 }
             }
 
             [JsonIgnore]
-            IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;
-
-            [JsonProperty(PropertyName = "value_overrides", NullValueHandling = NullValueHandling.Ignore)]
-            private Dictionary<string, JsonValueOverrideSpecification>? _serializedValueOverrides;
-            [JsonIgnore]
-            private Dictionary<string, ValueOverrideSpecification>? _cachedValueOverrides;
-            [JsonIgnore]
-            public IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides
-            {
-                get
-                {
-                    if (_cachedValueOverrides != null)
-                    {
-                        return _cachedValueOverrides;
-                    }
-                    _cachedValueOverrides = null;
-                    if (_serializedValueOverrides != null)
-                    {
-                        _cachedValueOverrides = new();
-                        foreach (var entry in _serializedValueOverrides)
-                        {
-                            _cachedValueOverrides[entry.Key] = new ValueOverrideSpecification
-                            {
-                                Keyword = entry.Value.Keyword,
-                                DefaultValue = entry.Value.DefaultValue,
-                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
-                            };
-                        }
-                    }
-                    return _cachedValueOverrides;
-                }
-                set
-                {
-                    _cachedValueOverrides = null;
-                    _serializedValueOverrides = null;
-                    if (value != null)
-                    {
-                        _serializedValueOverrides = new();
-                        foreach (var entry in value)
-                        {
-                            _serializedValueOverrides.Add(entry.Key, new JsonValueOverrideSpecification
-                            {
-                                Keyword = entry.Value.Keyword,
-                                DefaultValue = entry.Value.DefaultValue,
-                                ExcludeFromAggregateFunctionsIfNotFound = entry.Value.ExcludeFromAggregateFunctionsIfNotFound
-                            });
-                        }
-                    }
-                }
-            }
+            IReadOnlyList<IReadOnlyVariable> IReadOnlyInstrumentProfile.Variables => Variables;
 
             public InstrumentProfile(string profileId)
             {
@@ -240,7 +211,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 throw new IInstrumentProfileFactory.InvalidInstrumentProfileException("Invalid ID: " + profile.Id, null);
             }
 
-            foreach (var constant in profile.Constants)
+            foreach (var constant in profile.Variables)
             {
                 bool isNameValid = constant.Name.Length > 0 && char.IsLetter(constant.Name[0]) && constant.Name.All(x => char.IsLetterOrDigit(x));
                 if (!isNameValid)

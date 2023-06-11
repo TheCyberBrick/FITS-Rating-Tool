@@ -38,6 +38,16 @@ namespace FitsRatingTool.IoC
             return container.FirstOrDefault();
         }
 
+        public static void Do<Instance, Parameter>(this IContainer<Instance, Parameter> container, Parameter parameter, Action<Instance> consumer)
+            where Instance : class
+        {
+            Inject(container, parameter, instance =>
+            {
+                consumer.Invoke(instance);
+                container.Destroy(instance);
+            });
+        }
+
         public static void Inject<Instance, Parameter>(this IContainer<Instance, Parameter> container, Parameter parameter, Action<Instance>? consumer = null)
             where Instance : class
         {

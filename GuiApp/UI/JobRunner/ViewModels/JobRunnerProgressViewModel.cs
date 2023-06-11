@@ -99,44 +99,11 @@ namespace FitsRatingTool.GuiApp.UI.JobRunner.ViewModels
 
         private JobRunnerProgressViewModel(
             IJobRunnerProgressViewModel.OfJob args,
-            IStandaloneEvaluationService standaloneEvaluationService,
-            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
+            IStandaloneEvaluationService standaloneEvaluationService)
         {
             jobConfigFile = args.JobConfigFile;
             path = args.Path;
             this.standaloneEvaluationService = standaloneEvaluationService;
-
-            exporterConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), registry =>
-            {
-                foreach (var id in registry.Ids)
-                {
-                    var factory = registry.GetFactory(id);
-
-                    if (factory != null)
-                    {
-                        standaloneEvaluationService.RegisterExporter(id, (ctx, config) =>
-                        {
-                            var exporter = factory.Do(configurator =>
-                            {
-                                if (configurator.TryLoadConfig(config))
-                                {
-                                    return configurator.CreateExporter(ctx);
-                                }
-                                return null;
-                            });
-
-                            if (exporter != null)
-                            {
-                                return exporter;
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException("Failed loading exporter config");
-                            }
-                        });
-                    }
-                }
-            });
         }
 
 

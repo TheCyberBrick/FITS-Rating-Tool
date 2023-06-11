@@ -300,7 +300,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             bool errored;
 
-            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, instrumentProfileManager.CurrentProfile?.ValueOverrides, out evaluatorInstance, out var errorMessage) && errorMessage != null)
+            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, instrumentProfileManager.CurrentProfile?.Variables, out evaluatorInstance, out var errorMessage) && errorMessage != null)
             {
                 errored = true;
                 RatingFormulaError = errorMessage;

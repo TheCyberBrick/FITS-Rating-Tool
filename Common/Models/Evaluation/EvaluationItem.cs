@@ -20,7 +20,5 @@ using FitsRatingTool.Common.Models.FitsImage;
 
 namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public record ValueOverride(double Value, bool ExcludeFromAggregateFunctions);
-
-    public record EvaluationItem(IFitsImageStatistics Statistics, IDictionary<string, ValueOverride>? ValueOverrides);
+    public record EvaluationItem(IFitsImageStatistics Statistics, IDictionary<string, Constant>? Constants);
 }

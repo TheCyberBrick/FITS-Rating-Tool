@@ -18,7 +18,6 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.FitsImage;
-using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using org.matheval;
@@ -41,14 +40,14 @@ namespace FitsRatingTool.Common.Services.Impl
             private readonly EvaluationService evaluator;
             private readonly List<Variable> variables;
 
-            private readonly Dictionary<string, ValueOverride> defaultValueOverrides;
+            private readonly Dictionary<string, Constant> constants;
 
-            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula, Dictionary<string, ValueOverride> defaultValueOverrides)
+            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula, Dictionary<string, Constant> constants)
             {
                 Formula = formula;
                 this.evaluator = evaluator;
                 this.variables = variables;
-                this.defaultValueOverrides = defaultValueOverrides;
+                this.constants = constants;
             }
 
             public IEvaluationService.IEvaluator Clone()
@@ -63,7 +62,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     clonedVariables.Add(clonedVariable);
                 }
 
-                return new Evaluator(evaluator, clonedVariables, Formula, defaultValueOverrides);
+                return new Evaluator(evaluator, clonedVariables, Formula, constants);
             }
 
             private async Task EvaluateAsync(
@@ -71,7 +70,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 int startVarIndex, int endVarIndex,
                 bool statisticsRequired,
                 EvaluationItem item,
-                Dictionary<string, ValueOverride> defaultValueOverrides,
+                Dictionary<string, Constant> constants,
                 Dictionary<string, StatsInfo> additionalStatistics,
                 Dictionary<string, StatsInfo> additionalVariablesStatistics,
                 Dictionary<string, double> evaluatedVariables,
@@ -93,7 +92,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         throw new InvalidOperationException("Variable expression is null");
                     }
 
-                    SetStatsBindings(variable.Expression, item, defaultValueOverrides, additionalStatistics);
+                    SetStatsBindings(variable.Expression, item, constants, additionalStatistics);
 
                     foreach (var v in evaluatedVariables)
                     {
@@ -121,15 +120,15 @@ namespace FitsRatingTool.Common.Services.Impl
                         {
                             foreach (var measurementClass in MeasurementClasses)
                             {
-                                if (GetItemValue(item, measurementClass.Value, measurementClass.Name, excludeOverrides: true, isAggregateFunction: false, defaultValueOverrides, out var val))
+                                if (GetItemValue(item, measurementClass.Value, measurementClass.Name, excludeConstants: true, isAggregateFunction: false, constants, out var val))
                                 {
                                     yield return KeyValuePair.Create(measurementClass.Name, val);
                                 }
                             }
 
-                            foreach (var entry in defaultValueOverrides)
+                            foreach (var entry in constants)
                             {
-                                if (GetItemValue(item, null, entry.Key, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var val))
+                                if (GetItemValue(item, null, entry.Key, excludeConstants: false, isAggregateFunction: false, constants, out var val))
                                 {
                                     yield return KeyValuePair.Create(entry.Key, val);
                                 }
@@ -140,7 +139,7 @@ namespace FitsRatingTool.Common.Services.Impl
                                 var name = entry.Key;
                                 var value = entry.Value;
 
-                                double sigma = value.mad > 0 && GetItemValue(item, value.measurement, name, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var svalue) ? (svalue - value.median) / value.mad : 0;
+                                double sigma = value.mad > 0 && GetItemValue(item, value.measurement, name, excludeConstants: false, isAggregateFunction: false, constants, out var svalue) ? (svalue - value.median) / value.mad : 0;
                                 yield return KeyValuePair.Create(name + "Sigma", sigma);
 
                                 yield return KeyValuePair.Create(name + "Min", value.min);
@@ -197,7 +196,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            CalculateStatistics(measurement, name, items, defaultValueOverrides, out var min, out var max, out var median, out var mad, cancellationToken);
+                            CalculateStatistics(measurement, name, items, constants, out var min, out var max, out var median, out var mad, cancellationToken);
                             return Tuple.Create(name, new StatsInfo(measurement, min, max, median, mad));
                         }));
                     }
@@ -324,7 +323,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         {
                             yield return instance => ct => Task.Run(async () => await instance.EvaluateAsync(
                                 n, startVarIndex, endVarIndex,
-                                statisticsRequired, item, defaultValueOverrides, additionalStatistics, additionalVariablesStatistics,
+                                statisticsRequired, item, constants, additionalStatistics, additionalVariablesStatistics,
                                 evaluatedVariablesMap[item], consumer, intermediateResults, eventConsumer, ct));
                         }
                     }
@@ -423,18 +422,18 @@ namespace FitsRatingTool.Common.Services.Impl
             new MeasurementClass("Residual", MeasurementType.ResidualMean, MeasurementType.ResidualMax, MeasurementType.ResidualMin, MeasurementType.ResidualMean, MeasurementType.ResidualMedian, MeasurementType.ResidualMAD)
         };
 
-        private static bool GetItemValue(EvaluationItem item, MeasurementType? measurement, string name, bool excludeOverrides, bool isAggregateFunction, Dictionary<string, ValueOverride> defaultValueOverrides, out double value)
+        private static bool GetItemValue(EvaluationItem item, MeasurementType? measurement, string name, bool excludeConstants, bool isAggregateFunction, Dictionary<string, Constant> constants, out double value)
         {
             value = 0;
 
-            if ((item.ValueOverrides != null && item.ValueOverrides.TryGetValue(name, out var valueOverride)) || defaultValueOverrides.TryGetValue(name, out valueOverride))
+            if ((item.Constants != null && item.Constants.TryGetValue(name, out var constant)) || constants.TryGetValue(name, out constant))
             {
-                if (excludeOverrides || (isAggregateFunction && valueOverride.ExcludeFromAggregateFunctions))
+                if (excludeConstants || (isAggregateFunction && constant.ExcludeFromAggregateFunctions))
                 {
                     return false;
                 }
 
-                value = valueOverride.Value;
+                value = constant.Value;
 
                 return true;
             }
@@ -482,7 +481,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static void CalculateStatistics(MeasurementType measurement, string name, IEnumerable<EvaluationItem> items, Dictionary<string, ValueOverride> defaultValueOverrides, out double min, out double max, out double median, out double mad, CancellationToken cancellationToken = default)
+        private static void CalculateStatistics(MeasurementType measurement, string name, IEnumerable<EvaluationItem> items, Dictionary<string, Constant> constants, out double min, out double max, out double median, out double mad, CancellationToken cancellationToken = default)
         {
             int i = 0;
             min = double.MaxValue;
@@ -493,7 +492,7 @@ namespace FitsRatingTool.Common.Services.Impl
             int j = 0;
             foreach (var item in items)
             {
-                if (GetItemValue(item, measurement, name, excludeOverrides: false, isAggregateFunction: true, defaultValueOverrides, out var fvalue))
+                if (GetItemValue(item, measurement, name, excludeConstants: false, isAggregateFunction: true, constants, out var fvalue))
                 {
                     ++i;
                     values.Add(fvalue);
@@ -510,11 +509,11 @@ namespace FitsRatingTool.Common.Services.Impl
             CalculateStatistics(values, min, max, out median, out mad, cancellationToken);
         }
 
-        private static void SetAdditionalStatsBindings(Expression expression, MeasurementType? measurement, string name, EvaluationItem item, Dictionary<string, ValueOverride> defaultValueOverrides, IDictionary<string, StatsInfo> additionalStatisticsCache)
+        private static void SetAdditionalStatsBindings(Expression expression, MeasurementType? measurement, string name, EvaluationItem item, Dictionary<string, Constant> constants, IDictionary<string, StatsInfo> additionalStatisticsCache)
         {
             if (additionalStatisticsCache.TryGetValue(name, out var tuple))
             {
-                double sigma = tuple.mad > 0 && GetItemValue(item, measurement, name, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var svalue) ? (svalue - tuple.median) / tuple.mad : 0;
+                double sigma = tuple.mad > 0 && GetItemValue(item, measurement, name, excludeConstants: false, isAggregateFunction: false, constants, out var svalue) ? (svalue - tuple.median) / tuple.mad : 0;
                 expression.Bind(name + "Sigma", sigma);
 
                 expression.Bind(name + "Min", tuple.min);
@@ -531,53 +530,53 @@ namespace FitsRatingTool.Common.Services.Impl
             expression.Bind(name + "Median", 1.123456 + rng.NextDouble());
         }
 
-        private static void SetStatsBindings(Expression expression, EvaluationItem item, Dictionary<string, ValueOverride> defaultValueOverrides, IDictionary<string, StatsInfo> additionalStatistics)
+        private static void SetStatsBindings(Expression expression, EvaluationItem item, Dictionary<string, Constant> constants, IDictionary<string, StatsInfo> additionalStatistics)
         {
             foreach (var measurementClass in MeasurementClasses)
             {
-                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
+                if (!constants.ContainsKey(measurementClass.Name))
                 {
-                    SetAdditionalStatsBindings(expression, measurementClass.Value, measurementClass.Name, item, defaultValueOverrides, additionalStatistics);
+                    SetAdditionalStatsBindings(expression, measurementClass.Value, measurementClass.Name, item, constants, additionalStatistics);
 
                     foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
                         if (!measurementName.Equals(measurementClass.Name))
                         {
-                            SetAdditionalStatsBindings(expression, measurementClass.Measurements[measurementName], measurementName, item, defaultValueOverrides, additionalStatistics);
+                            SetAdditionalStatsBindings(expression, measurementClass.Measurements[measurementName], measurementName, item, constants, additionalStatistics);
                         }
                     }
                 }
             }
 
-            foreach (var entry in defaultValueOverrides)
+            foreach (var entry in constants)
             {
-                SetAdditionalStatsBindings(expression, null, entry.Key, item, defaultValueOverrides, additionalStatistics);
+                SetAdditionalStatsBindings(expression, null, entry.Key, item, constants, additionalStatistics);
             }
 
             foreach (var measurementClass in MeasurementClasses)
             {
-                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
+                if (!constants.ContainsKey(measurementClass.Name))
                 {
                     foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
                         var measurement = measurementClass.Measurements[measurementName];
 
-                        expression.Bind(measurementName, GetItemValue(item, measurement, measurementName, excludeOverrides: true, isAggregateFunction: false, defaultValueOverrides, out var value) ? value : 0.0);
+                        expression.Bind(measurementName, GetItemValue(item, measurement, measurementName, excludeConstants: true, isAggregateFunction: false, constants, out var value) ? value : 0.0);
                     }
                 }
             }
 
-            foreach (var entry in defaultValueOverrides)
+            foreach (var entry in constants)
             {
-                expression.Bind(entry.Key, GetItemValue(item, null, entry.Key, excludeOverrides: false, isAggregateFunction: false, defaultValueOverrides, out var value) ? value : 0.0);
+                expression.Bind(entry.Key, GetItemValue(item, null, entry.Key, excludeConstants: false, isAggregateFunction: false, constants, out var value) ? value : 0.0);
             }
         }
 
-        private static void SetStatsBindingsCheck(Expression expression, Dictionary<string, ValueOverride> defaultValueOverrides, Random rng)
+        private static void SetStatsBindingsCheck(Expression expression, Dictionary<string, Constant> constants, Random rng)
         {
             foreach (var measurementClass in MeasurementClasses)
             {
-                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
+                if (!constants.ContainsKey(measurementClass.Name))
                 {
                     SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
 
@@ -588,14 +587,14 @@ namespace FitsRatingTool.Common.Services.Impl
                 }
             }
 
-            foreach (var entry in defaultValueOverrides)
+            foreach (var entry in constants)
             {
                 SetAdditionalStatsBindingsCheck(expression, entry.Key, rng);
             }
 
             foreach (var measurementClass in MeasurementClasses)
             {
-                if (!defaultValueOverrides.ContainsKey(measurementClass.Name))
+                if (!constants.ContainsKey(measurementClass.Name))
                 {
                     foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
@@ -604,7 +603,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 }
             }
 
-            foreach (var entry in defaultValueOverrides)
+            foreach (var entry in constants)
             {
                 expression.Bind(entry.Key, 1.123456 + rng.NextDouble());
             }
@@ -699,7 +698,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private bool BuildVariable(Variable variable, List<Variable> variables, Dictionary<string, ValueOverride> defaultValueOverrides, out string? errorMessage)
+        private bool BuildVariable(Variable variable, List<Variable> variables, Dictionary<string, Constant> constants, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -729,7 +728,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var rng = new Random();
 
-            SetStatsBindingsCheck(variable.Expression, defaultValueOverrides, rng);
+            SetStatsBindingsCheck(variable.Expression, constants, rng);
 
             foreach (var var in variables)
             {
@@ -773,14 +772,14 @@ namespace FitsRatingTool.Common.Services.Impl
             return true;
         }
 
-        public bool Build(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverridesIn, out IEvaluationService.IEvaluator? evaluator, out string? errorMessage)
+        public bool Build(string formula, IReadOnlyList<IReadOnlyVariable>? customVariables, out IEvaluationService.IEvaluator? evaluator, out string? errorMessage)
         {
-            Dictionary<string, ValueOverride> defaultValueOverrides = new();
-            if (defaultValueOverridesIn != null)
+            Dictionary<string, Constant> defaultConstants = new();
+            if (customVariables != null)
             {
-                foreach (var entry in defaultValueOverridesIn)
+                foreach (var variable in customVariables)
                 {
-                    defaultValueOverrides.Add(entry.Key, new ValueOverride(entry.Value.DefaultValue, entry.Value.ExcludeFromAggregateFunctionsIfNotFound));
+                    defaultConstants[variable.Name] = new Constant(variable.Name, variable.DefaultValue, false);
                 }
             }
 
@@ -875,7 +874,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             foreach (Variable variable in variables)
             {
-                if (!BuildVariable(variable, evaluatedVariables, defaultValueOverrides, out errorMessage))
+                if (!BuildVariable(variable, evaluatedVariables, defaultConstants, out errorMessage))
                 {
                     return false;
                 }
@@ -883,33 +882,21 @@ namespace FitsRatingTool.Common.Services.Impl
                 evaluatedVariables.Add(variable);
             }
 
-            evaluator = new Evaluator(this, variables, formula, defaultValueOverrides);
+            evaluator = new Evaluator(this, variables, formula, defaultConstants);
             return true;
         }
 
-        public IDictionary<string, ValueOverride> GetValueOverridesFromHeader(IReadOnlyDictionary<string, ValueOverrideSpecification> defaultValueOverrides, Func<string, string?> header)
+        public async Task<IDictionary<string, Constant>> EvaluateVariablesAsync(IReadOnlyList<IReadOnlyVariable> variables, string file, Func<string, string?> header)
         {
-            Dictionary<string, ValueOverride> valueOverrides = new();
+            Dictionary<string, Constant> constants = new();
 
-            foreach (var entry in defaultValueOverrides)
+            foreach (var variable in variables)
             {
-                var name = entry.Key;
-                var keyword = entry.Value.Keyword;
-                var defaultOverride = entry.Value;
-
-                var valueStr = header.Invoke(keyword);
-
-                if (double.TryParse(valueStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
-                {
-                    valueOverrides.Add(name, new ValueOverride(value, false));
-                }
-                else
-                {
-                    valueOverrides.Add(name, new ValueOverride(defaultOverride.DefaultValue, defaultOverride.ExcludeFromAggregateFunctionsIfNotFound));
-                }
+                var constant = await variable.EvaluateAsync(file, header);
+                constants[variable.Name] = constant;
             }
 
-            return valueOverrides;
+            return constants;
         }
     }
 }

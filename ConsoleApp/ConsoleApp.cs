@@ -35,15 +35,18 @@ namespace FitsRatingTool.ConsoleApp
 
         private readonly IJobConfigFactory jobConfigFactory;
         private readonly IStandaloneEvaluationService evaluator;
+        private readonly IEvaluationExporterManager evaluationExporterManager;
 
         private Dictionary<string, IEvaluationExporterFactory> exporterFactories = new();
 
-        public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, ICSVEvaluationExporterFactory csvEvaluationExporterFactory,
-            IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory, IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory,
-            IFileDeleterExporterFactory fileDeleterExporterFactory, IFileMoverExporterFactory fileMoverExporterFactory)
+        public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, IEvaluationExporterManager evaluationExporterManager,
+            ICSVEvaluationExporterFactory csvEvaluationExporterFactory, IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory,
+            IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IFileDeleterExporterFactory fileDeleterExporterFactory,
+            IFileMoverExporterFactory fileMoverExporterFactory)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.evaluator = evaluator;
+            this.evaluationExporterManager = evaluationExporterManager;
 
             RegisterExporter("csv", csvEvaluationExporterFactory);
             RegisterExporter("fits_header", fitsHeaderEvaluationExporterFactory);
@@ -54,7 +57,7 @@ namespace FitsRatingTool.ConsoleApp
 
         private void RegisterExporter(string id, IEvaluationExporterFactory factory)
         {
-            if (evaluator.RegisterExporter(id, (ctx, conf) => factory.Create(ctx, conf)))
+            if (evaluationExporterManager.Register(id, (ctx, conf) => factory.Create(ctx, conf)))
             {
                 exporterFactories.Add(id, factory);
             }
@@ -90,7 +93,7 @@ namespace FitsRatingTool.ConsoleApp
             {
                 Console.WriteLine("Exporters:");
                 Console.WriteLine();
-                foreach (var exporterId in evaluator.Exporters)
+                foreach (var exporterId in evaluationExporterManager.Exporters.Keys)
                 {
                     var exporterFactory = exporterFactories[exporterId];
                     Console.WriteLine(" - Id: " + exporterId);

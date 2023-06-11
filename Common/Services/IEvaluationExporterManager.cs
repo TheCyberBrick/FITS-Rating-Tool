@@ -17,27 +17,21 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
+using System.Diagnostics.CodeAnalysis;
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.Common.Services
 {
-    public interface IReadOnlyInstrumentProfile
+    public interface IEvaluationExporterManager
     {
-        string Id { get; }
+        delegate IEvaluationExporter ExporterFactory(IEvaluationExporterContext ctx, string config);
 
-        string Name { get; }
 
-        string Description { get; }
+        IReadOnlyDictionary<string, ExporterFactory> Exporters { get; }
 
-        string Key { get; }
+        bool Register(string id, ExporterFactory exporterFactory);
 
-        float? FocalLength { get; }
+        bool Unregister(string id);
 
-        int? BitDepth { get; }
-
-        float? ElectronsPerADU { get; }
-
-        float? PixelSizeInMicrons { get; }
-
-        IReadOnlyList<IReadOnlyVariable> Variables { get; }
+        bool TryCreateExporter(IEvaluationExporterContext ctx, string id, string config, [NotNullWhen(true)] out IEvaluationExporter? exporter);
     }
 }

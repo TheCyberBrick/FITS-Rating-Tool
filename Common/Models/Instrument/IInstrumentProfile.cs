@@ -16,26 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Evaluation;
+
 namespace FitsRatingTool.Common.Models.Instrument
 {
     public interface IInstrumentProfile : IReadOnlyInstrumentProfile
     {
-        public class Constant : IConstant
-        {
-            public string Name { get; set; } = "";
-
-            public double Value { get; set; }
-        }
-
-        public interface IValueOverrideSpecification : IReadOnlyValueOverrideSpecification
-        {
-            new string Keyword { get; set; }
-
-            new double DefaultValue { get; set; }
-
-            new bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
-        }
-
         new string Id { get; set; }
 
         new string Name { get; set; }
@@ -52,8 +38,6 @@ namespace FitsRatingTool.Common.Models.Instrument
 
         new float? PixelSizeInMicrons { get; set; }
 
-        new IReadOnlyList<IConstant> Constants { get; set; }
-
-        new IReadOnlyDictionary<string, ValueOverrideSpecification>? ValueOverrides { get; set; }
+        new IReadOnlyList<IVariable> Variables { get; set; }
     }
 }

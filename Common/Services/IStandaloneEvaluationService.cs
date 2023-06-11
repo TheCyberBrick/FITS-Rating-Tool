@@ -33,16 +33,6 @@ namespace FitsRatingTool.Common.Services
         }
 
 
-        delegate IEvaluationExporter ExporterFactory(IEvaluationExporterContext ctx, string config);
-
-
-        IReadOnlyCollection<string> Exporters { get; }
-
-        bool RegisterExporter(string id, ExporterFactory exporterFactory);
-
-        bool UnregisterExporter(string id);
-
-
         delegate Task EvaluationConsumer(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
         delegate void EventConsumer(BatchEvaluation.Event e);
 

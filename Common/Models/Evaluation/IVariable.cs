@@ -18,32 +18,10 @@
 
 namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IJobConfig : IReadOnlyJobConfig
+    public interface IVariable : IReadOnlyVariable
     {
-        new string EvaluationFormula { get; set; }
+        new string Name { get; set; }
 
-        new int ParallelTasks { get; set; }
-
-        new int ParallelIO { get; set; }
-
-        new IReadOnlyCollection<string>? GroupingKeys { get; set; }
-
-        new bool GroupingKeysRequired { get; set; }
-
-        new IReadOnlyCollection<FilterConfig>? GroupingFilters { get; set; }
-
-        new string? OutputLogsPath { get; set; }
-
-        new string? CachePath { get; set; }
-
-        new long MaxImageSize { get; set; }
-
-        new int MaxImageWidth { get; set; }
-
-        new int MaxImageHeight { get; set; }
-
-        new IReadOnlyCollection<ExporterConfig>? Exporters { get; set; }
-
-        new IReadOnlyList<IVariable>? Variables { get; set; }
+        new double DefaultValue { get; set; }
     }
 }

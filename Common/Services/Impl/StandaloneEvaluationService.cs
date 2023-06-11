@@ -39,37 +39,16 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private readonly Dictionary<string, IStandaloneEvaluationService.ExporterFactory> exporterFactories = new();
-
-        public IReadOnlyCollection<string> Exporters => exporterFactories.Keys;
-
 
         private readonly IJobConfigFactory jobConfigFactory;
         private readonly IBatchEvaluationService batchEvaluationService;
+        private readonly IEvaluationExporterManager exporterManager;
 
-        public StandaloneEvaluationService(IJobConfigFactory jobConfigFactory, IBatchEvaluationService batchEvaluationService)
+        public StandaloneEvaluationService(IJobConfigFactory jobConfigFactory, IBatchEvaluationService batchEvaluationService, IEvaluationExporterManager exporterManager)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.batchEvaluationService = batchEvaluationService;
-        }
-
-        public bool RegisterExporter(string id, IStandaloneEvaluationService.ExporterFactory exporterFactory)
-        {
-            return exporterFactories.TryAdd(id, exporterFactory);
-        }
-
-        public bool UnregisterExporter(string id)
-        {
-            return exporterFactories.Remove(id);
-        }
-
-        private IEvaluationExporter? CreateExporter(IEvaluationExporterContext ctx, string id, string config)
-        {
-            if (exporterFactories.TryGetValue(id, out var exporter))
-            {
-                return exporter.Invoke(ctx, config);
-            }
-            return null;
+            this.exporterManager = exporterManager;
         }
 
         private void LoadConfig(string jobConfigFile, out IReadOnlyJobConfig jobConfig, out string workingDir, out Cache? cache)
@@ -136,7 +115,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     {
                         try
                         {
-                            exporter = CreateExporter(ctx, exporterConfig.Id, exporterConfig.Config);
+                            exporterManager.TryCreateExporter(ctx, exporterConfig.Id, exporterConfig.Config, out exporter);
                         }
                         catch (Exception ex)
                         {

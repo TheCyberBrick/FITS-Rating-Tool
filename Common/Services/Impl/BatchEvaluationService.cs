@@ -18,7 +18,6 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.FitsImage;
-using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using System.Collections.Concurrent;
@@ -101,7 +100,7 @@ namespace FitsRatingTool.Common.Services.Impl
             return true;
         }
 
-        private async Task<(IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, ValueOverride>? ValueOverrides)?> LoadAndCalculateStatisticsAsync(
+        private async Task<(IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, Constant>? Constants)?> LoadAndCalculateStatisticsAsync(
             string file, IReadOnlyJobConfig jobConfig, Filters? filters,
             AsyncSemaphore ioThrottle, int index, IGroupingManager.IGrouping grouping,
             IBatchEvaluationService.ICache? cache,
@@ -112,7 +111,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             IFitsImageStatistics? stats = null;
             string? groupKey = null;
-            IDictionary<string, ValueOverride>? valueOverrides = null;
+            IDictionary<string, Constant>? constants = null;
 
             try
             {
@@ -202,14 +201,14 @@ namespace FitsRatingTool.Common.Services.Impl
                         if (hasAllMeasurements)
                         {
                             // Get value overrides
-                            if (jobConfig.ValueOverrides != null)
+                            if (jobConfig.Variables != null)
                             {
-                                valueOverrides = evaluationService.GetValueOverridesFromHeader(jobConfig.ValueOverrides, headerMap);
+                                constants = await evaluationService.EvaluateVariablesAsync(jobConfig.Variables, file, headerMap);
                             }
 
                             eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, true, false));
 
-                            return (new Stats(cachedStats), cachedGroupKey, valueOverrides);
+                            return (new Stats(cachedStats), cachedGroupKey, constants);
                         }
                     }
                 }
@@ -286,9 +285,9 @@ namespace FitsRatingTool.Common.Services.Impl
                         cancellationToken.ThrowIfCancellationRequested();
 
                         // Get value overrides
-                        if (jobConfig.ValueOverrides != null)
+                        if (jobConfig.Variables != null)
                         {
-                            valueOverrides = evaluationService.GetValueOverridesFromHeader(jobConfig.ValueOverrides, headerMap);
+                            constants = await evaluationService.EvaluateVariablesAsync(jobConfig.Variables, file, headerMap);
                         }
 
                         cancellationToken.ThrowIfCancellationRequested();
@@ -393,10 +392,10 @@ namespace FitsRatingTool.Common.Services.Impl
                 eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, false, false, ex));
             }
 
-            return stats != null ? (stats, groupKey, valueOverrides) : null;
+            return stats != null ? (stats, groupKey, constants) : null;
         }
 
-        private IEvaluationService.IEvaluator? BuildEvaluator(string formula, IReadOnlyDictionary<string, ValueOverrideSpecification>? defaultValueOverrides, out string? errorMessage, IBatchEvaluationService.EventConsumer? eventConsumer = null)
+        private IEvaluationService.IEvaluator? BuildEvaluator(string formula, IReadOnlyList<IReadOnlyVariable>? customVariables, out string? errorMessage, IBatchEvaluationService.EventConsumer? eventConsumer = null)
         {
             eventConsumer?.Invoke(new BatchEvaluation.Event(BatchEvaluation.Phase.InitStart));
 
@@ -404,7 +403,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             try
             {
-                if (!evaluationService.Build(formula, defaultValueOverrides, out evaluator, out errorMessage) || evaluator == null)
+                if (!evaluationService.Build(formula, customVariables, out evaluator, out errorMessage) || evaluator == null)
                 {
                     if (errorMessage != null)
                     {
@@ -470,14 +469,14 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var grouping = groupingManager.BuildGrouping(jobConfig.GroupingKeys != null ? jobConfig.GroupingKeys.ToArray() : Array.Empty<string>());
 
-            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, jobConfig.ValueOverrides, out var errorMessage, eventConsumer);
+            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, jobConfig.Variables, out var errorMessage, eventConsumer);
 
             if (evaluator == null)
             {
                 throw new IBatchEvaluationService.InvalidConfigException(errorMessage, null);
             }
 
-            ConcurrentDictionary<string, (IFitsImageStatistics Statistics, int Index, IDictionary<string, ValueOverride>? ValueOverrides)> fileToStatistics = new();
+            ConcurrentDictionary<string, (IFitsImageStatistics Statistics, int Index, IDictionary<string, Constant>? Constants)> fileToStatistics = new();
             ConcurrentDictionary<IFitsImageStatistics, (string File, int Index, string GroupKey)> statisticsToFile = new();
 
             ConcurrentDictionary<string, List<string>> groups = new();
@@ -492,14 +491,14 @@ namespace FitsRatingTool.Common.Services.Impl
                 {
                     yield return o => async ct =>
                     {
-                        (IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, ValueOverride> ValueOverrides)? tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, ioThrottle, index, grouping, cache, eventConsumer, ct));
+                        (IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, Constant> Constants)? tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, ioThrottle, index, grouping, cache, eventConsumer, ct));
                         if (tuple.HasValue)
                         {
                             var stats = tuple.Value.Statistics;
                             var groupKey = tuple.Value.GroupKey ?? "All";
-                            var valueOverride = tuple.Value.ValueOverrides;
+                            var constants = tuple.Value.Constants;
 
-                            fileToStatistics.TryAdd(file, (stats, index, valueOverride));
+                            fileToStatistics.TryAdd(file, (stats, index, constants));
                             statisticsToFile.TryAdd(stats, (file, index, groupKey));
 
                             var groupFiles = groups.GetOrAdd(groupKey, _ => new());
@@ -570,7 +569,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     foreach (var file in groupFiles)
                     {
                         var stats = fileToStatistics[file];
-                        yield return new EvaluationItem(stats.Statistics, stats.ValueOverrides);
+                        yield return new EvaluationItem(stats.Statistics, stats.Constants);
                     }
                 }
 

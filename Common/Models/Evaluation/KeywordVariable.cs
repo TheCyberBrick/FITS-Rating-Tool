@@ -16,14 +16,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Instrument
+using System.Globalization;
+
+namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public class ValueOverrideSpecification : IInstrumentProfile.IValueOverrideSpecification
+    public class KeywordVariable : IKeywordVariable
     {
-        public string Keyword { get; set; } = "";
+        public string Name { get; set; }
 
         public double DefaultValue { get; set; }
 
+        public string Keyword { get; set; }
+
         public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
+
+        public KeywordVariable(string name, string keyword)
+        {
+            Name = name;
+            Keyword = keyword;
+        }
+
+        public Task<Constant> EvaluateAsync(string file, Func<string, string?> header)
+        {
+            double? value = null;
+            if (double.TryParse(header.Invoke(Keyword), NumberStyles.Float, CultureInfo.InvariantCulture, out double keywordValue))
+            {
+                value = keywordValue;
+            }
+            return Task.FromResult(new Constant(Name, value.HasValue ? value.Value : DefaultValue, !value.HasValue && ExcludeFromAggregateFunctionsIfNotFound));
+        }
     }
 }

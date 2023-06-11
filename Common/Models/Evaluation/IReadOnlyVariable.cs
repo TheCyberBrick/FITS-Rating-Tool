@@ -16,12 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.Common.Models.Evaluation
 {
-    public interface IKeywordVariable : IVariable
+    public interface IReadOnlyVariable
     {
-        string Keyword { get; set; }
+        string Name { get; }
 
-        bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
+        double DefaultValue { get; }
+
+        Task<Constant> EvaluateAsync(string file, Func<string, string?> header);
     }
 }

@@ -124,7 +124,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             var constants = new List<IConstant>();
 
-            foreach (var constant in profile.Constants)
+            foreach (var constant in profile.Variables)
             {
                 var pconstant = new IInstrumentProfile.Constant()
                 {
@@ -135,7 +135,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 constants.Add(pconstant);
             }
 
-            copy.Constants = constants;
+            copy.Variables = constants;
 
             return copy;
         }
