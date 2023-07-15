@@ -27,11 +27,11 @@ using System.ComponentModel.Composition;
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
     [Export(typeof(IInstrumentProfileSelectorViewModel)), TransientReuse]
-    public class InstrumentProfileSelectorViewModel : ViewModelBase, IInstrumentProfileSelectorViewModel
+    public class VariableSelectorViewModel : ViewModelBase, IInstrumentProfileSelectorViewModel
     {
-        public InstrumentProfileSelectorViewModel(IRegistrar<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> reg)
+        public VariableSelectorViewModel(IRegistrar<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> reg)
         {
-            reg.RegisterAndReturn<InstrumentProfileSelectorViewModel>();
+            reg.RegisterAndReturn<VariableSelectorViewModel>();
         }
 
         private bool _isReadOnly;
@@ -64,7 +64,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private readonly IInstrumentProfileManager instrumentProfileManager;
         private readonly IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer;
 
-        private InstrumentProfileSelectorViewModel(IInstrumentProfileSelectorViewModel.Of args, IInstrumentProfileManager instrumentProfileManager,
+        private VariableSelectorViewModel(IInstrumentProfileSelectorViewModel.Of args, IInstrumentProfileManager instrumentProfileManager,
             IContainer<IInstrumentProfileViewModel, IInstrumentProfileViewModel.OfProfile> instrumentProfileContainer)
         {
             this.instrumentProfileManager = instrumentProfileManager;
@@ -74,7 +74,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             Profiles = new ReadOnlyObservableCollection<IInstrumentProfileViewModel>(_profiles);
 
-            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, InstrumentProfileSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
+            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, VariableSelectorViewModel>(instrumentProfileManager, nameof(IInstrumentProfileManager.RecordChanged), OnRecordChanged);
         }
 
         protected override void OnInstantiated()

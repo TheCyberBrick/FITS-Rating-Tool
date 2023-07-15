@@ -37,10 +37,13 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         public class VariableConfig
         {
+            public string Id { get; }
+
             public string Config { get; }
 
-            public VariableConfig(string config)
+            public VariableConfig(string id, string config)
             {
+                Id = id;
                 Config = config;
             }
         }
