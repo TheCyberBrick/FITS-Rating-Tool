@@ -35,6 +35,16 @@ namespace FitsRatingTool.Common.Models.Evaluation
             }
         }
 
+        public class VariableConfig
+        {
+            public string Config { get; }
+
+            public VariableConfig(string config)
+            {
+                Config = config;
+            }
+        }
+
         public class FilterConfig
         {
             public string Key { get; }

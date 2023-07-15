@@ -42,6 +42,7 @@ using Avalonia.Collections;
 using System.ComponentModel.Composition;
 using DryIocAttributes;
 using FitsRatingTool.IoC;
+using FitsRatingTool.GuiApp.UI.Variables;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -187,6 +188,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private readonly IAppConfig appConfig;
         private readonly IVoyagerIntegration voyagerIntegration;
         private readonly IEvaluationExporterManager evaluationExporterManager;
+        private readonly IVariableManager variableManager;
 
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer;
@@ -210,6 +212,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IAppConfigManager appConfigManager,
             IVoyagerIntegration voyagerIntegration,
             IEvaluationExporterManager evaluationExporterManager,
+            IVariableManager variableManager,
             IContainer<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> multiImageViewerContainer,
             IContainer<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> imageLoadProgressContainer,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
@@ -229,12 +232,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryRoot<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerFactory,
             IFactoryRoot<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory,
             IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory,
-            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer)
+            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer,
+            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer)
         {
             this.manager = manager;
             this.appConfig = appConfig;
             this.voyagerIntegration = voyagerIntegration;
             this.evaluationExporterManager = evaluationExporterManager;
+            this.variableManager = variableManager;
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
             this.appViewerOverlayContainer = appViewerOverlayContainer;
@@ -464,6 +469,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             SubscribeToEvent<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
 
             exporterConfiguratorRegistryContainer.Singleton().Do(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), RegisterExporters);
+            variableConfiguratorRegistryContainer.Singleton().Do(new IComponentRegistry<IVariableConfiguratorViewModel>.Of(), RegisterVariables);
 
             RxApp.MainThreadScheduler.Schedule(Initialize);
 
@@ -537,6 +543,38 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                         else
                         {
                             throw new InvalidOperationException("Failed loading exporter config");
+                        }
+                    });
+                }
+            }
+        }
+
+        private void RegisterVariables(IComponentRegistry<IVariableConfiguratorViewModel> configuratorRegistry)
+        {
+            foreach (var id in configuratorRegistry.Ids)
+            {
+                var factory = configuratorRegistry.GetFactory(id);
+
+                if (factory != null)
+                {
+                    variableManager.Register(id, (config) =>
+                    {
+                        var exporter = factory.Do(configurator =>
+                        {
+                            if (configurator.TryLoadConfig(config))
+                            {
+                                return configurator.CreateVariable();
+                            }
+                            return null;
+                        });
+
+                        if (exporter != null)
+                        {
+                            return exporter;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Failed loading variable config");
                         }
                     });
                 }
