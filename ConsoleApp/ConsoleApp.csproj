@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Exporters\Exporters.csproj" />
+    <ProjectReference Include="..\Variables\Variables.csproj" />
   </ItemGroup>
 
 </Project>

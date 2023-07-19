@@ -20,6 +20,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Utils;
 using FitsRatingTool.Exporters.Services;
+using FitsRatingTool.Variables.Services;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -36,23 +37,29 @@ namespace FitsRatingTool.ConsoleApp
         private readonly IJobConfigFactory jobConfigFactory;
         private readonly IStandaloneEvaluationService evaluator;
         private readonly IEvaluationExporterManager evaluationExporterManager;
+        private readonly IVariableManager variableManager;
 
         private Dictionary<string, IEvaluationExporterFactory> exporterFactories = new();
+        private Dictionary<string, IVariableFactory> variableFactories = new();
 
         public ConsoleApp(IJobConfigFactory jobConfigFactory, IStandaloneEvaluationService evaluator, IEvaluationExporterManager evaluationExporterManager,
-            ICSVEvaluationExporterFactory csvEvaluationExporterFactory, IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory,
+            IVariableManager variableManager, ICSVEvaluationExporterFactory csvEvaluationExporterFactory, IFitsHeaderEvaluationExporterFactory fitsHeaderEvaluationExporterFactory,
             IVoyagerEvaluationExporterFactory voyagerEvaluationExporterFactory, IFileDeleterExporterFactory fileDeleterExporterFactory,
-            IFileMoverExporterFactory fileMoverExporterFactory)
+            IFileMoverExporterFactory fileMoverExporterFactory, IConstantVariableFactory constantVariableFactory, IKeywordVariableFactory keywordVariableFactory)
         {
             this.jobConfigFactory = jobConfigFactory;
             this.evaluator = evaluator;
             this.evaluationExporterManager = evaluationExporterManager;
+            this.variableManager = variableManager;
 
             RegisterExporter("csv", csvEvaluationExporterFactory);
             RegisterExporter("fits_header", fitsHeaderEvaluationExporterFactory);
             RegisterExporter("voyager", voyagerEvaluationExporterFactory);
             RegisterExporter("file_deleter", fileDeleterExporterFactory);
             RegisterExporter("file_mover", fileMoverExporterFactory);
+
+            RegisterVariable("constant", constantVariableFactory);
+            RegisterVariable("keyword", keywordVariableFactory);
         }
 
         private void RegisterExporter(string id, IEvaluationExporterFactory factory)
@@ -60,6 +67,14 @@ namespace FitsRatingTool.ConsoleApp
             if (evaluationExporterManager.Register(id, factory))
             {
                 exporterFactories.Add(id, factory);
+            }
+        }
+
+        private void RegisterVariable(string id, IVariableFactory factory)
+        {
+            if (variableManager.Register(id, factory))
+            {
+                variableFactories.Add(id, factory);
             }
         }
 
@@ -93,12 +108,27 @@ namespace FitsRatingTool.ConsoleApp
             {
                 Console.WriteLine("Exporters:");
                 Console.WriteLine();
-                foreach (var exporterId in evaluationExporterManager.Exporters.Keys)
+                foreach (var entry in exporterFactories)
                 {
-                    var exporterFactory = exporterFactories[exporterId];
-                    Console.WriteLine(" - Id: " + exporterId);
+                    var exporterFactory = entry.Value;
+                    Console.WriteLine(" - Id: " + entry.Key);
                     Console.WriteLine("   Description: " + Environment.NewLine + PrintWithSpacing(5, exporterFactory.Description));
                     Console.WriteLine("   Example config: " + Environment.NewLine + PrintWithSpacing(5, exporterFactory.ExampleConfig));
+                    Console.WriteLine();
+                }
+                informationOnly = true;
+            }
+
+            if (args.Contains("-v") || args.Contains("--variables"))
+            {
+                Console.WriteLine("Variables:");
+                Console.WriteLine();
+                foreach (var entry in variableFactories)
+                {
+                    var variableFactory = entry.Value;
+                    Console.WriteLine(" - Id: " + entry.Key);
+                    Console.WriteLine("   Description: " + Environment.NewLine + PrintWithSpacing(5, variableFactory.Description));
+                    Console.WriteLine("   Example config: " + Environment.NewLine + PrintWithSpacing(5, variableFactory.ExampleConfig));
                     Console.WriteLine();
                 }
                 informationOnly = true;
@@ -571,6 +601,7 @@ namespace FitsRatingTool.ConsoleApp
             writer.WriteLine("  -p,\t--path <path>\t\tpath of the directory containing FITS files");
             writer.WriteLine("  \t--progress\t\tdisplay progress messages");
             writer.WriteLine("  -s,\t--silent\t\tsuppress all standard output except for progress messages and results");
+            writer.WriteLine("  -v,\t--variables\t\tdisplay list of available variables");
             writer.WriteLine("  -y,\t--yes\t\t\tsuppress confirmations for --clearcache or potentially dangerous exporters");
             writer.WriteLine();
             writer.WriteLine("Use the following command to get started quickly:");

@@ -21,6 +21,8 @@ using FitsRatingTool.Common.Services;
 using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.Exporters.Services;
 using FitsRatingTool.Exporters.Services.Impl;
+using FitsRatingTool.Variables.Services;
+using FitsRatingTool.Variables.Services.Impl;
 
 namespace FitsRatingTool.ConsoleApp
 {
@@ -34,6 +36,7 @@ namespace FitsRatingTool.ConsoleApp
 
             RegisterServices(container);
             RegisterExporters(container);
+            RegisterVariables(container);
 
             return container;
         }
@@ -58,6 +61,12 @@ namespace FitsRatingTool.ConsoleApp
             container.Register<IVoyagerEvaluationExporterFactory, VoyagerEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IFileDeleterExporterFactory, FileDeleterExporterFactory>(Reuse.Singleton);
             container.Register<IFileMoverExporterFactory, FileMoverExporterFactory>(Reuse.Singleton);
+        }
+
+        private static void RegisterVariables(Container container)
+        {
+            container.Register<IConstantVariableFactory, ConstantVariableFactory>(Reuse.Singleton);
+            container.Register<IKeywordVariableFactory, KeywordVariableFactory>(Reuse.Singleton);
         }
     }
 }

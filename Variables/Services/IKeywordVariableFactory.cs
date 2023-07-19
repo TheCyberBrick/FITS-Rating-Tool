@@ -16,22 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Evaluation
+using FitsRatingTool.Common.Services;
+
+namespace FitsRatingTool.Variables.Services
 {
-    public class ConstantVariable : IVariable
+    public interface IKeywordVariableFactory : IVariableFactory
     {
-        public string Name { get; set; }
-
-        public double DefaultValue { get; set; }
-
-        public ConstantVariable(string name)
-        {
-            Name = name;
-        }
-
-        public Task<Constant> EvaluateAsync(string file, Func<string, string?> header)
-        {
-            return Task.FromResult(new Constant(Name, DefaultValue, false));
-        }
     }
 }

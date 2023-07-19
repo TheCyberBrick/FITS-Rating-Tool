@@ -16,12 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.Common.Models.Evaluation
-{
-    public interface IKeywordVariable : IVariable
-    {
-        string Keyword { get; set; }
+using FitsRatingTool.Common.Services;
 
-        bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
+namespace FitsRatingTool.Variables.Services
+{
+    public interface IConstantVariableFactory : IVariableFactory
+    {
     }
 }

@@ -59,44 +59,6 @@ namespace FitsRatingTool.Common.Services.Impl
                 public string Config { get; set; } = null!;
             }
 
-            private class JsonVariable
-            {
-                [JsonProperty(PropertyName = "type", Required = Required.Always)]
-                [JsonConverter(typeof(StringEnumConverter))]
-                public VariableType Type { get; set; }
-
-                [JsonProperty(PropertyName = "name", Required = Required.Always)]
-                public string Name { get; set; } = null!;
-
-                [JsonProperty(PropertyName = "default_value", Required = Required.Always)]
-                public double DefaultValue { get; set; }
-
-                [JsonProperty(PropertyName = "keyword", NullValueHandling = NullValueHandling.Ignore)]
-                public string Keyword { get; set; } = "";
-
-                [JsonProperty(PropertyName = "exclude_from_aggregate_functions_if_not_found", NullValueHandling = NullValueHandling.Ignore)]
-                public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; } = false;
-
-                public IVariable Build()
-                {
-                    switch (Type)
-                    {
-                        default:
-                        case VariableType.Constant:
-                            return new ConstantVariable(Name)
-                            {
-                                DefaultValue = DefaultValue
-                            };
-                        case VariableType.Keyword:
-                            return new KeywordVariable(Name, Keyword)
-                            {
-                                DefaultValue = DefaultValue,
-                                ExcludeFromAggregateFunctionsIfNotFound = ExcludeFromAggregateFunctionsIfNotFound
-                            };
-                    }
-                }
-            }
-
 
 
             [JsonIgnore]
