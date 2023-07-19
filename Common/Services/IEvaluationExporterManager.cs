@@ -34,4 +34,12 @@ namespace FitsRatingTool.Common.Services
 
         bool TryCreateExporter(IEvaluationExporterContext ctx, string id, string config, [NotNullWhen(true)] out IEvaluationExporter? exporter);
     }
+
+    public static class IEvaluationExporterManagerExtensions
+    {
+        public static bool Register(this IEvaluationExporterManager manager, string id, IEvaluationExporterFactory factory)
+        {
+            return manager.Register(id, factory.Create);
+        }
+    }
 }

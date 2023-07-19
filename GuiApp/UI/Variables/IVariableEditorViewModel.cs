@@ -16,22 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.IoC;
-using System;
+using FitsRatingTool.GuiApp.UI.Utils;
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IVariableEditorViewModel
+    public interface IVariableEditorViewModel : IItemEditorViewModel<IVariableConfiguratorViewModel>
     {
         public record Of();
-
-        IVariableSelectorViewModel Selector { get; }
-
-        IVariableConfiguratorViewModel? VariableConfigurator { get; }
-
-        void SetVariableConfigurator(IDelegatedFactory<IVariableConfiguratorViewModel>? factory);
-
-
-        event EventHandler ConfigurationChanged;
     }
 }

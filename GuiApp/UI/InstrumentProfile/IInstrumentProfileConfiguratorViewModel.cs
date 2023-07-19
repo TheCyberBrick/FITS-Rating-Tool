@@ -31,6 +31,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         bool HasProfile { get; }
 
+        bool IsValid { get; }
+
         Interaction<IReadOnlyInstrumentProfile, bool> DeleteConfirmationDialog { get; }
 
         Interaction<Unit, bool> DiscardConfirmationDialog { get; }

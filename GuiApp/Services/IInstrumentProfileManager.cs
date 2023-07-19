@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 
 namespace FitsRatingTool.GuiApp.Services
@@ -82,6 +83,8 @@ namespace FitsRatingTool.GuiApp.Services
         IReadOnlyInstrumentProfile? Load(string data);
 
         IReadOnlyInstrumentProfile? CurrentProfile { get; set; }
+
+        IReadOnlyList<IReadOnlyVariable>? CurrentVariables { get; }
 
         event EventHandler<ProfileChangedEventArgs> CurrentProfileChanged;
 

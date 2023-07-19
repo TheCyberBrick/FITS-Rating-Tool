@@ -61,12 +61,14 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
+        private readonly IVariableManager variableManager;
         private readonly IFitsImageLoader imageLoader;
         private readonly IGroupingManager groupingManager;
         private readonly IEvaluationService evaluationService;
 
-        public BatchEvaluationService(IFitsImageLoader imageLoader, IGroupingManager groupingManager, IEvaluationService evaluationService)
+        public BatchEvaluationService(IVariableManager variableManager, IFitsImageLoader imageLoader, IGroupingManager groupingManager, IEvaluationService evaluationService)
         {
+            this.variableManager = variableManager;
             this.imageLoader = imageLoader;
             this.groupingManager = groupingManager;
             this.evaluationService = evaluationService;
@@ -101,7 +103,7 @@ namespace FitsRatingTool.Common.Services.Impl
         }
 
         private async Task<(IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, Constant>? Constants)?> LoadAndCalculateStatisticsAsync(
-            string file, IReadOnlyJobConfig jobConfig, Filters? filters,
+            string file, IReadOnlyJobConfig jobConfig, Filters? filters, IReadOnlyList<IReadOnlyVariable> variables,
             AsyncSemaphore ioThrottle, int index, IGroupingManager.IGrouping grouping,
             IBatchEvaluationService.ICache? cache,
             IBatchEvaluationService.EventConsumer? eventConsumer = null,
@@ -203,7 +205,7 @@ namespace FitsRatingTool.Common.Services.Impl
                             // Get value overrides
                             if (jobConfig.Variables != null)
                             {
-                                constants = await evaluationService.EvaluateVariablesAsync(jobConfig.Variables, file, headerMap);
+                                constants = await evaluationService.EvaluateVariablesAsync(variables, file, headerMap);
                             }
 
                             eventConsumer?.Invoke(new BatchEvaluation.LoadEvent(BatchEvaluation.Phase.LoadFitEnd, file, index, true, false));
@@ -287,7 +289,7 @@ namespace FitsRatingTool.Common.Services.Impl
                         // Get value overrides
                         if (jobConfig.Variables != null)
                         {
-                            constants = await evaluationService.EvaluateVariablesAsync(jobConfig.Variables, file, headerMap);
+                            constants = await evaluationService.EvaluateVariablesAsync(variables, file, headerMap);
                         }
 
                         cancellationToken.ThrowIfCancellationRequested();
@@ -429,6 +431,28 @@ namespace FitsRatingTool.Common.Services.Impl
             return evaluator;
         }
 
+        private List<IReadOnlyVariable> LoadJobVariables(IReadOnlyJobConfig jobConfig)
+        {
+            var variables = new List<IReadOnlyVariable>();
+
+            if (jobConfig.Variables != null)
+            {
+                foreach (var cfg in jobConfig.Variables)
+                {
+                    if (variableManager.TryCreateVariable(cfg.Id, cfg.Name, cfg.Config, out var variable))
+                    {
+                        variables.Add(variable);
+                    }
+                    else
+                    {
+                        throw new IBatchEvaluationService.InvalidVariableException("Invalid or unknown variable: " + cfg.Id, null);
+                    }
+                }
+            }
+
+            return variables;
+        }
+
         public async Task EvaluateAsync(
             IReadOnlyJobConfig jobConfig, List<string> files,
             IBatchEvaluationService.EvaluationConsumer evaluationConsumer,
@@ -469,11 +493,13 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var grouping = groupingManager.BuildGrouping(jobConfig.GroupingKeys != null ? jobConfig.GroupingKeys.ToArray() : Array.Empty<string>());
 
-            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, jobConfig.Variables, out var errorMessage, eventConsumer);
+            var variables = LoadJobVariables(jobConfig);
+
+            var evaluator = BuildEvaluator(jobConfig.EvaluationFormula, variables, out var errorMessage, eventConsumer);
 
             if (evaluator == null)
             {
-                throw new IBatchEvaluationService.InvalidConfigException(errorMessage, null);
+                throw new IBatchEvaluationService.InvalidFormulaException(errorMessage, null);
             }
 
             ConcurrentDictionary<string, (IFitsImageStatistics Statistics, int Index, IDictionary<string, Constant>? Constants)> fileToStatistics = new();
@@ -491,7 +517,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 {
                     yield return o => async ct =>
                     {
-                        (IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, Constant> Constants)? tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, ioThrottle, index, grouping, cache, eventConsumer, ct));
+                        (IFitsImageStatistics Statistics, string? GroupKey, IDictionary<string, Constant> Constants)? tuple = await Task.Run(() => LoadAndCalculateStatisticsAsync(file, jobConfig, filters, variables, ioThrottle, index, grouping, cache, eventConsumer, ct));
                         if (tuple.HasValue)
                         {
                             var stats = tuple.Value.Statistics;

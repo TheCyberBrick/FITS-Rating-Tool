@@ -45,6 +45,11 @@ namespace FitsRatingTool.Common.Services
             public InvalidFormulaException(string? message, Exception? innerException) : base(message, innerException) { }
         }
 
+        public class InvalidVariableException : InvalidConfigException
+        {
+            public InvalidVariableException(string? message, Exception? innerException) : base(message, innerException) { }
+        }
+
 
         public delegate Task EvaluationConsumer(string file, string groupKey, IEnumerable<KeyValuePair<string, double>> variableValues, double value, CancellationToken cancellationToken = default);
         public delegate void EventConsumer(BatchEvaluation.Event e);

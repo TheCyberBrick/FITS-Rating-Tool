@@ -17,20 +17,17 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
+using FitsRatingTool.GuiApp.UI.Utils;
 using System;
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IVariableConfiguratorViewModel
+    public interface IVariableConfiguratorViewModel : IItemConfigurator
     {
-        bool IsValid { get; }
-
         string CreateConfig();
 
         IVariable CreateVariable();
 
-        event EventHandler ConfigurationChanged;
-
-        bool TryLoadConfig(string config);
+        bool TryLoadConfig(string name, string config);
     }
 }

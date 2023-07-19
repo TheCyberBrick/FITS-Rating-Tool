@@ -172,7 +172,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     var grouping = evaluationManager.CurrentGrouping;
                     var evaluationFormula = evaluationManager.CurrentFormula;
 
-                    var variables = instrumentProfileManager.CurrentProfile?.Variables;
+                    var variables = instrumentProfileManager.CurrentVariables;
 
                     if (!evaluationService.Build(evaluationFormula ?? "", variables, out var evaluator, out var formulaErrorMessage) || evaluator == null)
                     {

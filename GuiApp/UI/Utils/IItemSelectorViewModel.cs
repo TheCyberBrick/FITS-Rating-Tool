@@ -16,28 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
+using System.Collections.ObjectModel;
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.GuiApp.UI.Utils
 {
-    public interface IReadOnlyInstrumentProfile
+    public record Item(string Id, string Name);
+
+    public interface IItemSelectorViewModel
     {
-        string Id { get; }
+        ReadOnlyObservableCollection<Item> Items { get; }
 
-        string Name { get; }
+        Item? SelectedItem { get; set; }
 
-        string Description { get; }
+        Item? FindById(string id);
 
-        string Key { get; }
+        Item? SelectById(string id);
 
-        float? FocalLength { get; }
-
-        int? BitDepth { get; }
-
-        float? ElectronsPerADU { get; }
-
-        float? PixelSizeInMicrons { get; }
-
-        IReadOnlyList<IReadOnlyJobConfig.VariableConfig> Variables { get; }
+        void Reset();
     }
 }

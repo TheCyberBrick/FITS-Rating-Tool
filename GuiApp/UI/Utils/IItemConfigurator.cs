@@ -16,28 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
+using System;
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.GuiApp.UI.Utils
 {
-    public interface IReadOnlyInstrumentProfile
+    public interface IItemConfigurator
     {
-        string Id { get; }
+        bool IsValid { get; }
 
-        string Name { get; }
-
-        string Description { get; }
-
-        string Key { get; }
-
-        float? FocalLength { get; }
-
-        int? BitDepth { get; }
-
-        float? ElectronsPerADU { get; }
-
-        float? PixelSizeInMicrons { get; }
-
-        IReadOnlyList<IReadOnlyJobConfig.VariableConfig> Variables { get; }
+        event EventHandler ConfigurationChanged;
     }
 }

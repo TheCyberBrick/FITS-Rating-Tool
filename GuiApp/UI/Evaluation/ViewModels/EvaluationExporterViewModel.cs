@@ -37,7 +37,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
 
-        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator { get; private set; } = null!;
+        private IEvaluationExporterConfiguratorViewModel _evaluationExporterConfigurator = null!;
+        public IEvaluationExporterConfiguratorViewModel EvaluationExporterConfigurator
+        {
+            get => _evaluationExporterConfigurator;
+            private set => this.RaiseAndSetIfChanged(ref _evaluationExporterConfigurator, value);
+        }
 
         public ReactiveCommand<Unit, IEvaluationExportProgressViewModel> ExportWithProgress { get; }
 

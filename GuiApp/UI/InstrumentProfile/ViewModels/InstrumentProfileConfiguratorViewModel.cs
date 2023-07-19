@@ -45,6 +45,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private ObservableAsPropertyHelper<bool> _hasProfile = null!;
         public bool HasProfile => _hasProfile.Value;
 
+        private ObservableAsPropertyHelper<bool> _isValid = null!;
+        public bool IsValid => _isValid.Value;
+
         public Interaction<IReadOnlyInstrumentProfile, bool> DeleteConfirmationDialog { get; } = new();
 
         public Interaction<Unit, bool> DiscardConfirmationDialog { get; } = new();
@@ -93,6 +96,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             var isSelectedProfileExisting = this.WhenAnyValue(x => x.Selector.SelectedProfile!.SourceProfile, (IReadOnlyInstrumentProfile? x) => x != null);
             var isSelectedProfileModified = this.WhenAnyValue(x => x.Selector.SelectedProfile!.IsModified);
             var isSelectedProfileValid = this.WhenAnyValue(x => x.Selector.SelectedProfile!.IsValid);
+            _isValid = isSelectedProfileValid.ToProperty(this, x => x.IsValid);
 
             this.WhenAnyValue(x => x.Selector.SelectedProfile).Subscribe(newProfile =>
             {
@@ -133,7 +137,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 var profile = Selector.SelectedProfile;
                 if (profile != null)
                 {
-                    instrumentProfileManager.GetOrAdd(profile.Id).Profile = profile;
+                    instrumentProfileManager.GetOrAdd(profile.Id).Profile = profile.CreateProfile();
 
                     profile.ResetToSourceProfile();
 
@@ -254,7 +258,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                     {
                         try
                         {
-                            var data = instrumentProfileManager.Save(profile);
+                            var data = instrumentProfileManager.Save(profile.CreateProfile());
 
                             await File.WriteAllTextAsync(file, data);
 
@@ -279,7 +283,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 }
 
                 return result;
-            }, hasProfile);
+            }, isSelectedProfileValid);
         }
     }
 }

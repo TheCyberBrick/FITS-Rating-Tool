@@ -20,6 +20,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
@@ -28,42 +29,17 @@ namespace FitsRatingTool.Common.Services.Impl
     {
         private class InstrumentProfile : IInstrumentProfile
         {
-            private class JsonVariable
+            public class JsonVariableConfig
             {
-                [JsonProperty(PropertyName = "type", Required = Required.Always)]
-                [JsonConverter(typeof(StringEnumConverter))]
-                public VariableType Type { get; set; }
+                [JsonProperty(PropertyName = "id", Required = Required.Always)]
+                public string Id { get; set; } = null!;
 
                 [JsonProperty(PropertyName = "name", Required = Required.Always)]
                 public string Name { get; set; } = null!;
 
-                [JsonProperty(PropertyName = "default_value", Required = Required.Always)]
-                public double DefaultValue { get; set; }
-
-                [JsonProperty(PropertyName = "keyword", NullValueHandling = NullValueHandling.Ignore)]
-                public string Keyword { get; set; } = "";
-
-                [JsonProperty(PropertyName = "exclude_from_aggregate_functions_if_not_found", NullValueHandling = NullValueHandling.Ignore)]
-                public bool ExcludeFromAggregateFunctionsIfNotFound { get; set; } = false;
-
-                public IVariable Build()
-                {
-                    switch (Type)
-                    {
-                        default:
-                        case VariableType.Constant:
-                            return new ConstantVariable(Name)
-                            {
-                                DefaultValue = DefaultValue
-                            };
-                        case VariableType.Keyword:
-                            return new KeywordVariable(Name, Keyword)
-                            {
-                                DefaultValue = DefaultValue,
-                                ExcludeFromAggregateFunctionsIfNotFound = ExcludeFromAggregateFunctionsIfNotFound
-                            };
-                    }
-                }
+                [JsonProperty(PropertyName = "config", Required = Required.Always)]
+                [JsonConverter(typeof(JsonToStringConverter))]
+                public string Config { get; set; } = null!;
             }
 
 
@@ -91,12 +67,13 @@ namespace FitsRatingTool.Common.Services.Impl
             [JsonProperty(PropertyName = "pixel_size", NullValueHandling = NullValueHandling.Ignore)]
             public float? PixelSizeInMicrons { get; set; }
 
+
             [JsonProperty(PropertyName = "variables", NullValueHandling = NullValueHandling.Ignore)]
-            private JsonVariable[]? _serializedVariables;
+            private JsonVariableConfig[]? _serializedVariables;
             [JsonIgnore]
-            private IVariable[]? _cachedVariables;
+            private IReadOnlyJobConfig.VariableConfig[]? _cachedVariables;
             [JsonIgnore]
-            public IReadOnlyList<IVariable> Variables
+            public IReadOnlyList<IReadOnlyJobConfig.VariableConfig>? Variables
             {
                 get
                 {
@@ -107,14 +84,13 @@ namespace FitsRatingTool.Common.Services.Impl
                     _cachedVariables = null;
                     if (_serializedVariables != null)
                     {
-                        _cachedVariables = new IVariable[_serializedVariables.Length];
+                        _cachedVariables = new IReadOnlyJobConfig.VariableConfig[_serializedVariables.Length];
                         int i = 0;
-                        foreach (var constant in _serializedVariables)
+                        foreach (var cfg in _serializedVariables)
                         {
-                            _cachedVariables[i++] = constant.Build();
+                            _cachedVariables[i++] = new IReadOnlyJobConfig.VariableConfig(cfg.Id, cfg.Name, cfg.Config);
                         }
                     }
-                    _cachedVariables ??= Array.Empty<IVariable>();
                     return _cachedVariables;
                 }
                 set
@@ -123,28 +99,20 @@ namespace FitsRatingTool.Common.Services.Impl
                     _serializedVariables = null;
                     if (value != null)
                     {
-                        _serializedVariables = new JsonVariable[value.Count];
+                        _serializedVariables = new JsonVariableConfig[value.Count];
                         int i = 0;
-                        foreach (var constant in value)
+                        foreach (var cfg in value)
                         {
-                            var jsonVar = new JsonVariable();
-                            // TODO 
-                            if (constant is IKeywordVariable kwVar)
+                            _serializedVariables[i++] = new JsonVariableConfig
                             {
-                                jsonVar.Type = VariableType.Keyword;
-                                jsonVar.Keyword = kwVar.Keyword;
-                                jsonVar.ExcludeFromAggregateFunctionsIfNotFound = kwVar.ExcludeFromAggregateFunctionsIfNotFound;
-                            }
-                            jsonVar.Name = constant.Name;
-                            jsonVar.DefaultValue = constant.DefaultValue;
-                            _serializedVariables[i++] = jsonVar;
+                                Id = cfg.Id,
+                                Name = cfg.Name,
+                                Config = cfg.Config
+                            };
                         }
                     }
                 }
             }
-
-            [JsonIgnore]
-            IReadOnlyList<IReadOnlyVariable> IReadOnlyInstrumentProfile.Variables => Variables;
 
             public InstrumentProfile(string profileId)
             {
@@ -170,6 +138,14 @@ namespace FitsRatingTool.Common.Services.Impl
                 }
                 return new InstrumentProfile(profileId);
             }
+        }
+
+
+        private readonly IVariableManager variableManager;
+
+        public InstrumentProfileFactory(IVariableManager variableManager)
+        {
+            this.variableManager = variableManager;
         }
 
         public IInstrumentProfileFactory.IBuilder Builder()
@@ -211,12 +187,14 @@ namespace FitsRatingTool.Common.Services.Impl
                 throw new IInstrumentProfileFactory.InvalidInstrumentProfileException("Invalid ID: " + profile.Id, null);
             }
 
-            foreach (var constant in profile.Variables)
+            if (profile.Variables != null)
             {
-                bool isNameValid = constant.Name.Length > 0 && char.IsLetter(constant.Name[0]) && constant.Name.All(x => char.IsLetterOrDigit(x));
-                if (!isNameValid)
+                foreach (var cfg in profile.Variables)
                 {
-                    throw new IInstrumentProfileFactory.InvalidInstrumentProfileException("Invalid constant name: " + constant.Name, null);
+                    if (!variableManager.TryCreateVariable(cfg.Id, cfg.Name, cfg.Config, out var _))
+                    {
+                        throw new IInstrumentProfileFactory.InvalidInstrumentProfileException("Invalid or unknown variable: " + cfg.Id, null);
+                    }
                 }
             }
 

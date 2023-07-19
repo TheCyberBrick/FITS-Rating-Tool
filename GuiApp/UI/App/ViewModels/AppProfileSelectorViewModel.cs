@@ -40,7 +40,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public IInstrumentProfileSelectorViewModel Selector { get; private set; } = null!;
 
-        public ReactiveCommand<IReadOnlyInstrumentProfile?, bool> ChangeProfile { get; }
+        public ReactiveCommand<IInstrumentProfileViewModel?, bool> ChangeProfile { get; }
 
         public Interaction<Unit, bool> ChangeProfileConfirmationDialog { get; } = new();
 
@@ -66,7 +66,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 prevSelectedProfileId = Selector.SelectedProfile?.Id;
             });
 
-            ChangeProfile = ReactiveCommand.CreateFromTask<IReadOnlyInstrumentProfile?, bool>(async profile =>
+            ChangeProfile = ReactiveCommand.CreateFromTask<IInstrumentProfileViewModel?, bool>(async profile =>
             {
                 bool confirmed = true;
 
@@ -84,7 +84,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
                 if (confirmed)
                 {
-                    instrumentProfileManager.CurrentProfile = profile;
+                    instrumentProfileManager.CurrentProfile = profile.CreateProfile();
 
                     suppressChangeCommand = true;
                     try

@@ -39,11 +39,14 @@ namespace FitsRatingTool.Common.Models.Evaluation
         {
             public string Id { get; }
 
+            public string Name { get; }
+
             public string Config { get; }
 
-            public VariableConfig(string id, string config)
+            public VariableConfig(string id, string name, string config)
             {
                 Id = id;
+                Name = name;
                 Config = config;
             }
         }
@@ -85,6 +88,6 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         IReadOnlyCollection<ExporterConfig>? Exporters { get; }
 
-        IReadOnlyList<IReadOnlyVariable>? Variables { get; }
+        IReadOnlyList<VariableConfig>? Variables { get; }
     }
 }

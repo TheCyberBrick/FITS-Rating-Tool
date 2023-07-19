@@ -18,26 +18,14 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 
-namespace FitsRatingTool.Common.Models.Instrument
+namespace FitsRatingTool.Common.Services
 {
-    public interface IReadOnlyInstrumentProfile
+    public interface IVariableFactory
     {
-        string Id { get; }
-
-        string Name { get; }
-
         string Description { get; }
 
-        string Key { get; }
+        string ExampleConfig { get; }
 
-        float? FocalLength { get; }
-
-        int? BitDepth { get; }
-
-        float? ElectronsPerADU { get; }
-
-        float? PixelSizeInMicrons { get; }
-
-        IReadOnlyList<IReadOnlyJobConfig.VariableConfig> Variables { get; }
+        IVariable Create(string name, string config);
     }
 }

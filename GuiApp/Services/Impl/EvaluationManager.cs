@@ -173,7 +173,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             var evaluatorInstance = evaluator;
 
-            var variables = instrumentProfileManager.CurrentProfile?.Variables;
+            var variables = instrumentProfileManager.CurrentVariables;
 
             if (evaluatorInstance == null)
             {

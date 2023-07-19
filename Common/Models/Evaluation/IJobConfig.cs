@@ -44,6 +44,6 @@ namespace FitsRatingTool.Common.Models.Evaluation
 
         new IReadOnlyCollection<ExporterConfig>? Exporters { get; set; }
 
-        new IReadOnlyList<IVariable>? Variables { get; set; }
+        new IReadOnlyList<VariableConfig>? Variables { get; set; }
     }
 }

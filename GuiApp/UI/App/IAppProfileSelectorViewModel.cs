@@ -29,7 +29,7 @@ namespace FitsRatingTool.GuiApp.UI.App
 
         IInstrumentProfileSelectorViewModel Selector { get; }
 
-        ReactiveCommand<IReadOnlyInstrumentProfile?, bool> ChangeProfile { get; }
+        ReactiveCommand<IInstrumentProfileViewModel?, bool> ChangeProfile { get; }
 
         Interaction<Unit, bool> ChangeProfileConfirmationDialog { get; }
     }

@@ -38,6 +38,6 @@ namespace FitsRatingTool.Common.Models.Instrument
 
         new float? PixelSizeInMicrons { get; set; }
 
-        new IReadOnlyList<IVariable> Variables { get; set; }
+        new IReadOnlyList<IReadOnlyJobConfig.VariableConfig> Variables { get; set; }
     }
 }

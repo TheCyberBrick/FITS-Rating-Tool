@@ -47,6 +47,8 @@ namespace FitsRatingTool.GuiApp
             container.Register<IBatchEvaluationService, BatchEvaluationService>(Reuse.Singleton);
             container.Register<IStandaloneEvaluationService, StandaloneEvaluationService>(Reuse.Transient);
             container.Register<IInstrumentProfileFactory, InstrumentProfileFactory>(Reuse.Singleton);
+            container.Register<IVariableManager, VariableManager>(Reuse.Singleton);
+            container.Register<IEvaluationExporterManager, EvaluationExporterManager>(Reuse.Singleton);
 
             // IoC
             container.RegisterExports(typeof(IContainer<,>).Assembly);

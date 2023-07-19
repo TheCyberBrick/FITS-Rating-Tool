@@ -203,9 +203,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         }
 #pragma warning restore CS8618
 
+
         private AppViewModel(IAppViewModel.Of args,
             IFitsImageManager manager,
-            IJobConfigFactory jobConfigFactory,
             IFileSystemService fileSystemService,
             IOpenFileEventManager openFileEventManager,
             IAppConfig appConfig,
@@ -557,11 +557,11 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
                 if (factory != null)
                 {
-                    variableManager.Register(id, (config) =>
+                    variableManager.Register(id, (name, config) =>
                     {
                         var exporter = factory.Do(configurator =>
                         {
-                            if (configurator.TryLoadConfig(config))
+                            if (configurator.TryLoadConfig(name, config))
                             {
                                 return configurator.CreateVariable();
                             }

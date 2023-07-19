@@ -18,6 +18,7 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 
 namespace FitsRatingTool.Common.Services.Impl
 {
@@ -37,14 +38,22 @@ namespace FitsRatingTool.Common.Services.Impl
             return variableFactories.Remove(id);
         }
 
-        public bool TryCreateVariable(string id, string config, [NotNullWhen(true)] out IVariable? variable)
+        public bool TryCreateVariable(string id, string name, string config, [NotNullWhen(true)] out IVariable? variable)
         {
             variable = null;
-            if (variableFactories.TryGetValue(id, out var exporterFactory))
+
+            bool isNameValid = name.Length > 0 && char.IsLetter(name[0]) && name.All(x => char.IsLetterOrDigit(x));
+            if (!isNameValid)
             {
-                variable = exporterFactory.Invoke(config);
+                return false;
+            }
+
+            if (variableFactories.TryGetValue(id, out var variableFactory))
+            {
+                variable = variableFactory.Invoke(name, config);
                 return true;
             }
+
             return false;
         }
     }

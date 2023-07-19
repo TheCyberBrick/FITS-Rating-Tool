@@ -16,30 +16,30 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Models.Evaluation;
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace FitsRatingTool.Common.Services
+namespace FitsRatingTool.Common.Services.Impl
 {
-    public interface IVariableManager
+    public class JsonToStringConverter : JsonConverter
     {
-        delegate IVariable VariableFactory(string name, string config);
-
-
-        IReadOnlyDictionary<string, VariableFactory> Variables { get; }
-
-        bool Register(string id, VariableFactory variableFactory);
-
-        bool Unregister(string id);
-
-        bool TryCreateVariable(string id, string name, string config, [NotNullWhen(true)] out IVariable? variable);
-    }
-
-    public static class IVariableManagerExtensions
-    {
-        public static bool Register(this IVariableManager manager, string id, IVariableFactory factory)
+        public override bool CanConvert(Type objectType)
         {
-            return manager.Register(id, factory.Create);
+            return (objectType == typeof(JTokenType));
+        }
+
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        {
+            JToken token = JToken.Load(reader);
+            return token.ToString();
+        }
+
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+        {
+            if (value != null)
+            {
+                writer.WriteToken(JToken.Parse(value.ToString()!).CreateReader());
+            }
         }
     }
 }

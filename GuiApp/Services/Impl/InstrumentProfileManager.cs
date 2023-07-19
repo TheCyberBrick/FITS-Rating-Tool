@@ -17,6 +17,7 @@
 */
 
 using DryIocAttributes;
+using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Repositories;
@@ -85,12 +86,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private readonly IInstrumentProfileRepository instrumentProfileRepository;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
+        private readonly IVariableManager variableManager;
 
 
-        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory, IAppConfig appConfig)
+        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory, IVariableManager variableManager, IAppConfig appConfig)
         {
             this.instrumentProfileRepository = instrumentProfileRepository;
             this.instrumentProfileFactory = instrumentProfileFactory;
+            this.variableManager = variableManager;
 
             // Add already loaded profiles to manager
             foreach (var profileId in instrumentProfileRepository.ProfileIds)
@@ -121,21 +124,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             copy.BitDepth = profile.BitDepth;
             copy.ElectronsPerADU = profile.ElectronsPerADU;
             copy.PixelSizeInMicrons = profile.PixelSizeInMicrons;
-
-            var constants = new List<IConstant>();
-
-            foreach (var constant in profile.Variables)
-            {
-                var pconstant = new IInstrumentProfile.Constant()
-                {
-                    Name = constant.Name,
-                    Value = constant.Value
-                };
-
-                constants.Add(pconstant);
-            }
-
-            copy.Variables = constants;
+            copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);
 
             return copy;
         }
@@ -144,6 +133,35 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             instrumentProfileRepository.AddOrUpdateProfile(profile);
             instrumentProfileRepository.Save(profile.Id);
+        }
+
+        private void SyncAndLoadProfileVariables()
+        {
+            var profile = CurrentProfile;
+            if (profile != null)
+            {
+                _currentVariables ??= new();
+                _currentVariables.Clear();
+
+                if (profile.Variables != null)
+                {
+                    foreach (var cfg in profile.Variables)
+                    {
+                        if (variableManager.TryCreateVariable(cfg.Id, cfg.Name, cfg.Config, out var variable))
+                        {
+                            _currentVariables.Add(variable);
+                        }
+                        else
+                        {
+                            throw new Exception("Invalid or unknown variable '" + cfg.Id + "' in current profile");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _currentVariables = null;
+            }
         }
 
         private IReadOnlyInstrumentProfile? _currentProfile;
@@ -155,11 +173,18 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 if (!EqualityComparer<IReadOnlyInstrumentProfile?>.Default.Equals(_currentProfile, value))
                 {
                     var old = _currentProfile;
+
                     _currentProfile = value;
+
+                    SyncAndLoadProfileVariables();
+
                     _currentProfileChanged?.Invoke(this, new IInstrumentProfileManager.ProfileChangedEventArgs(old, value));
                 }
             }
         }
+
+        private List<IReadOnlyVariable>? _currentVariables;
+        public IReadOnlyList<IReadOnlyVariable>? CurrentVariables => _currentVariables;
 
         public IReadOnlyCollection<string> ProfileIds => instrumentProfileRepository.ProfileIds;
 

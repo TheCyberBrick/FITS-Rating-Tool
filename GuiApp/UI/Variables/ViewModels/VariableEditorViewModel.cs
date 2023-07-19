@@ -17,132 +17,24 @@
 */
 
 using DryIocAttributes;
+using FitsRatingTool.GuiApp.UI.Utils.ViewModels;
 using FitsRatingTool.IoC;
-using ReactiveUI;
-using System;
 using System.ComponentModel.Composition;
-using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 {
     [Export(typeof(IVariableEditorViewModel)), TransientReuse, AllowDisposableTransient]
-    public class VariableEditorViewModel : ViewModelBase, IVariableEditorViewModel, IDisposable
+    public class VariableEditorViewModel : RegistryItemEditorViewModel<IVariableConfiguratorViewModel>, IVariableEditorViewModel
     {
         public VariableEditorViewModel(IRegistrar<IVariableEditorViewModel, IVariableEditorViewModel.Of> reg)
         {
             reg.RegisterAndReturn<VariableEditorViewModel>();
         }
 
-
-        public IVariableSelectorViewModel Selector { get; private set; } = null!;
-
-        private IDisposable? _configuratorDisposable;
-        private IVariableConfiguratorViewModel? _configurator;
-        public IVariableConfiguratorViewModel? VariableConfigurator
-        {
-            get => _configurator;
-            private set => this.RaiseAndSetIfChanged(ref _configurator, value);
-        }
-
-
-        private EventHandler? _configurationChanged;
-        public event EventHandler ConfigurationChanged
-        {
-            add => _configurationChanged += value;
-            remove => _configurationChanged -= value;
-        }
-
-
-        private IComponentRegistry<IVariableConfiguratorViewModel> variableConfiguratorRegistry = null!;
-
         private VariableEditorViewModel(IVariableEditorViewModel.Of args,
-            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer)
+            IContainer<IVariableSelectorViewModel, IVariableSelectorViewModel.Of> variableSelectorContainer)
         {
-            variableConfiguratorRegistryContainer.Inject(new(), this, x => x.variableConfiguratorRegistry);
-
-            this.WhenAnyValue(x => x.Selector.SelectedVariable)
-                .Skip(1)
-                .Subscribe(x => ReplaceConfigurator(x?.Id));
-        }
-
-        private void ReplaceConfigurator(string? id)
-        {
-            ReplaceConfigurator(variableConfiguratorRegistry.GetFactory(id));
-        }
-
-        private void ReplaceConfigurator(IDelegatedFactory<IVariableConfiguratorViewModel>? factory)
-        {
-            IDisposable? newConfiguratorDisposable = null;
-            IVariableConfiguratorViewModel? newConfigurator = factory != null ? factory.Instantiate(out newConfiguratorDisposable) : null;
-
-            var oldConfigurator = VariableConfigurator;
-
-            if (oldConfigurator != null)
-            {
-                if (newConfigurator != null && oldConfigurator.GetType() == newConfigurator.GetType())
-                {
-                    // Same configurator, no changes needed
-                    newConfiguratorDisposable?.Dispose();
-                    return;
-                }
-
-                UnsubscribeFromEvent<IVariableConfiguratorViewModel, EventArgs, VariableEditorViewModel>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnConfigurationChanged);
-            }
-
-            var oldExporterConfiguratorDisposable = _configuratorDisposable;
-
-            _configuratorDisposable = newConfiguratorDisposable;
-            VariableConfigurator = newConfigurator;
-
-            oldExporterConfiguratorDisposable?.Dispose();
-
-            if (newConfigurator != null)
-            {
-                SubscribeToEvent<IVariableConfiguratorViewModel, EventArgs, VariableEditorViewModel>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnConfigurationChanged);
-            }
-
-            _configurationChanged?.Invoke(this, new EventArgs());
-        }
-
-        private void OnConfigurationChanged(object? sender, EventArgs e)
-        {
-            if (sender == VariableConfigurator)
-            {
-                _configurationChanged?.Invoke(this, new EventArgs());
-            }
-        }
-
-        public void SetVariableConfigurator(IDelegatedFactory<IVariableConfiguratorViewModel>? delegatedFactory)
-        {
-            ReplaceConfigurator(delegatedFactory); // Set configurator first so it keeps its loaded data
-
-            if (delegatedFactory != null)
-            {
-                foreach (var id in variableConfiguratorRegistry.Ids)
-                {
-                    var registration = variableConfiguratorRegistry.GetRegistration(id);
-                    var factory = variableConfiguratorRegistry.GetFactory(id);
-
-                    if (registration != null && factory != null && factory.InstanceType == delegatedFactory.InstanceType)
-                    {
-                        if (Selector.SelectById(registration.Id) != null)
-                        {
-                            return;
-                        }
-                    }
-                }
-                throw new InvalidOperationException("Tried setting exporter configurator to unknown type '" + delegatedFactory.InstanceType.FullName + "'");
-            }
-            else
-            {
-                Selector.SelectedVariable = null;
-            }
-        }
-
-        public void Dispose()
-        {
-            _configuratorDisposable?.Dispose();
-            _configuratorDisposable = null;
+            variableSelectorContainer.Singleton().Inject(new(), SetSelector);
         }
     }
 }

@@ -20,6 +20,8 @@ using Avalonia.Collections;
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
+using FitsRatingTool.Common.Services;
+using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.IoC;
 using ReactiveUI;
@@ -239,10 +241,12 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         //public AvaloniaList<IConstantViewModel> Constants => throw new NotImplementedException();
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IInstrumentProfileFactory instrumentProfileFactory;
 
-        private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager)
+        private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager, IInstrumentProfileFactory instrumentProfileFactory)
         {
             this.instrumentProfileManager = instrumentProfileManager;
+            this.instrumentProfileFactory = instrumentProfileFactory;
 
             IsNew = args.Profile == null;
 
@@ -412,6 +416,36 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 }
             }*/
             IsConstantNameValid = valid;
+        }
+
+        public IReadOnlyInstrumentProfile CreateProfile()
+        {
+            if (!IsValid)
+            {
+                throw new Exception("Invalid profile");
+            }
+
+            var profile = instrumentProfileFactory.Builder().Id(Id).Build();
+
+            profile.Name = Name;
+            profile.Description = Description;
+            profile.Key = Key;
+            profile.FocalLength = FocalLength;
+            profile.BitDepth = BitDepth;
+            profile.ElectronsPerADU = ElectronsPerADU;
+            profile.PixelSizeInMicrons = PixelSizeInMicrons;
+
+            /*if(Variables != null)
+            {
+                var variables = new List<IReadOnlyVariable>();
+            
+                
+            }*/
+
+            //TODO
+            //profile.Variables = ...
+
+            return profile;
         }
     }
 }

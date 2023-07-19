@@ -62,6 +62,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         IReadOnlyInstrumentProfile? SourceProfile { get; }
 
+        IReadOnlyInstrumentProfile CreateProfile();
+
         // TODO Remove
         //new AvaloniaList<IConstantViewModel> Constants { get; }
 

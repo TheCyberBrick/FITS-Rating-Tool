@@ -57,7 +57,7 @@ namespace FitsRatingTool.ConsoleApp
 
         private void RegisterExporter(string id, IEvaluationExporterFactory factory)
         {
-            if (evaluationExporterManager.Register(id, (ctx, conf) => factory.Create(ctx, conf)))
+            if (evaluationExporterManager.Register(id, factory))
             {
                 exporterFactories.Add(id, factory);
             }

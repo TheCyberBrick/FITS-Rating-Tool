@@ -19,7 +19,6 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
@@ -28,28 +27,6 @@ namespace FitsRatingTool.Common.Services.Impl
     {
         private class JobConfig : IJobConfig
         {
-            private class JsonToStringConverter : JsonConverter
-            {
-                public override bool CanConvert(Type objectType)
-                {
-                    return (objectType == typeof(JTokenType));
-                }
-
-                public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
-                {
-                    JToken token = JToken.Load(reader);
-                    return token.ToString();
-                }
-
-                public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-                {
-                    if (value != null)
-                    {
-                        writer.WriteToken(JToken.Parse(value.ToString()!).CreateReader());
-                    }
-                }
-            }
-
             public class JsonGroupingFilterConfig
             {
                 [JsonProperty(PropertyName = "grouping_key", Required = Required.Always)]
@@ -63,6 +40,19 @@ namespace FitsRatingTool.Common.Services.Impl
             {
                 [JsonProperty(PropertyName = "id", Required = Required.Always)]
                 public string Id { get; set; } = null!;
+
+                [JsonProperty(PropertyName = "config", Required = Required.Always)]
+                [JsonConverter(typeof(JsonToStringConverter))]
+                public string Config { get; set; } = null!;
+            }
+
+            public class JsonVariableConfig
+            {
+                [JsonProperty(PropertyName = "id", Required = Required.Always)]
+                public string Id { get; set; } = null!;
+
+                [JsonProperty(PropertyName = "name", Required = Required.Always)]
+                public string Name { get; set; } = null!;
 
                 [JsonProperty(PropertyName = "config", Required = Required.Always)]
                 [JsonConverter(typeof(JsonToStringConverter))]
@@ -267,11 +257,11 @@ namespace FitsRatingTool.Common.Services.Impl
             }
 
             [JsonProperty(PropertyName = "variables", NullValueHandling = NullValueHandling.Ignore)]
-            private JsonVariable[]? _serializedVariables;
+            private JsonVariableConfig[]? _serializedVariables;
             [JsonIgnore]
-            private IVariable[]? _cachedVariables;
+            private IReadOnlyJobConfig.VariableConfig[]? _cachedVariables;
             [JsonIgnore]
-            public IReadOnlyList<IVariable> Variables
+            public IReadOnlyList<IReadOnlyJobConfig.VariableConfig>? Variables
             {
                 get
                 {
@@ -282,14 +272,13 @@ namespace FitsRatingTool.Common.Services.Impl
                     _cachedVariables = null;
                     if (_serializedVariables != null)
                     {
-                        _cachedVariables = new IVariable[_serializedVariables.Length];
+                        _cachedVariables = new IReadOnlyJobConfig.VariableConfig[_serializedVariables.Length];
                         int i = 0;
-                        foreach (var constant in _serializedVariables)
+                        foreach (var cfg in _serializedVariables)
                         {
-                            _cachedVariables[i++] = constant.Build();
+                            _cachedVariables[i++] = new IReadOnlyJobConfig.VariableConfig(cfg.Id, cfg.Name, cfg.Config);
                         }
                     }
-                    _cachedVariables ??= Array.Empty<IVariable>();
                     return _cachedVariables;
                 }
                 set
@@ -298,28 +287,20 @@ namespace FitsRatingTool.Common.Services.Impl
                     _serializedVariables = null;
                     if (value != null)
                     {
-                        _serializedVariables = new JsonVariable[value.Count];
+                        _serializedVariables = new JsonVariableConfig[value.Count];
                         int i = 0;
-                        foreach (var constant in value)
+                        foreach (var cfg in value)
                         {
-                            var jsonVar = new JsonVariable();
-                            // TODO 
-                            if (constant is IKeywordVariable kwVar)
+                            _serializedVariables[i++] = new JsonVariableConfig
                             {
-                                jsonVar.Type = VariableType.Keyword;
-                                jsonVar.Keyword = kwVar.Keyword;
-                                jsonVar.ExcludeFromAggregateFunctionsIfNotFound = kwVar.ExcludeFromAggregateFunctionsIfNotFound;
-                            }
-                            jsonVar.Name = constant.Name;
-                            jsonVar.DefaultValue = constant.DefaultValue;
-                            _serializedVariables[i++] = jsonVar;
+                                Id = cfg.Id,
+                                Name = cfg.Name,
+                                Config = cfg.Config
+                            };
                         }
                     }
                 }
             }
-
-            [JsonIgnore]
-            IReadOnlyList<IReadOnlyVariable> IReadOnlyJobConfig.Variables => Variables;
         }
 
         private class JobConfigBuilder : IConfigBuilder<IJobConfig>

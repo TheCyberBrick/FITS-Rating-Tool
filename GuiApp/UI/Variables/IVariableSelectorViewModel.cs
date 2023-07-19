@@ -16,33 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Collections.ObjectModel;
+using FitsRatingTool.GuiApp.UI.Utils;
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IVariableSelectorViewModel
+    public interface IVariableSelectorViewModel : IItemSelectorViewModel
     {
         public record Of();
-
-        public class VariableChoice
-        {
-            public string Id { get; }
-
-            public string Name { get; }
-
-            public VariableChoice(string id, string name)
-            {
-                Id = id;
-                Name = name;
-            }
-        }
-
-        ReadOnlyObservableCollection<VariableChoice> Variables { get; }
-
-        VariableChoice? SelectedVariable { get; set; }
-
-        VariableChoice? FindById(string id);
-
-        VariableChoice? SelectById(string id);
     }
 }

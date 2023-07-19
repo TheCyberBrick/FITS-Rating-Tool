@@ -17,75 +17,22 @@
 */
 
 using DryIocAttributes;
+using FitsRatingTool.GuiApp.UI.Utils.ViewModels;
 using FitsRatingTool.IoC;
-using ReactiveUI;
-using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 {
     [Export(typeof(IVariableSelectorViewModel)), TransientReuse]
-    public class VariableSelectorViewModel : ViewModelBase, IVariableSelectorViewModel
+    public class VariableItemSelectorViewModel : RegistryItemSelectorViewModel<IVariableConfiguratorViewModel>, IVariableSelectorViewModel
     {
-        public VariableSelectorViewModel(IRegistrar<IVariableSelectorViewModel, IVariableSelectorViewModel.Of> reg)
+        public VariableItemSelectorViewModel(IRegistrar<IVariableSelectorViewModel, IVariableSelectorViewModel.Of> reg)
         {
-            reg.RegisterAndReturn<VariableSelectorViewModel>();
+            reg.RegisterAndReturn<VariableItemSelectorViewModel>();
         }
 
-        public ReadOnlyObservableCollection<IVariableSelectorViewModel.VariableChoice> Variables { get; }
-
-        private IVariableSelectorViewModel.VariableChoice? _selectedVariable;
-        public IVariableSelectorViewModel.VariableChoice? SelectedVariable
+        private VariableItemSelectorViewModel(IVariableSelectorViewModel.Of args)
         {
-            get => _selectedVariable;
-            set => this.RaiseAndSetIfChanged(ref _selectedVariable, value);
         }
-
-
-        private ObservableCollection<IVariableSelectorViewModel.VariableChoice> _variables = new();
-
-
-        private VariableSelectorViewModel(IVariableSelectorViewModel.Of args,
-            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer)
-        {
-            Variables = new ReadOnlyObservableCollection<IVariableSelectorViewModel.VariableChoice>(_variables);
-
-            variableConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IVariableConfiguratorViewModel>.Of(), registry =>
-            {
-                foreach (var id in registry.Ids)
-                {
-                    var registration = registry.GetRegistration(id);
-                    var factory = registry.GetFactory(id);
-
-                    if (registration != null && factory != null)
-                    {
-                        _variables.Add(new IVariableSelectorViewModel.VariableChoice(registration.Id, registration.Name));
-                    }
-                }
-            });
-        }
-
-        public IVariableSelectorViewModel.VariableChoice? FindById(string id)
-        {
-            foreach (var choice in _variables)
-            {
-                if (choice.Id == id)
-                {
-                    return choice;
-                }
-            }
-            return null;
-        }
-
-        public IVariableSelectorViewModel.VariableChoice? SelectById(string id)
-        {
-            var choice = FindById(id);
-            if (choice != null)
-            {
-                SelectedVariable = choice;
-            }
-            return choice;
-        }
-
     }
 }
