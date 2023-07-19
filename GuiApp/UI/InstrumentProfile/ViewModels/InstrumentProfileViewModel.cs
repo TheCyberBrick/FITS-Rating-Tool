@@ -57,7 +57,6 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 Editor = editor;
                 Remove = ReactiveCommand.Create(() => { });
             }
-
         }
 
         private string _id = "";

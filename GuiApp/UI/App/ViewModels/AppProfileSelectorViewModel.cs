@@ -84,7 +84,16 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
                 if (confirmed)
                 {
-                    instrumentProfileManager.CurrentProfile = profile?.CreateProfile();
+                    try
+                    {
+                        instrumentProfileManager.CurrentProfile = profile?.CreateProfile();
+                    }
+                    catch
+                    {
+                        // If profile is invalid we fallback to the
+                        // source profile
+                        instrumentProfileManager.CurrentProfile = profile?.SourceProfile;
+                    }
 
                     suppressChangeCommand = true;
                     try

@@ -83,6 +83,7 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             this.constantVariableFactory = constantVariableFactory;
 
             this.WhenAnyValue(x => x.Name).Skip(1).Subscribe(x => NotifyConfigurationChange());
+            this.WhenAnyValue(x => x.Value).Skip(1).Subscribe(x => NotifyConfigurationChange());
         }
 
 
