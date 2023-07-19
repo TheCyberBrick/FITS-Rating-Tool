@@ -43,6 +43,8 @@ using System.ComponentModel.Composition;
 using DryIocAttributes;
 using FitsRatingTool.IoC;
 using FitsRatingTool.GuiApp.UI.Variables;
+using FitsRatingTool.GuiApp.Repositories;
+using FitsRatingTool.GuiApp.Services.Impl;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
@@ -187,8 +189,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IAppConfig appConfig;
         private readonly IVoyagerIntegration voyagerIntegration;
-        private readonly IEvaluationExporterManager evaluationExporterManager;
-        private readonly IVariableManager variableManager;
 
         private readonly IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer;
         private readonly IContainer<IAppImageItemViewModel, IAppImageItemViewModel.OfImage> appImageItemContainer;
@@ -208,11 +208,9 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFitsImageManager manager,
             IFileSystemService fileSystemService,
             IOpenFileEventManager openFileEventManager,
-            IAppConfig appConfig,
             IAppConfigManager appConfigManager,
+            IAppConfig appConfig,
             IVoyagerIntegration voyagerIntegration,
-            IEvaluationExporterManager evaluationExporterManager,
-            IVariableManager variableManager,
             IContainer<IFitsImageMultiViewerViewModel, IFitsImageMultiViewerViewModel.Of> multiImageViewerContainer,
             IContainer<IFitsImageLoadProgressViewModel, IFitsImageLoadProgressViewModel.OfFiles> imageLoadProgressContainer,
             IContainer<IFitsImageViewModel, IFitsImageViewModel.OfFile> fitsImageContainer,
@@ -231,18 +229,16 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryRoot<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> jobConfiguratorFromFileFactory,
             IFactoryRoot<IJobRunnerViewModel, IJobRunnerViewModel.Of> jobRunnerFactory,
             IFactoryRoot<IInstrumentProfileConfiguratorViewModel, IInstrumentProfileConfiguratorViewModel.Of> instrumentProfileConfiguratorFactory,
-            IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory,
-            IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer,
-            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer)
+            IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory)
         {
             this.manager = manager;
             this.appConfig = appConfig;
             this.voyagerIntegration = voyagerIntegration;
-            this.evaluationExporterManager = evaluationExporterManager;
-            this.variableManager = variableManager;
+
             this.fitsImageContainer = fitsImageContainer;
             this.appImageItemContainer = appImageItemContainer;
             this.appViewerOverlayContainer = appViewerOverlayContainer;
+
             this.appViewerOverlayFactory = appViewerOverlayFactory;
 
             multiImageViewerContainer.Singleton().Inject(new IFitsImageMultiViewerViewModel.Of(), vm =>
@@ -468,9 +464,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             SubscribeToEvent<IAppConfigManager, IAppConfigManager.ValueChangedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValueChanged), OnConfigChanged);
             SubscribeToEvent<IAppConfigManager, IAppConfigManager.ValuesReloadedEventArgs, AppViewModel>(appConfigManager, nameof(appConfigManager.ValuesReloaded), OnConfigChanged);
 
-            exporterConfiguratorRegistryContainer.Singleton().Do(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), RegisterExporters);
-            variableConfiguratorRegistryContainer.Singleton().Do(new IComponentRegistry<IVariableConfiguratorViewModel>.Of(), RegisterVariables);
-
             RxApp.MainThreadScheduler.Schedule(Initialize);
 
             if (openFileEventManager.LaunchFilePath != null)
@@ -515,70 +508,6 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     item.Scale = ThumbnailScale;
                 }
             });
-        }
-
-        private void RegisterExporters(IComponentRegistry<IExporterConfiguratorViewModel> configuratorRegistry)
-        {
-            foreach (var id in configuratorRegistry.Ids)
-            {
-                var factory = configuratorRegistry.GetFactory(id);
-
-                if (factory != null)
-                {
-                    evaluationExporterManager.Register(id, (ctx, config) =>
-                    {
-                        var exporter = factory.Do(configurator =>
-                        {
-                            if (configurator.TryLoadConfig(config))
-                            {
-                                return configurator.CreateExporter(ctx);
-                            }
-                            return null;
-                        });
-
-                        if (exporter != null)
-                        {
-                            return exporter;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Failed loading exporter config");
-                        }
-                    });
-                }
-            }
-        }
-
-        private void RegisterVariables(IComponentRegistry<IVariableConfiguratorViewModel> configuratorRegistry)
-        {
-            foreach (var id in configuratorRegistry.Ids)
-            {
-                var factory = configuratorRegistry.GetFactory(id);
-
-                if (factory != null)
-                {
-                    variableManager.Register(id, (name, config) =>
-                    {
-                        var exporter = factory.Do(configurator =>
-                        {
-                            if (configurator.TryLoadConfig(name, config))
-                            {
-                                return configurator.CreateVariable();
-                            }
-                            return null;
-                        });
-
-                        if (exporter != null)
-                        {
-                            return exporter;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Failed loading variable config");
-                        }
-                    });
-                }
-            }
         }
 
         private async Task ApplySettingsAsync()

@@ -18,30 +18,28 @@
 
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Instrument;
+using FitsRatingTool.GuiApp.UI.Variables;
 using ReactiveUI;
 using System.Reactive;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 {
-    public interface IInstrumentProfileViewModel /*: IInstrumentProfile*/
+    public interface IInstrumentProfileViewModel
     {
         public record OfProfile(IReadOnlyInstrumentProfile? Profile = null);
 
 
-        // TODO Temp
-        public string Name { get; set; }
-        public string Id { get; set; }
-
-        //TODO Remove
-        /*public interface IConstantViewModel : IConstant
+        public interface IVariableItemViewModel
         {
-            IInstrumentProfileViewModel Profile { get; }
-
-            bool IsNameValid { get; }
+            IVariableEditorViewModel Editor { get; }
 
             ReactiveCommand<Unit, Unit> Remove { get; }
-        }*/
+        }
 
+
+        public string Name { get; set; }
+
+        public string Id { get; set; }
 
 
         bool IsFocalLengthEnabled { get; set; }
@@ -53,6 +51,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
         bool IsPixelSizeInMicronsEnabled { get; set; }
 
 
+        AvaloniaList<IVariableItemViewModel> Variables { get; }
+
+
 
         bool IsModified { get; set; }
 
@@ -62,10 +63,6 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         IReadOnlyInstrumentProfile? SourceProfile { get; }
 
-        IReadOnlyInstrumentProfile CreateProfile();
-
-        // TODO Remove
-        //new AvaloniaList<IConstantViewModel> Constants { get; }
 
         bool IsIdValid { get; }
 
@@ -77,7 +74,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         bool ResetToSourceProfile();
 
-        ReactiveCommand<Unit, Unit> AddConstant { get; }
+        IReadOnlyInstrumentProfile CreateProfile();
+
+        ReactiveCommand<Unit, Unit> AddVariable { get; }
 
         ReactiveCommand<Unit, Unit> Reset { get; }
     }

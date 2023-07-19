@@ -31,14 +31,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public string Path { get; private set; } = null!;
 
+        public bool IsLoaded { get; private set; }
 
         private Configuration defaultConfig = null!;
         private Configuration userConfig = null!;
-
-        public AppConfigManager()
-        {
-            Load();
-        }
 
         public void Load()
         {
@@ -70,15 +66,29 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
 
             _valuesReloaded?.Invoke(this, new IAppConfigManager.ValuesReloadedEventArgs());
+
+            IsLoaded = true;
+        }
+
+        private void CheckLoaded()
+        {
+            if (!IsLoaded)
+            {
+                throw new InvalidOperationException("Config not yet loaded");
+            }
         }
 
         public void Save()
         {
+            CheckLoaded();
+
             userConfig.Save(ConfigurationSaveMode.Modified);
         }
 
         public void Set(string key, string? value)
         {
+            CheckLoaded();
+
             var current = userConfig.AppSettings.Settings[key];
 
             if (current != null)
@@ -104,6 +114,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public string? Get(string key, string? fallback = null)
         {
+            CheckLoaded();
+
             var entry = userConfig.AppSettings.Settings[key];
 
             if (entry != null)
@@ -117,6 +129,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public bool Contains(string key)
         {
+            CheckLoaded();
+
             return userConfig.AppSettings.Settings[key]?.Value != null;
         }
 

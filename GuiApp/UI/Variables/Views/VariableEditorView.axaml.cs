@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,23 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using DryIocAttributes;
-using FitsRatingTool.GuiApp.UI.Utils.ViewModels;
-using FitsRatingTool.IoC;
-using System.ComponentModel.Composition;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
+namespace FitsRatingTool.GuiApp.UI.Variables.Views
 {
-    [Export(typeof(IVariableSelectorViewModel)), TransientReuse]
-    public class VariableSelectorViewModel : RegistryItemSelectorViewModel<IVariableConfiguratorViewModel>, IVariableSelectorViewModel
+    public partial class VariableEditorView : UserControl
     {
-        public VariableSelectorViewModel(IRegistrar<IVariableSelectorViewModel, IVariableSelectorViewModel.Of> reg)
+        public VariableEditorView()
         {
-            reg.RegisterAndReturn<VariableSelectorViewModel>();
+            InitializeComponent();
         }
 
-        private VariableSelectorViewModel(IVariableSelectorViewModel.Of args)
+        private void InitializeComponent()
         {
+            AvaloniaXamlLoader.Load(this);
         }
     }
 }

@@ -76,7 +76,12 @@ namespace FitsRatingTool.Variables.Services.Impl
 
         public IVariable Create(string name, string config)
         {
-            throw new NotImplementedException();
+            var cfg = JsonConvert.DeserializeObject<Config>(config);
+            if (cfg == null)
+            {
+                throw new ArgumentException("Invalid config");
+            }
+            return new Variable(name, cfg);
         }
     }
 }

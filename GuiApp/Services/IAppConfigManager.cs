@@ -48,6 +48,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         string Path { get; }
 
+        bool IsLoaded { get; }
+
         void Load();
 
         void Save();

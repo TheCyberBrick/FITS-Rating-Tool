@@ -22,9 +22,9 @@ using Avalonia.Markup.Xaml;
 using DryIoc;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI;
-using FitsRatingTool.GuiApp.UI.App;
 using FitsRatingTool.GuiApp.UI.App.Windows;
 using FitsRatingTool.IoC;
+using System.Reactive.Disposables;
 
 namespace FitsRatingTool.GuiApp
 {
@@ -45,13 +45,15 @@ namespace FitsRatingTool.GuiApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                IContainerRoot<IAppViewModel, IAppViewModel.Of> appContainerRoot = container.Resolve<IContainerRoot<IAppViewModel, IAppViewModel.Of>>();
-
-                var disposable = appContainerRoot.Instantiate(new IAppViewModel.Of(), out var app, true);
+                var disposable = new CompositeDisposable
+                {
+                    container.Resolve<IContainerRoot<IAppLifecycle, IAppLifecycle.Of>>().Instantiate(new IAppLifecycle.Of(), out var appLifecycle, true),
+                    appLifecycle.CreateRootDataContext(out var dataContext)
+                };
 
                 desktop.MainWindow = new AppWindow(container.Resolve<IWindowManager>(), container.Resolve<IOpenFileEventManager>())
                 {
-                    DataContext = app
+                    DataContext = dataContext
                 };
 
                 desktop.Exit += (s, e) => disposable.Dispose();

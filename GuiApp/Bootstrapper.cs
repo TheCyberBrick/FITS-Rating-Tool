@@ -25,6 +25,8 @@ using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.GuiApp.Services.Impl;
 using FitsRatingTool.IoC;
 using FitsRatingTool.IoC.Impl;
+using FitsRatingTool.Variables.Services;
+using FitsRatingTool.Variables.Services.Impl;
 
 namespace FitsRatingTool.GuiApp
 {
@@ -60,6 +62,10 @@ namespace FitsRatingTool.GuiApp
             container.Register<IVoyagerEvaluationExporterFactory, VoyagerEvaluationExporterFactory>(Reuse.Singleton);
             container.Register<IFileDeleterExporterFactory, FileDeleterExporterFactory>(Reuse.Singleton);
             container.Register<IFileMoverExporterFactory, FileMoverExporterFactory>(Reuse.Singleton);
+
+            // Variables
+            container.Register<IConstantVariableFactory, ConstantVariableFactory>(Reuse.Singleton);
+            container.Register<IKeywordVariableFactory, KeywordVariableFactory>(Reuse.Singleton);
 
             // Scan and register MEF exports
             container.RegisterExports(typeof(Bootstrapper).Assembly);

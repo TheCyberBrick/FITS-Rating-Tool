@@ -128,6 +128,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             this.evaluationService = evaluationService;
             this.evaluationManager = evaluationManager;
             this.groupingManager = groupingManager;
+            this.instrumentProfileManager = instrumentProfileManager;
 
             AutoUpdateRatings = evaluationManager.AutoUpdateRatings;
 

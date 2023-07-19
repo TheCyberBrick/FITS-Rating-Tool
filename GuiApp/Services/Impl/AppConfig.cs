@@ -26,6 +26,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     [Export(typeof(IAppConfig)), SingletonReuse]
     public class AppConfig : IAppConfig
     {
+        public bool IsLoaded => manager.IsLoaded;
+        
         private IAppConfigManager manager;
         private IGroupingManager groupingManager;
 

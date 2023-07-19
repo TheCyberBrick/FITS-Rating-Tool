@@ -113,7 +113,7 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
                     return;
                 }
 
-                UnsubscribeFromEvent<TConfigurator, EventArgs, RegistryItemEditorViewModel<TConfigurator>>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnConfigurationChanged);
+                UnsubscribeFromEvent<IItemConfigurator, EventArgs, RegistryItemEditorViewModel<TConfigurator>>(oldConfigurator, nameof(oldConfigurator.ConfigurationChanged), OnConfigurationChanged);
             }
 
             var oldConfiguratorDisposable = _configuratorDisposable;
@@ -125,7 +125,7 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
 
             if (newConfigurator != null)
             {
-                SubscribeToEvent<TConfigurator, EventArgs, RegistryItemEditorViewModel<TConfigurator>>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnConfigurationChanged);
+                SubscribeToEvent<IItemConfigurator, EventArgs, RegistryItemEditorViewModel<TConfigurator>>(newConfigurator, nameof(newConfigurator.ConfigurationChanged), OnConfigurationChanged);
             }
 
             _configurationChanged?.Invoke(this, new EventArgs());

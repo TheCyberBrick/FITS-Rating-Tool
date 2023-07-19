@@ -61,7 +61,7 @@ namespace FitsRatingTool.Variables.Services.Impl
             {
                 throw new ArgumentException("Invalid config");
             }
-            throw new NotImplementedException();
+            return new Variable(name, cfg);
         }
     }
 }

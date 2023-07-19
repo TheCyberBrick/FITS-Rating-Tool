@@ -17,13 +17,11 @@
 */
 
 using System;
-using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Common.Services.Impl;
 using ReactiveUI;
 
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels

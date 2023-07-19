@@ -16,23 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using DryIocAttributes;
-using FitsRatingTool.GuiApp.UI.Utils.ViewModels;
-using FitsRatingTool.IoC;
-using System.ComponentModel.Composition;
-
-namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
+namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    [Export(typeof(IVariableSelectorViewModel)), TransientReuse]
-    public class VariableSelectorViewModel : RegistryItemSelectorViewModel<IVariableConfiguratorViewModel>, IVariableSelectorViewModel
+    public interface IConstantVariableConfiguratorViewModel : IVariableConfiguratorViewModel
     {
-        public VariableSelectorViewModel(IRegistrar<IVariableSelectorViewModel, IVariableSelectorViewModel.Of> reg)
-        {
-            reg.RegisterAndReturn<VariableSelectorViewModel>();
-        }
-
-        private VariableSelectorViewModel(IVariableSelectorViewModel.Of args)
-        {
-        }
+        public record Of();
     }
 }

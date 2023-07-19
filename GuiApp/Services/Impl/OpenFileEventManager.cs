@@ -46,7 +46,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             Program.OnOpenFile += OnProgramOpenFile;
             LaunchFilePath = Program.LaunchFilePath;
 
-            SyncSettings();
+            if (appConfig.IsLoaded)
+            {
+                SyncSettings();
+            }
 
             WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueEventArgs, OpenFileEventManager>(configManager, nameof(configManager.ValueChanged), OnConfigChanged);
             WeakEventHandlerManager.Subscribe<IAppConfigManager, IAppConfigManager.ValueEventArgs, OpenFileEventManager>(configManager, nameof(configManager.ValuesReloaded), OnConfigChanged);

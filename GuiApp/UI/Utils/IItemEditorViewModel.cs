@@ -36,4 +36,22 @@ namespace FitsRatingTool.GuiApp.UI.Utils
 
         event EventHandler ConfigurationChanged;
     }
+
+    public static class IItemEditorViewModelExtensions
+    {
+        public static bool Configure<TConfigurator>(this IItemEditorViewModel<TConfigurator> editor, string id, Func<TConfigurator, bool> configuration)
+            where TConfigurator : class, IItemConfigurator
+        {
+            var item = editor.Selector.SelectById(id);
+            if (item != null && editor.Selector.SelectedItem == item)
+            {
+                var configurator = editor.Configurator;
+                if (configurator != null)
+                {
+                    return configuration.Invoke(configurator);
+                }
+            }
+            return false;
+        }
+    }
 }

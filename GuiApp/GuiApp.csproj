@@ -295,6 +295,15 @@
     <Compile Update="UI\MessageBox\Windows\MessageBoxWindow.axaml.cs">
       <DependentUpon>MessageBoxWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Variables\Views\ConstantVariableConfiguratorView.axaml.cs">
+      <DependentUpon>ConstantVariableConfiguratorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Variables\Views\VariableSelectorView.axaml.cs">
+      <DependentUpon>VariableSelectorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Variables\Views\VariableEditorView.axaml.cs">
+      <DependentUpon>VariableEditorView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
@@ -304,11 +313,13 @@
     <Folder Include="UI\Info\Views\" />
     <Folder Include="UI\Info\ViewModels\" />
     <Folder Include="UI\JobRunner\Views\" />
+    <Folder Include="UI\Utils\Views\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Exporters\Exporters.csproj" />
     <ProjectReference Include="..\IoC\IoC.csproj" />
+    <ProjectReference Include="..\Variables\Variables.csproj" />
     <ProjectReference Include="..\VoyagerAPI\VoyagerAPI.csproj" />
   </ItemGroup>
   <ItemGroup>

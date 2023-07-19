@@ -26,17 +26,17 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
     public class RegistryItemSelectorViewModel<TConfigurator> : ViewModelBase, IItemSelectorViewModel
         where TConfigurator : class
     {
-        public ReadOnlyObservableCollection<Item> Items { get; }
+        public ReadOnlyObservableCollection<IItemSelectorViewModel.Item> Items { get; }
 
-        private Item? _selectedItem;
-        public Item? SelectedItem
+        private IItemSelectorViewModel.Item? _selectedItem;
+        public IItemSelectorViewModel.Item? SelectedItem
         {
             get => _selectedItem;
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
 
-        private ObservableCollection<Item> _items = new();
+        private ObservableCollection<IItemSelectorViewModel.Item> _items = new();
 
         [Import]
         protected IContainer<IComponentRegistry<TConfigurator>, IComponentRegistry<TConfigurator>.Of> RegistryContainer { get; private set; } = null!;
@@ -44,7 +44,7 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
 
         protected RegistryItemSelectorViewModel()
         {
-            Items = new ReadOnlyObservableCollection<Item>(_items);
+            Items = new ReadOnlyObservableCollection<IItemSelectorViewModel.Item>(_items);
         }
 
         protected override void OnInstantiated()
@@ -68,13 +68,13 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
 
                     if (registration != null && factory != null)
                     {
-                        _items.Add(new Item(registration.Id, registration.Name));
+                        _items.Add(new IItemSelectorViewModel.Item(registration.Id, registration.Name));
                     }
                 }
             });
         }
 
-        public Item? FindById(string id)
+        public IItemSelectorViewModel.Item? FindById(string id)
         {
             foreach (var item in _items)
             {
@@ -86,7 +86,7 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
             return null;
         }
 
-        public Item? SelectById(string id)
+        public IItemSelectorViewModel.Item? SelectById(string id)
         {
             var item = FindById(id);
             if (item != null)

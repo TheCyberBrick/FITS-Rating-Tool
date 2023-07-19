@@ -87,6 +87,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IInstrumentProfileRepository instrumentProfileRepository;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
         private readonly IVariableManager variableManager;
+        private readonly IAppConfig appConfig;
 
 
         public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory, IVariableManager variableManager, IAppConfig appConfig)
@@ -94,12 +95,22 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.instrumentProfileRepository = instrumentProfileRepository;
             this.instrumentProfileFactory = instrumentProfileFactory;
             this.variableManager = variableManager;
+            this.appConfig = appConfig;
 
-            // Add already loaded profiles to manager
+            AddRecordsFromRepository();
+        }
+
+        private void AddRecordsFromRepository()
+        {
             foreach (var profileId in instrumentProfileRepository.ProfileIds)
             {
                 records.TryAdd(profileId, new Record(profileId, this));
             }
+        }
+
+        public void Load()
+        {
+            AddRecordsFromRepository();
 
             var defaultProfile = appConfig.DefaultInstrumentProfileId.Length > 0 ? instrumentProfileRepository.GetProfile(appConfig.DefaultInstrumentProfileId) : null;
             if (defaultProfile != null)
@@ -124,7 +135,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             copy.BitDepth = profile.BitDepth;
             copy.ElectronsPerADU = profile.ElectronsPerADU;
             copy.PixelSizeInMicrons = profile.PixelSizeInMicrons;
-            copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);
+            if (profile.Variables != null)
+            {
+                copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);
+            }
 
             return copy;
         }

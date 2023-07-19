@@ -20,10 +20,10 @@ using System.Collections.ObjectModel;
 
 namespace FitsRatingTool.GuiApp.UI.Utils
 {
-    public record Item(string Id, string Name);
-
     public interface IItemSelectorViewModel
     {
+        public record Item(string Id, string Name);
+
         ReadOnlyObservableCollection<Item> Items { get; }
 
         Item? SelectedItem { get; set; }

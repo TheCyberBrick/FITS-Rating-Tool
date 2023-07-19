@@ -22,6 +22,8 @@ namespace FitsRatingTool.GuiApp.Services
 {
     public interface IAppConfig
     {
+        bool IsLoaded { get; }
+
         #region Misc
         bool OpenFileInNewWindow { get; set; }
 

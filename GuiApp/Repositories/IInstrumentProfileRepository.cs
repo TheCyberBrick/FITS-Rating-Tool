@@ -48,6 +48,8 @@ namespace FitsRatingTool.GuiApp.Repositories
 
         IReadOnlyInstrumentProfile? GetProfile(string id);
 
+        void Load();
+
         void AddOrUpdateProfile(IReadOnlyInstrumentProfile profile);
 
         void RemoveProfile(string id);

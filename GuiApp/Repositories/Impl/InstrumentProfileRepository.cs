@@ -42,18 +42,18 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
         private readonly IAppConfigManager appConfigManager;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
 
+        private bool isLoaded = false;
+
         public InstrumentProfileRepository(IAppConfigManager appConfigManager, IInstrumentProfileFactory instrumentProfileFactory)
         {
             this.appConfigManager = appConfigManager;
             this.instrumentProfileFactory = instrumentProfileFactory;
-
-            Directory.CreateDirectory(ProfilesPath);
-
-            Load();
         }
 
-        private void Load()
+        public void Load()
         {
+            Directory.CreateDirectory(ProfilesPath);
+
             Dictionary<string, IReadOnlyInstrumentProfile> removedProfiles = new Dictionary<string, IReadOnlyInstrumentProfile>(profiles);
 
             foreach (var file in Directory.EnumerateFiles(ProfilesPath, "*.json"))
@@ -88,10 +88,22 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
 
                 _profileRemoved?.Invoke(this, new IInstrumentProfileRepository.InstrumentProfileEventArgs(removedProfileId, false, false, true));
             }
+
+            isLoaded = true;
+        }
+
+        private void CheckLoaded()
+        {
+            if (!isLoaded)
+            {
+                throw new InvalidOperationException("Instrument profile repository not yet loaded");
+            }
         }
 
         public void AddOrUpdateProfile(IReadOnlyInstrumentProfile profile)
         {
+            CheckLoaded();
+
             if (profiles.ContainsKey(profile.Id))
             {
                 profiles[profile.Id] = profile;
@@ -108,11 +120,15 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
 
         public IReadOnlyInstrumentProfile? GetProfile(string id)
         {
+            CheckLoaded();
+
             return profiles.TryGetValue(id, out var profile) ? profile : null;
         }
 
         public void RemoveProfile(string id)
         {
+            CheckLoaded();
+
             if (profiles.Remove(id))
             {
                 _profileRemoved?.Invoke(this, new IInstrumentProfileRepository.InstrumentProfileEventArgs(id, false, false, true));
@@ -123,6 +139,8 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
 
         public void Save(string id)
         {
+            CheckLoaded();
+
             var profile = GetProfile(id);
 
             if (profile != null)
@@ -135,6 +153,8 @@ namespace FitsRatingTool.GuiApp.Repositories.Impl
 
         public void SaveAll()
         {
+            CheckLoaded();
+
             foreach (var profileId in profiles.Keys)
             {
                 Save(profileId);

@@ -84,7 +84,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
                 if (confirmed)
                 {
-                    instrumentProfileManager.CurrentProfile = profile.CreateProfile();
+                    instrumentProfileManager.CurrentProfile = profile?.CreateProfile();
 
                     suppressChangeCommand = true;
                     try

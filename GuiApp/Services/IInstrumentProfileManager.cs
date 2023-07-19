@@ -70,6 +70,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         IReadOnlyCollection<string> ProfileIds { get; }
 
+        void Load();
+
         bool Contains(string profileId);
 
         IRecord? Get(string profileId);

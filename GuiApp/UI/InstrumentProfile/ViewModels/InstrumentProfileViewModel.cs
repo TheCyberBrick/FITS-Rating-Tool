@@ -17,21 +17,23 @@
 */
 
 using Avalonia.Collections;
+using DryIoc;
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
-using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Utils;
+using FitsRatingTool.GuiApp.UI.Variables;
 using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using static FitsRatingTool.GuiApp.UI.InstrumentProfile.IInstrumentProfileViewModel;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
@@ -43,46 +45,20 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             reg.RegisterAndReturn<InstrumentProfileViewModel>();
         }
 
-        // TODO Remove
-        /*private class ConstantViewModel : ViewModelBase, IInstrumentProfileViewModel.IConstantViewModel
+        private class VariableItemViewModel : ViewModelBase, IInstrumentProfileViewModel.IVariableItemViewModel
         {
-            public IInstrumentProfileViewModel Profile { get; }
+            public IVariableEditorViewModel Editor { get; }
 
-            private readonly ObservableAsPropertyHelper<bool> _isNameValid;
-            public bool IsNameValid => _isNameValid.Value;
+            public ReactiveCommand<Unit, Unit> Remove { get; }
 
-            private string _name = "";
-            public string Name
+
+            public VariableItemViewModel(IVariableEditorViewModel editor)
             {
-                get => _name;
-                set => this.RaiseAndSetIfChanged(ref _name, value);
+                Editor = editor;
+                Remove = ReactiveCommand.Create(() => { });
             }
 
-            private double _value;
-            public double Value
-            {
-                get => _value;
-                set => this.RaiseAndSetIfChanged(ref _value, value);
-            }
-
-            public ReactiveCommand<Unit, Unit> Remove { get; } = ReactiveCommand.Create(() => { });
-
-            public ConstantViewModel(InstrumentProfileViewModel profile)
-            {
-                Profile = profile;
-                _isNameValid = this.WhenAnyValue(x => x.Name, ValidateName).ToProperty(this, x => x.IsNameValid);
-
-                this.WhenAnyValue(x => x.IsNameValid).Subscribe(_ => profile.ValidateConstants());
-
-                this.WhenAnyValue(x => x.Name).Subscribe(_ => Profile.IsModified = true);
-                this.WhenAnyValue(x => x.Value).Subscribe(_ => Profile.IsModified = true);
-            }
-
-            private bool ValidateName(string name)
-            {
-                return name.Length > 0 && char.IsLetter(name[0]) && name.All(x => char.IsLetterOrDigit(x));
-            }
-        }*/
+        }
 
         private string _id = "";
         public string Id
@@ -171,27 +147,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         }
 
 
-        // TODO Remove
-
-        /*public AvaloniaList<IInstrumentProfileViewModel.IConstantViewModel> Constants { get; } = new();
-
-        IReadOnlyList<IConstant> IInstrumentProfile.Constants
-        {
-            get => Constants;
-            set
-            {
-                Constants.Clear();
-                foreach (var c in value)
-                {
-                    var constVm = CreateConstant();
-                    constVm.Name = c.Name;
-                    constVm.Value = c.Value;
-                    Constants.Add(constVm);
-                }
-            }
-        }
-
-        IReadOnlyList<IReadOnlyConstant> IReadOnlyInstrumentProfile.Constants => Constants;*/
+        public AvaloniaList<IVariableItemViewModel> Variables { get; } = new();
 
 
         private bool _isModified;
@@ -226,36 +182,38 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isValid;
         public bool IsValid => _isValid.Value;
 
-        private bool _isConstantNameValid;
-        private bool IsConstantNameValid
+        private bool _isVariableValid;
+        private bool IsVariableValid
         {
-            get => _isConstantNameValid;
-            set => this.RaiseAndSetIfChanged(ref _isConstantNameValid, value);
+            get => _isVariableValid;
+            set => this.RaiseAndSetIfChanged(ref _isVariableValid, value);
         }
 
-        public ReactiveCommand<Unit, Unit> AddConstant { get; }
+        public ReactiveCommand<Unit, Unit> AddVariable { get; }
 
         public ReactiveCommand<Unit, Unit> Reset { get; }
 
-        // TODO Remove
-        //public AvaloniaList<IConstantViewModel> Constants => throw new NotImplementedException();
+
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
 
-        private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager, IInstrumentProfileFactory instrumentProfileFactory)
+        private readonly IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer;
+
+        private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager,
+            IInstrumentProfileFactory instrumentProfileFactory, IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer)
         {
             this.instrumentProfileManager = instrumentProfileManager;
             this.instrumentProfileFactory = instrumentProfileFactory;
+            this.variableEditorContainer = variableEditorContainer;
 
             IsNew = args.Profile == null;
 
             SourceProfile = args.Profile;
 
-            AddConstant = ReactiveCommand.Create(() =>
+            AddVariable = ReactiveCommand.Create(() =>
             {
-                // TODO Remove
-                //CreateConstant();
+                CreateVariable();
             });
 
             Reset = ReactiveCommand.Create(() =>
@@ -269,7 +227,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             var isIdValidated = this.WhenAnyValue(x => x.Id, ValidateId);
             _isIdValid = Observable.CombineLatest(isIdValidated, isIdAvailable, (a, b) => a && b).ToProperty(this, x => x.IsIdValid);
 
-            _isValid = Observable.CombineLatest(this.WhenAnyValue(x => x.IsIdValid), this.WhenAnyValue(x => x.IsConstantNameValid), (a, b) => a && b).ToProperty(this, x => x.IsValid);
+            _isValid = Observable.CombineLatest(this.WhenAnyValue(x => x.IsIdValid), this.WhenAnyValue(x => x.IsVariableValid), (a, b) => a && b).ToProperty(this, x => x.IsValid);
 
             this.WhenAnyValue(x => x.IsFocalLengthEnabled).Select(x => !x).Subscribe(_ => FocalLength = null);
             this.WhenAnyValue(x => x.IsBitDepthEnabled).Select(x => !x).Subscribe(_ => BitDepth = null);
@@ -289,19 +247,22 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             this.WhenAnyValue(x => x.IsPixelSizeInMicronsEnabled).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.PixelSizeInMicrons).Subscribe(_ => IsModified = true);
 
-            //TODO Remove
-            /*Constants.CollectionChanged += (sender, e) =>
+            Variables.CollectionChanged += (sender, e) =>
             {
                 IsModified = true;
-                ValidateConstants();
-            };*/
+                ValidateVariables();
+            };
 
-            if (args.Profile != null)
+            ValidateVariables();
+        }
+
+
+        protected override void OnInstantiated()
+        {
+            if (SourceProfile != null)
             {
-                LoadFromProfile(args.Profile);
+                LoadFromProfile(SourceProfile);
             }
-
-            ValidateConstants();
         }
 
         private bool ValidateId(string id)
@@ -366,32 +327,74 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 IsPixelSizeInMicronsEnabled = false;
             }
 
-            // TODO Remove
-            /*Constants.Clear();
-            foreach (var constant in profile.Variables)
+
+            // Remove all variables first
+            while (Variables.Count > 0)
             {
-                var constantVm = CreateConstant();
-                constantVm.Name = constant.Name;
-                constantVm.Value = constant.Value;
-            }*/
+                RemoveVariable(Variables[Variables.Count - 1]);
+            }
+            // And then try loading them from configs
+            if (profile.Variables != null)
+            {
+                foreach (var config in profile.Variables)
+                {
+                    var item = CreateVariable();
+
+                    bool loaded = false;
+
+                    try
+                    {
+                        loaded = !item.Editor.Configure(config.Id, configurator =>
+                        {
+                            return configurator.TryLoadConfig(config.Name, config.Config);
+                        });
+                    }
+                    finally
+                    {
+                        if (loaded)
+                        {
+                            RemoveVariable(item);
+                        }
+                    }
+                }
+            }
 
             IsModified = false;
+
+            ValidateVariables();
         }
 
-        // TODO Remove
-        /*private ConstantViewModel CreateConstant()
+        private IVariableItemViewModel CreateVariable()
         {
-            var constant = new ConstantViewModel(this);
+            var item = new VariableItemViewModel(variableEditorContainer.Instantiate(new()));
 
-            constant.Remove.Subscribe(_ =>
+            item.Remove.Subscribe(_ =>
             {
-                Constants.Remove(constant);
+                RemoveVariable(item);
             });
 
-            Constants.Add(constant);
+            SubscribeToEvent<IItemEditorViewModel<IVariableConfiguratorViewModel>, EventArgs, InstrumentProfileViewModel>(item.Editor, nameof(item.Editor.ConfigurationChanged), OnVariableConfiguratorChanged);
 
-            return constant;
-        }*/
+            Variables.Add(item);
+
+            return item;
+        }
+
+        private void RemoveVariable(IVariableItemViewModel item)
+        {
+            Variables.Remove(item);
+
+            variableEditorContainer.Destroy(item.Editor);
+
+            UnsubscribeFromEvent<IItemEditorViewModel<IVariableConfiguratorViewModel>, EventArgs, InstrumentProfileViewModel>(item.Editor, nameof(item.Editor.ConfigurationChanged), OnVariableConfiguratorChanged);
+        }
+
+        private void OnVariableConfiguratorChanged(object? sender, EventArgs args)
+        {
+            IsModified = true;
+
+            ValidateVariables();
+        }
 
         public bool ResetToSourceProfile()
         {
@@ -403,19 +406,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             return false;
         }
 
-        private void ValidateConstants()
+        private void ValidateVariables()
         {
             bool valid = true;
-            // TODO Remove
-            /*foreach (var constant in Constants)
+            foreach (var variable in Variables)
             {
-                if (!constant.IsNameValid)
+                if (!variable.Editor.IsValid)
                 {
                     valid = false;
                     break;
                 }
-            }*/
-            IsConstantNameValid = valid;
+            }
+            IsVariableValid = valid;
         }
 
         public IReadOnlyInstrumentProfile CreateProfile()
@@ -435,15 +437,24 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             profile.ElectronsPerADU = ElectronsPerADU;
             profile.PixelSizeInMicrons = PixelSizeInMicrons;
 
-            /*if(Variables != null)
+            if (Variables != null)
             {
-                var variables = new List<IReadOnlyVariable>();
-            
-                
-            }*/
+                var variables = new List<IReadOnlyJobConfig.VariableConfig>();
 
-            //TODO
-            //profile.Variables = ...
+                foreach (var item in Variables)
+                {
+                    var configurator = item.Editor.Configurator;
+                    var selectorItem = item.Editor.Selector.SelectedItem;
+                    if (configurator != null && selectorItem != null)
+                    {
+                        var variable = configurator.CreateVariable();
+                        var config = configurator.CreateConfig();
+                        variables.Add(new IReadOnlyJobConfig.VariableConfig(selectorItem.Id, variable.Name, config));
+                    }
+                }
+
+                profile.Variables = variables;
+            }
 
             return profile;
         }
