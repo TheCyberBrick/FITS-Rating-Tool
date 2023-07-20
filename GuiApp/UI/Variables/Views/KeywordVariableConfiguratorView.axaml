@@ -21,10 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
-             x:Class="FitsRatingTool.GuiApp.UI.Variables.Views.ConstantVariableConfiguratorView">
+             x:Class="FitsRatingTool.GuiApp.UI.Variables.Views.KeywordVariableConfiguratorView">
 
   <Grid ColumnDefinitions="Auto,*"
-        RowDefinitions="Auto,Auto">
+        RowDefinitions="Auto,Auto,Auto,Auto">
 
     <TextBlock Grid.Column="0" Grid.Row="0" Text="Name" VerticalAlignment="Center" Margin="0 0 8 0"/>
     <Panel Grid.Column="1" Grid.Row="0"
@@ -46,8 +46,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </Border>
     </Panel>
 
-    <TextBlock Grid.Column="0" Grid.Row="1" Text="Value" VerticalAlignment="Center"/>
-    <NumericUpDown Grid.Column="2" Grid.Row="1" Value="{Binding Value}" FormatString="0.#########" ShowButtonSpinner="False"/>
+    <TextBlock Grid.Column="0" Grid.Row="1" Text="Keyword" VerticalAlignment="Center" Margin="0 0 8 0"/>
+    <Panel Grid.Column="1" Grid.Row="1"
+           Margin="0 0 0 4">
+      <TextBox Text="{Binding Keyword}" Classes.invalid="{Binding !IsKeywordValid}">
+        <TextBox.Styles>
+          <Style Selector="TextBox.invalid">
+            <Setter Property="ToolTip.Tip" Value="FITS header keyword. Must only consist of characters a-Z and 0-9."/>
+          </Style>
+        </TextBox.Styles>
+      </TextBox>
+      <Border Classes.invalid="{Binding !IsKeywordValid}">
+        <Border.Styles>
+          <Style Selector="Border.invalid">
+            <Setter Property="BorderBrush" Value="#90FA4A37"/>
+            <Setter Property="BorderThickness" Value="2"/>
+          </Style>
+        </Border.Styles>
+      </Border>
+    </Panel>
+
+    <TextBlock Grid.Column="0" Grid.Row="2" Text="Default Value" VerticalAlignment="Center" Margin="0 0 8 0"/>
+    <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding DefaultValue}" FormatString="0.#########" ShowButtonSpinner="False"/>
+
+    <CheckBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"
+              Margin="0 8 0 0"
+              Content="Exclude from aggregate funtions if not found"
+              ToolTip.Tip="Whether this variable should be excluded from aggregate functions (min, max, median, etc.) if they keyword cannot be found or parsed in the FITS header."
+              HorizontalAlignment="Center"
+              IsChecked="{Binding ExcludeFromAggregateFunctionsIfNotFound}"/>
 
   </Grid>
 

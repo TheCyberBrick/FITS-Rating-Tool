@@ -18,7 +18,6 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.GuiApp.UI.Utils;
-using System;
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {

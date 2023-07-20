@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,16 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace FitsRatingTool.GuiApp.UI.Variables
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+
+namespace FitsRatingTool.GuiApp.UI.Variables.Views
 {
-    public interface IConstantVariableConfiguratorViewModel : IVariableConfiguratorViewModel
+    public partial class KeywordVariableConfiguratorView : UserControl
     {
-        public record Of();
+        public KeywordVariableConfiguratorView()
+        {
+            InitializeComponent();
+        }
 
-        string Name { get; set; }
-
-        double Value { get; set; }
-
-        bool IsNameValid { get; }
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }

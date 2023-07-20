@@ -153,6 +153,10 @@ namespace FitsRatingTool.GuiApp
                 {
                     AllowEglInitialization = false
                 })
+                /*.With(new SkiaOptions
+                {
+                    MaxGpuResourceSizeBytes = 2147483648
+                })*/
                 .UsePlatformDetect()
                 .LogToTrace()
                 .UseReactiveUI();

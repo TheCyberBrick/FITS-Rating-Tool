@@ -18,7 +18,6 @@
 
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.IoC;
 using FitsRatingTool.Variables.Services;
 using FitsRatingTool.Variables.Services.Impl;
@@ -28,22 +27,21 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Xml.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 {
     [Export(typeof(IComponentRegistration<IVariableConfiguratorViewModel>)), TransientReuse]
-    public class ConstantVariableConfiguratorRegistration : ComponentRegistrationOfContainer<IVariableConfiguratorViewModel, IConstantVariableConfiguratorViewModel, IConstantVariableConfiguratorViewModel.Of>
+    public class KeywordVariableConfiguratorRegistration : ComponentRegistrationOfContainer<IVariableConfiguratorViewModel, IKeywordVariableConfiguratorViewModel, IKeywordVariableConfiguratorViewModel.Of>
     {
-        public ConstantVariableConfiguratorRegistration() : base("constant", "Constant", new IConstantVariableConfiguratorViewModel.Of()) { }
+        public KeywordVariableConfiguratorRegistration() : base("keyword", "FITS Keyword", new IKeywordVariableConfiguratorViewModel.Of()) { }
     }
 
-    [Export(typeof(IConstantVariableConfiguratorViewModel)), TransientReuse, AllowDisposableTransient]
-    public class ConstantVariableConfiguratorViewModel : ViewModelBase, IConstantVariableConfiguratorViewModel
+    [Export(typeof(IKeywordVariableConfiguratorViewModel)), TransientReuse, AllowDisposableTransient]
+    public class KeywordVariableConfiguratorViewModel : ViewModelBase, IKeywordVariableConfiguratorViewModel
     {
-        public ConstantVariableConfiguratorViewModel(IRegistrar<IConstantVariableConfiguratorViewModel, IConstantVariableConfiguratorViewModel.Of> reg)
+        public KeywordVariableConfiguratorViewModel(IRegistrar<IKeywordVariableConfiguratorViewModel, IKeywordVariableConfiguratorViewModel.Of> reg)
         {
-            reg.RegisterAndReturn<ConstantVariableConfiguratorViewModel>();
+            reg.RegisterAndReturn<KeywordVariableConfiguratorViewModel>();
         }
 
 
@@ -54,11 +52,25 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
-        public double _value;
-        public double Value
+        private string _keyword = "";
+        public string Keyword
         {
-            get => _value;
-            set => this.RaiseAndSetIfChanged(ref _value, value);
+            get => _keyword;
+            set => this.RaiseAndSetIfChanged(ref _keyword, value);
+        }
+
+        public double _defaultValue;
+        public double DefaultValue
+        {
+            get => _defaultValue;
+            set => this.RaiseAndSetIfChanged(ref _defaultValue, value);
+        }
+
+        private bool _excludeFromAggregateFunctinosIfNotFound;
+        public bool ExcludeFromAggregateFunctionsIfNotFound
+        {
+            get => _excludeFromAggregateFunctinosIfNotFound;
+            set => this.RaiseAndSetIfChanged(ref _excludeFromAggregateFunctinosIfNotFound, value);
         }
 
         private bool _isValid;
@@ -75,15 +87,24 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isNameValid, value);
         }
 
-
-        private IConstantVariableFactory constantVariableFactory;
-
-        private ConstantVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IConstantVariableFactory constantVariableFactory)
+        private bool _isKeywordValid;
+        public bool IsKeywordValid
         {
-            this.constantVariableFactory = constantVariableFactory;
+            get => _isKeywordValid;
+            set => this.RaiseAndSetIfChanged(ref _isKeywordValid, value);
+        }
+
+
+        private IKeywordVariableFactory keywordVariableFactory;
+
+        private KeywordVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IKeywordVariableFactory keywordVariableFactory)
+        {
+            this.keywordVariableFactory = keywordVariableFactory;
 
             this.WhenAnyValue(x => x.Name).Skip(1).Subscribe(x => NotifyConfigurationChange());
-            this.WhenAnyValue(x => x.Value).Skip(1).Subscribe(x => NotifyConfigurationChange());
+            this.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x => NotifyConfigurationChange());
+            this.WhenAnyValue(x => x.DefaultValue).Skip(1).Subscribe(x => NotifyConfigurationChange());
+            this.WhenAnyValue(x => x.ExcludeFromAggregateFunctionsIfNotFound).Skip(1).Subscribe(x => NotifyConfigurationChange());
         }
 
 
@@ -98,33 +119,39 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         {
             IsNameValid = Name.Length > 0 && char.IsLetter(Name[0]) && Name.All(x => char.IsLetterOrDigit(x));
 
-            IsValid = IsNameValid;
+            IsKeywordValid = Keyword.All(x => char.IsLetterOrDigit(x));
+
+            IsValid = IsNameValid && IsKeywordValid;
         }
 
         public string CreateConfig()
         {
-            var config = new ConstantVariableFactory.Config
+            var config = new KeywordVariableFactory.Config
             {
-                Value = Value
+                Keyword = Keyword,
+                DefaultValue = DefaultValue,
+                ExcludeFromAggregateFunctionsIfNotFound = ExcludeFromAggregateFunctionsIfNotFound
             };
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
         public IVariable CreateVariable()
         {
-            return constantVariableFactory.Create(Name, CreateConfig());
+            return keywordVariableFactory.Create(Name, CreateConfig());
         }
 
         public bool TryLoadConfig(string name, string config)
         {
             try
             {
-                var cfg = JsonConvert.DeserializeObject<ConstantVariableFactory.Config>(config);
+                var cfg = JsonConvert.DeserializeObject<KeywordVariableFactory.Config>(config);
 
                 if (cfg != null)
                 {
                     Name = name;
-                    Value = cfg.Value;
+                    Keyword = cfg.Keyword;
+                    DefaultValue = cfg.DefaultValue;
+                    ExcludeFromAggregateFunctionsIfNotFound = cfg.ExcludeFromAggregateFunctionsIfNotFound;
                     return true;
                 }
             }
