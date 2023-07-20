@@ -66,7 +66,12 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public ReactiveCommand<Unit, IParameterizedFactory<IAppConfigViewModel, IAppConfigViewModel.Of>> ShowSettingsDialog { get; }
 
-        public IFitsImageMultiViewerViewModel MultiViewer { get; private set; } = null!;
+        private IFitsImageMultiViewerViewModel _multiViewer = null!;
+        public IFitsImageMultiViewerViewModel MultiViewer
+        {
+            get => _multiViewer;
+            private set => this.RaiseAndSetIfChanged(ref _multiViewer, value);
+        }
 
         public ReactiveCommand<float, Unit> IncreaseThumbnailScale { get; }
 
