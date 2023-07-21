@@ -52,6 +52,8 @@ namespace FitsRatingTool.GuiApp.Services
         string DefaultEvaluationFormulaPath { get; set; }
 
         GroupingConfiguration DefaultEvaluationGrouping { get; set; }
+
+        bool EnableDangerousExporters { get; set; }
         #endregion
 
         #region Voyager Integration

@@ -27,7 +27,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
     public class AppConfig : IAppConfig
     {
         public bool IsLoaded => manager.IsLoaded;
-        
+
         private IAppConfigManager manager;
         private IGroupingManager groupingManager;
 
@@ -111,6 +111,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             get => StringToGrouping(manager.Get("DefaultEvaluationGrouping") ?? "", out var grouping) ? grouping! : new GroupingConfiguration(true, true, false, false, false, false, 0, null);
             set => manager.Set("DefaultEvaluationGrouping", GroupingToString(value));
+        }
+
+        public bool EnableDangerousExporters
+        {
+            get => bool.TryParse(manager.Get("EnableDangerousExporters"), out bool enabled) ? enabled : false;
+            set => manager.Set("EnableDangerousExporters", value.ToString());
         }
         #endregion
 

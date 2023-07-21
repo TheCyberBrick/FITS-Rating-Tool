@@ -33,7 +33,7 @@ using System.Reactive.Linq;
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
-    public class VoyagerExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of>
+    public class VoyagerExporterConfiguratorRegistration : BaseExporterConfiguratorRegistration<IVoyagerExporterConfiguratorViewModel, IVoyagerExporterConfiguratorViewModel.Of>
     {
         public VoyagerExporterConfiguratorRegistration() : base("voyager", "Voyager RoboTarget", new IVoyagerExporterConfiguratorViewModel.Of()) { }
     }

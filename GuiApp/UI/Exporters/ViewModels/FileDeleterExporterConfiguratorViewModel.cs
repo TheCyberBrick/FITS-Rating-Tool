@@ -31,8 +31,10 @@ using System.Reactive.Concurrency;
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
-    public class FileDeleterExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of>
+    public class FileDeleterExporterConfiguratorRegistration : BaseExporterConfiguratorRegistration<IFileDeleterExporterConfiguratorViewModel, IFileDeleterExporterConfiguratorViewModel.Of>
     {
+        public override bool IsDangerous => true;
+
         public FileDeleterExporterConfiguratorRegistration() : base("file_deleter", "File Deleter", new IFileDeleterExporterConfiguratorViewModel.Of()) { }
     }
 

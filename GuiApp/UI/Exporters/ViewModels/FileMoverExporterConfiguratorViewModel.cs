@@ -33,7 +33,7 @@ using System.Reactive.Linq;
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
-    public class FileMoverExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of>
+    public class FileMoverExporterConfiguratorRegistration : BaseExporterConfiguratorRegistration<IFileMoverExporterConfiguratorViewModel, IFileMoverExporterConfiguratorViewModel.Of>
     {
         public FileMoverExporterConfiguratorRegistration() : base("file_mover", "File Mover", new IFileMoverExporterConfiguratorViewModel.Of()) { }
     }

@@ -29,7 +29,7 @@ using System.Linq;
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
-    public class CSVExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of>
+    public class CSVExporterConfiguratorRegistration : BaseExporterConfiguratorRegistration<ICSVExporterConfiguratorViewModel, ICSVExporterConfiguratorViewModel.Of>
     {
         public CSVExporterConfiguratorRegistration() : base("csv", "CSV", new ICSVExporterConfiguratorViewModel.Of()) { }
     }

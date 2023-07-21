@@ -75,7 +75,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     var registration = registry.GetRegistration(id);
                     var factory = registry.GetFactory(id);
 
-                    if (registration != null && factory != null)
+                    if (registration != null && registration.IsEnabled && factory != null)
                     {
                         exporterConfiguratorFactories.Add(new ExporterConfiguratorFactory(id, registration.Name, factory));
                     }

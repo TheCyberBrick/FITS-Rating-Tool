@@ -45,6 +45,11 @@ namespace FitsRatingTool.IoC
         Type BaseType => typeof(Base);
 
         /// <summary>
+        /// Returns whether this registration is enabled.
+        /// </summary>
+        bool IsEnabled { get; }
+
+        /// <summary>
         /// Creates a factory for creating instances of this registration's <typeparamref name="Base"/> type.
         /// </summary>
         /// <param name="disposable">This registration may use the specified <see cref="CompositeDisposable"/> to clean up the returned factory. The caller must dispose it when the factory is no longer needed.</param>

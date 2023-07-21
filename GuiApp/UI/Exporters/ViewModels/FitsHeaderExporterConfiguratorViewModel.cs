@@ -30,7 +30,7 @@ using System.Linq;
 namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 {
     [Export(typeof(IComponentRegistration<IExporterConfiguratorViewModel>)), TransientReuse]
-    public class FitsHeaderExporterConfiguratorRegistration : ComponentRegistrationOfContainer<IExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of>
+    public class FitsHeaderExporterConfiguratorRegistration : BaseExporterConfiguratorRegistration<IFitsHeaderExporterConfiguratorViewModel, IFitsHeaderExporterConfiguratorViewModel.Of>
     {
         public FitsHeaderExporterConfiguratorRegistration() : base("fits_header", "FITS Header", new IFitsHeaderExporterConfiguratorViewModel.Of()) { }
     }

@@ -29,6 +29,8 @@ namespace FitsRatingTool.IoC
 
         public virtual string Name { get; }
 
+        public virtual bool IsEnabled => true;
+
         protected virtual CParameter Parameter { get; }
 
         protected virtual bool IsSingleUse { get; set; } = false;

@@ -30,6 +30,8 @@ namespace FitsRatingTool.IoC
 
         public virtual string Name { get; }
 
+        public virtual bool IsEnabled => true;
+
         protected virtual Implementation Instance { get; }
 
         [Import]

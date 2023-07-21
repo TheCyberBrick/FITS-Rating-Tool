@@ -179,6 +179,10 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             {
                 Description = "Evaluation grouping used by default."
             });
+            category.Settings.Add(new BoolSettingViewModel("Enable Dangerous Exporters", () => appConfig.EnableDangerousExporters, v => appConfig.EnableDangerousExporters = v)
+            {
+                Description = "Whether dangerous exporters (e.g. with non-reversible effects) should be enabled."
+            });
 
             return category;
         }
