@@ -324,7 +324,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             // Setting a new formula also triggers the ratings
             // auto update, if enabled
-            evaluationManager.CurrentFormula = errored ? null : formula;
+            evaluationManager.CurrentFormula = formula;
 
             return Unit.Default;
         }

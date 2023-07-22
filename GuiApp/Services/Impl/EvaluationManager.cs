@@ -192,6 +192,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
 
+            IsCurrentFormulaValid = evaluatorInstance != null;
+
             if (evaluatorInstance != null)
             {
                 var currentGrouping = CurrentGrouping;
@@ -354,6 +356,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 }
             }
         }
+
+        public bool IsCurrentFormulaValid { get; private set; }
 
         private bool _autoUpdateRatings = true;
         public bool AutoUpdateRatings

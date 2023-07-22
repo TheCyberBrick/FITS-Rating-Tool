@@ -91,6 +91,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         string? CurrentFormula { get; set; }
 
+        bool IsCurrentFormulaValid { get; }
+
         bool AutoUpdateRatings { get; set; }
 
 
