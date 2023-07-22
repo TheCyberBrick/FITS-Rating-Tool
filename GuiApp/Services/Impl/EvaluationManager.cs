@@ -149,8 +149,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             // Invalidate cached formula and evaluator because
             // variables may now (no longer) be available
-            cachedEvaluator = null;
-            cachedEvaluatorFormula = CurrentFormula;
+            InvalidateCachedEvaluator();
 
             // TODO Should this always update?
             if (AutoUpdateRatings)
@@ -286,6 +285,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 Debug.WriteLine(ex.Message);
                 Debug.WriteLine(ex.StackTrace);
             }
+        }
+
+        private void InvalidateCachedEvaluator()
+        {
+            cachedEvaluator = null;
+            cachedEvaluatorFormula = null;
         }
 
 

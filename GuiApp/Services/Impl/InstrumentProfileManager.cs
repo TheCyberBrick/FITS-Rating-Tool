@@ -122,6 +122,14 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private void NotifyChange(IInstrumentProfileManager.IRecord record, bool removed)
         {
             _recordChanged?.Invoke(this, new IInstrumentProfileManager.RecordChangedEventArgs(record.ProfileId, removed));
+
+            // Make sure to update the current profile when
+            // its values have changed
+            var currentProfile = CurrentProfile;
+            if (!removed && record.Profile != null && currentProfile != null && record.ProfileId == currentProfile.Id)
+            {
+                CurrentProfile = record.Profile;
+            }
         }
 
         private IReadOnlyInstrumentProfile CreateProfileFactoryCopy(IReadOnlyInstrumentProfile profile)

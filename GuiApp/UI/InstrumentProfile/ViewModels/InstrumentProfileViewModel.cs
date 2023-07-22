@@ -343,14 +343,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
                     try
                     {
-                        loaded = !item.Editor.Configure(config.Id, configurator =>
+                        loaded = item.Editor.Configure(config.Id, configurator =>
                         {
                             return configurator.TryLoadConfig(config.Name, config.Config);
                         });
                     }
                     finally
                     {
-                        if (loaded)
+                        if (!loaded)
                         {
                             RemoveVariable(item);
                         }
