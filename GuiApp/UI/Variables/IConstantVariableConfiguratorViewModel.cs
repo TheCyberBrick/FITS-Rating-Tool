@@ -18,14 +18,10 @@
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IConstantVariableConfiguratorViewModel : IVariableConfiguratorViewModel
+    public interface IConstantVariableConfiguratorViewModel : IBaseVariableConfiguratorViewModel
     {
         public record Of();
 
-        string Name { get; set; }
-
         double Value { get; set; }
-
-        bool IsNameValid { get; }
     }
 }

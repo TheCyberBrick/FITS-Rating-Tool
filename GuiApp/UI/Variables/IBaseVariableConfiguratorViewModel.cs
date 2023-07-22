@@ -18,16 +18,10 @@
 
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IKeywordVariableConfiguratorViewModel : IBaseVariableConfiguratorViewModel
+    public interface IBaseVariableConfiguratorViewModel : IVariableConfiguratorViewModel
     {
-        public record Of();
+        string Name { get; set; }
 
-        string Keyword { get; set; }
-
-        double DefaultValue { get; set; }
-
-        bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
-
-        bool IsKeywordValid { get; }
+        bool IsNameValid { get; }
     }
 }

@@ -208,9 +208,10 @@ namespace FitsRatingTool.GuiApp.UI.Exporters.ViewModels
 
         public bool TryLoadConfig(string config)
         {
-            bool loaded = DoTryLoadConfig(config);
-            NotifyConfigurationChange();
-            return loaded;
+            using (DelayChangeNotifications())
+            {
+                return DoTryLoadConfig(config);
+            }
         }
 
         protected abstract bool DoTryLoadConfig(string config);

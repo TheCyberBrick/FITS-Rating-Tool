@@ -39,7 +39,7 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
     }
 
     [Export(typeof(IConstantVariableConfiguratorViewModel)), TransientReuse, AllowDisposableTransient]
-    public class ConstantVariableConfiguratorViewModel : ViewModelBase, IConstantVariableConfiguratorViewModel
+    public class ConstantVariableConfiguratorViewModel : BaseVariableConfiguratorViewModel, IConstantVariableConfiguratorViewModel
     {
         public ConstantVariableConfiguratorViewModel(IRegistrar<IConstantVariableConfiguratorViewModel, IConstantVariableConfiguratorViewModel.Of> reg)
         {
@@ -47,32 +47,11 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         }
 
 
-        private string _name = "";
-        public string Name
-        {
-            get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
-        }
-
         public double _value;
         public double Value
         {
             get => _value;
             set => this.RaiseAndSetIfChanged(ref _value, value);
-        }
-
-        private bool _isValid;
-        public bool IsValid
-        {
-            get => _isValid;
-            protected set => this.RaiseAndSetIfChanged(ref _isValid, value);
-        }
-
-        private bool _isNameValid;
-        public bool IsNameValid
-        {
-            get => _isNameValid;
-            set => this.RaiseAndSetIfChanged(ref _isNameValid, value);
         }
 
 
@@ -82,26 +61,11 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         {
             this.constantVariableFactory = constantVariableFactory;
 
-            this.WhenAnyValue(x => x.Name).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.Value).Skip(1).Subscribe(x => NotifyConfigurationChange());
         }
 
 
-        protected void NotifyConfigurationChange()
-        {
-            IsValid = true;
-            Validate();
-            _configurationChanged?.Invoke(this, new EventArgs());
-        }
-
-        protected virtual void Validate()
-        {
-            IsNameValid = Name.Length > 0 && char.IsLetter(Name[0]) && Name.All(x => char.IsLetterOrDigit(x));
-
-            IsValid = IsNameValid;
-        }
-
-        public string CreateConfig()
+        public override string CreateConfig()
         {
             var config = new ConstantVariableFactory.Config
             {
@@ -110,12 +74,12 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
-        public IVariable CreateVariable()
+        public override IVariable CreateVariable()
         {
             return constantVariableFactory.Create(Name, CreateConfig());
         }
 
-        public bool TryLoadConfig(string name, string config)
+        protected override bool DoTryLoadConfig(string config)
         {
             try
             {
@@ -123,7 +87,6 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
                 if (cfg != null)
                 {
-                    Name = name;
                     Value = cfg.Value;
                     return true;
                 }
@@ -132,13 +95,6 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             {
             }
             return false;
-        }
-
-        private EventHandler? _configurationChanged;
-        public event EventHandler ConfigurationChanged
-        {
-            add => _configurationChanged += value;
-            remove => _configurationChanged -= value;
         }
     }
 }

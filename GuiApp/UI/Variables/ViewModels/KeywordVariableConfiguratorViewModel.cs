@@ -37,20 +37,13 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
     }
 
     [Export(typeof(IKeywordVariableConfiguratorViewModel)), TransientReuse, AllowDisposableTransient]
-    public class KeywordVariableConfiguratorViewModel : ViewModelBase, IKeywordVariableConfiguratorViewModel
+    public class KeywordVariableConfiguratorViewModel : BaseVariableConfiguratorViewModel, IKeywordVariableConfiguratorViewModel
     {
         public KeywordVariableConfiguratorViewModel(IRegistrar<IKeywordVariableConfiguratorViewModel, IKeywordVariableConfiguratorViewModel.Of> reg)
         {
             reg.RegisterAndReturn<KeywordVariableConfiguratorViewModel>();
         }
 
-
-        private string _name = "";
-        public string Name
-        {
-            get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
-        }
 
         private string _keyword = "";
         public string Keyword
@@ -73,20 +66,6 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             set => this.RaiseAndSetIfChanged(ref _excludeFromAggregateFunctinosIfNotFound, value);
         }
 
-        private bool _isValid;
-        public bool IsValid
-        {
-            get => _isValid;
-            protected set => this.RaiseAndSetIfChanged(ref _isValid, value);
-        }
-
-        private bool _isNameValid;
-        public bool IsNameValid
-        {
-            get => _isNameValid;
-            set => this.RaiseAndSetIfChanged(ref _isNameValid, value);
-        }
-
         private bool _isKeywordValid;
         public bool IsKeywordValid
         {
@@ -101,30 +80,22 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         {
             this.keywordVariableFactory = keywordVariableFactory;
 
-            this.WhenAnyValue(x => x.Name).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.DefaultValue).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.ExcludeFromAggregateFunctionsIfNotFound).Skip(1).Subscribe(x => NotifyConfigurationChange());
         }
 
 
-        protected void NotifyConfigurationChange()
+        protected override void Validate()
         {
-            IsValid = true;
-            Validate();
-            _configurationChanged?.Invoke(this, new EventArgs());
-        }
-
-        protected virtual void Validate()
-        {
-            IsNameValid = Name.Length > 0 && char.IsLetter(Name[0]) && Name.All(x => char.IsLetterOrDigit(x));
+            base.Validate();
 
             IsKeywordValid = Keyword.All(x => char.IsLetterOrDigit(x));
 
-            IsValid = IsNameValid && IsKeywordValid;
+            IsValid &= IsKeywordValid;
         }
 
-        public string CreateConfig()
+        public override string CreateConfig()
         {
             var config = new KeywordVariableFactory.Config
             {
@@ -135,12 +106,12 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             return JsonConvert.SerializeObject(config, Formatting.Indented);
         }
 
-        public IVariable CreateVariable()
+        public override IVariable CreateVariable()
         {
             return keywordVariableFactory.Create(Name, CreateConfig());
         }
 
-        public bool TryLoadConfig(string name, string config)
+        protected override bool DoTryLoadConfig(string config)
         {
             try
             {
@@ -148,7 +119,6 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
                 if (cfg != null)
                 {
-                    Name = name;
                     Keyword = cfg.Keyword;
                     DefaultValue = cfg.DefaultValue;
                     ExcludeFromAggregateFunctionsIfNotFound = cfg.ExcludeFromAggregateFunctionsIfNotFound;
@@ -159,13 +129,6 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             {
             }
             return false;
-        }
-
-        private EventHandler? _configurationChanged;
-        public event EventHandler ConfigurationChanged
-        {
-            add => _configurationChanged += value;
-            remove => _configurationChanged -= value;
         }
     }
 }
