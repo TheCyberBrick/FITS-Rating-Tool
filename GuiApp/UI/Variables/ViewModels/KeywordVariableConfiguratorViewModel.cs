@@ -45,6 +45,13 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         }
 
 
+        private IKeywordPickerViewModel _keywordPicker = null!;
+        public IKeywordPickerViewModel KeywordPicker
+        {
+            get => _keywordPicker;
+            private set => this.RaiseAndSetIfChanged(ref _keywordPicker, value);
+        }
+
         private string _keyword = "";
         public string Keyword
         {
@@ -76,13 +83,25 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
         private IKeywordVariableFactory keywordVariableFactory;
 
-        private KeywordVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IKeywordVariableFactory keywordVariableFactory)
+        private KeywordVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IKeywordVariableFactory keywordVariableFactory,
+            IContainer<IKeywordPickerViewModel, IKeywordPickerViewModel.OfCurrentlySelectedFile> keywordPickerContainer)
         {
             this.keywordVariableFactory = keywordVariableFactory;
+
+            keywordPickerContainer.Singleton().Inject(new(true), this, x => x.KeywordPicker);
 
             this.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.DefaultValue).Skip(1).Subscribe(x => NotifyConfigurationChange());
             this.WhenAnyValue(x => x.ExcludeFromAggregateFunctionsIfNotFound).Skip(1).Subscribe(x => NotifyConfigurationChange());
+
+            this.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x =>
+            {
+                if (!KeywordPicker.Select(x))
+                {
+                    KeywordPicker.SelectedKeyword = null;
+                }
+            });
+            this.WhenAnyValue(x => x.KeywordPicker.SelectedKeyword).Skip(1).Where(x => x != null).Subscribe(x => Keyword = x ?? "");
         }
 
 

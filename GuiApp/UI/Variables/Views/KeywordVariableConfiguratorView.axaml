@@ -33,9 +33,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <views:BaseVariableConfiguratorView Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"/>
 
     <TextBlock Grid.Column="0" Grid.Row="1" Text="Keyword" VerticalAlignment="Center" Margin="0 0 8 0"/>
-    <Panel Grid.Column="1" Grid.Row="1"
-           Margin="0 0 0 4">
-      <TextBox Text="{Binding Keyword}" Classes.invalid="{Binding !IsKeywordValid}">
+    <Grid Grid.Column="1" Grid.Row="1"
+          ColumnDefinitions="*,Auto"
+          Margin="0 0 0 4">
+      <TextBox Grid.Column="0"
+               Text="{Binding Keyword}" Classes.invalid="{Binding !IsKeywordValid}">
         <TextBox.Styles>
           <Style Selector="TextBox.invalid">
             <Setter Property="ToolTip.Tip" Value="FITS header keyword. Must only consist of characters a-Z and 0-9."/>
@@ -50,7 +52,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </Style>
         </Border.Styles>
       </Border>
-    </Panel>
+      <Button Grid.Column="1"
+              Height="20"
+              Width="22"
+              Content="..."
+              Padding="1 -2"
+              HorizontalContentAlignment="Right"
+              Margin="2 0 0 0">
+        <Button.Flyout>
+          <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="Transient">
+            <views:KeywordPickerView DataContext="{Binding KeywordPicker}"
+                                     MinWidth="150">
+              <views:KeywordPickerView.Styles>
+                <Style Selector="ComboBox">
+                  <Style.Animations>
+                    <!--
+                    Using an animation to open up combobox to
+                    prevent buggy positioning of the dropdown
+                    -->
+                    <Animation Duration="0:0:0.1">
+                      <KeyFrame Cue="50%">
+                        <Setter Property="IsDropDownOpen" Value="True"/>
+                      </KeyFrame>
+                    </Animation>
+                  </Style.Animations>
+                </Style>
+              </views:KeywordPickerView.Styles>
+            </views:KeywordPickerView>
+          </Flyout>
+        </Button.Flyout>
+      </Button>
+    </Grid>
 
     <TextBlock Grid.Column="0" Grid.Row="2" Text="Default Value" VerticalAlignment="Center" Margin="0 0 8 0"/>
     <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding DefaultValue}" FormatString="0.#########" ShowButtonSpinner="False"/>

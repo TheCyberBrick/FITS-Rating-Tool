@@ -295,6 +295,9 @@
     <Compile Update="UI\MessageBox\Windows\MessageBoxWindow.axaml.cs">
       <DependentUpon>MessageBoxWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Variables\Views\KeywordPickerView.axaml.cs">
+      <DependentUpon>KeywordPickerView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\Variables\Views\BaseVariableConfiguratorView.axaml.cs">
       <DependentUpon>BaseVariableConfiguratorView.axaml</DependentUpon>
     </Compile>

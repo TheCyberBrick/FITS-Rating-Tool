@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Border Padding="100" Background="#FF555555">
       <StackPanel Spacing="10">
         <ComboBox Width="150" Items="ABC" IsEnabled="True"/>
+        <ComboBox Width="150" Items="ABC" IsEnabled="True" MaxDropDownHeight="30" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
         <ComboBox Width="150" Items="ABC" IsEnabled="False"/>
       </StackPanel>
     </Border>
@@ -173,7 +174,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                       Margin="0 0 10 10"
                       BoxShadow="2 2 5 0 #90000000">
                 <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                              MaxHeight="{TemplateBinding MaxDropDownHeight}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   Items="{TemplateBinding Items}"
                                   Margin="{DynamicResource ComboBoxDropdownContentMargin}"

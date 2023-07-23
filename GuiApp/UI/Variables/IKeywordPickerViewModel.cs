@@ -16,20 +16,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Collections.Generic;
+
 namespace FitsRatingTool.GuiApp.UI.Variables
 {
-    public interface IKeywordVariableConfiguratorViewModel : IBaseVariableConfiguratorViewModel
+    public interface IKeywordPickerViewModel
     {
-        public record Of();
+        public record OfFile(string File, bool AutoReset = false);
 
-        IKeywordPickerViewModel KeywordPicker { get; }
+        public record OfFiles(IEnumerable<string> Files, bool AutoReset = false);
 
-        string Keyword { get; set; }
+        public record OfAllFiles(bool AutoReset = false);
 
-        double DefaultValue { get; set; }
+        public record OfCurrentlySelectedFile(bool AutoReset = false);
 
-        bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
+        IReadOnlyList<string> Keywords { get; }
 
-        bool IsKeywordValid { get; }
+        string? SelectedKeyword { get; set; }
+
+        void Reset(bool keepSelection = false);
+
+        bool Select(string? keyword);
     }
 }
