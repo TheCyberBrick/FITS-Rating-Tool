@@ -18,7 +18,6 @@
 
 using DryIocAttributes;
 using FitsRatingTool.GuiApp.Services;
-using FitsRatingTool.GuiApp.UI.App;
 using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
@@ -51,6 +50,11 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         }
 
 
+        private enum ResetMode
+        {
+            None, InitialFiles, AnyFiles, CurrentFile
+        }
+
         private IReadOnlyList<string> _keywords = null!;
         public IReadOnlyList<string> Keywords
         {
@@ -67,57 +71,68 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
 
         private KeywordPickerViewModel(IKeywordPickerViewModel.OfFile args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => new[] { args.File }, args.AutoReset, false)
+            : this(fitsImageManager, () => new[] { args.File }, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
         {
         }
 
         private KeywordPickerViewModel(IKeywordPickerViewModel.OfFiles args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => args.Files, args.AutoReset, false)
+            : this(fitsImageManager, () => args.Files, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
         {
         }
 
         private KeywordPickerViewModel(IKeywordPickerViewModel.OfAllFiles args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => fitsImageManager.Files, args.AutoReset, true)
+            : this(fitsImageManager, () => fitsImageManager.Files, args.AutoReset ? ResetMode.AnyFiles : ResetMode.None)
         {
         }
 
         private KeywordPickerViewModel(IKeywordPickerViewModel.OfCurrentlySelectedFile args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => new[] { fitsImageManager.CurrentFile }, args.AutoReset, false)
+            : this(fitsImageManager, () => new[] { fitsImageManager.CurrentFile }, args.AutoReset ? ResetMode.CurrentFile : ResetMode.None)
         {
         }
 
 
         private readonly IFitsImageManager fitsImageManager;
         private readonly Func<IEnumerable<string?>> filesProvider;
-        private readonly bool autoReset;
+        private readonly ResetMode resetMode;
 
-
-        private readonly bool observeAllFiles;
         private HashSet<string> observedFileSet = new();
 
         private HashSet<string> keywordSet = new();
 
-        private KeywordPickerViewModel(IFitsImageManager fitsImageManager, Func<IEnumerable<string?>> filesProvider, bool autoReset, bool alwaysReset)
+        private KeywordPickerViewModel(IFitsImageManager fitsImageManager, Func<IEnumerable<string?>> filesProvider, ResetMode resetMode)
         {
             this.fitsImageManager = fitsImageManager;
             this.filesProvider = filesProvider;
-            this.autoReset = autoReset;
-            this.observeAllFiles = alwaysReset;
+            this.resetMode = resetMode;
 
             Reset();
 
-            if (autoReset)
+            switch (resetMode)
             {
-                SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, KeywordPickerViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+                case ResetMode.CurrentFile:
+                    SubscribeToEvent<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, KeywordPickerViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+                    goto case ResetMode.InitialFiles;
+                case ResetMode.InitialFiles:
+                case ResetMode.AnyFiles:
+                    SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, KeywordPickerViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
+                    break;
             }
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs e)
         {
-            if (e.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && (observeAllFiles || observedFileSet.Contains(e.File)))
+            if (e.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata &&
+                ((resetMode == ResetMode.AnyFiles) ||
+                (resetMode == ResetMode.InitialFiles && observedFileSet.Contains(e.File)) ||
+                (resetMode == ResetMode.CurrentFile && e.File == fitsImageManager.CurrentFile)))
             {
                 Reset(true);
             }
+        }
+
+        private void OnCurrentFileChanged(object? sender, IFitsImageManager.CurrentFileChangedEventArgs e)
+        {
+            Reset(true);
         }
 
         public void Reset(bool keepSelection = false)
@@ -131,7 +146,7 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             {
                 if (file != null)
                 {
-                    if (autoReset && !observeAllFiles)
+                    if (resetMode == ResetMode.InitialFiles)
                     {
                         observedFileSet.Add(file);
                     }
@@ -154,7 +169,10 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
             using (DelayChangeNotifications())
             {
                 Keywords = keywords;
-                Select(keepSelection ? SelectedKeyword : null);
+                if (!Select(keepSelection ? SelectedKeyword : null))
+                {
+                    SelectedKeyword = null;
+                }
             }
         }
 

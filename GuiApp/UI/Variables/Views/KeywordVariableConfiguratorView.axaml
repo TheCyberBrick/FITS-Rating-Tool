@@ -58,7 +58,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               Content="..."
               Padding="1 -2"
               HorizontalContentAlignment="Right"
-              Margin="2 0 0 0">
+              Margin="2 0 0 0"
+              ToolTip.Tip="Pick a keyword from the currently selected image.">
         <Button.Flyout>
           <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="Transient">
             <views:KeywordPickerView DataContext="{Binding KeywordPicker}"
@@ -85,12 +86,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </Grid>
 
     <TextBlock Grid.Column="0" Grid.Row="2" Text="Default Value" VerticalAlignment="Center" Margin="0 0 8 0"/>
-    <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding DefaultValue}" FormatString="0.#########" ShowButtonSpinner="False"/>
+    <NumericUpDown Grid.Column="2" Grid.Row="2" Value="{Binding DefaultValue}" FormatString="0.#########" ShowButtonSpinner="False"
+                   ToolTip.Tip="Value that is used if the keyword is not found in the FITS header or cannot be parsed."/>
 
     <CheckBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"
               Margin="0 8 0 0"
               Content="Exclude from aggregate funtions if not found"
-              ToolTip.Tip="Whether this variable should be excluded from aggregate functions (min, max, median, etc.) if they keyword cannot be found or parsed in the FITS header."
+              ToolTip.Tip="Whether this variable should be excluded from aggregate functions (min, max, median, etc.) if the keyword is not found in the FIST header or cannot be parsed."
               HorizontalAlignment="Center"
               IsChecked="{Binding ExcludeFromAggregateFunctionsIfNotFound}"/>
 
