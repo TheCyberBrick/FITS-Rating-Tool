@@ -170,6 +170,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             // No skip because group keys should be updated on load
             this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration)
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => UpdateGroupingConfiguration(x));
 
             RatingFormula = currentFormula;

@@ -37,7 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
             Classes="themed inner"
-            Margin="0 2" Padding="4">
+            Margin="0 2" Padding="4"
+            IsVisible="{Binding Configurator, Converter={x:Static ObjectConverters.IsNotNull}}">
       <ScrollViewer VerticalScrollBarVisibility="Hidden"
                     HorizontalScrollBarVisibility="Disabled">
         <ContentControl Content="{Binding Configurator}"

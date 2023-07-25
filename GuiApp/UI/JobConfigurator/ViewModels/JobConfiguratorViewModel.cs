@@ -432,14 +432,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
             disposable.Add(vm.WhenAnyValue(x => x.Key)
                 .Skip(1)
-                .Throttle(TimeSpan.FromMilliseconds(500))
-                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => UpdateJobConfig()));
 
             disposable.Add(vm.WhenAnyValue(x => x.Pattern)
                 .Skip(1)
-                .Throttle(TimeSpan.FromMilliseconds(500))
-                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => UpdateJobConfig()));
 
             disposable.Add(vm.WhenAnyValue(x => x.IsKeyValid)

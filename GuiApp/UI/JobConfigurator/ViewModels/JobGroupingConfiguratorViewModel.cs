@@ -228,11 +228,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
             var disposable = new CompositeDisposable();
 
-            disposable.Add(vm.WhenAnyValue(x => x.Keyword)
-                .Skip(1)
-                .Throttle(TimeSpan.FromMilliseconds(500))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(x => UpdateGroupingConfiguration()));
+            disposable.Add(vm.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x => UpdateGroupingConfiguration()));
 
             disposable.Add(Disposable.Create(() =>
             {

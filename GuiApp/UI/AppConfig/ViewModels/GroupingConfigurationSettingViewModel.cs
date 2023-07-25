@@ -20,6 +20,7 @@ using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using ReactiveUI;
 using System;
+using System.Reactive.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
 {
@@ -41,6 +42,7 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             _jobGroupingConfigurator = jobGroupingConfiguratorFactory.Invoke((GroupingConfiguration)Setting.Value!);
 
             this.WhenAnyValue(x => x.JobGroupingConfigurator.GroupingConfiguration)
+                .Skip(1)
                 .Subscribe(x => Setting.Value = x);
         }
     }

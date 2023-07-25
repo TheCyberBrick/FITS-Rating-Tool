@@ -275,7 +275,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 UpdateGraphsImmediately();
             });
 
-            this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Skip(1).Subscribe(x => UpdateGroupingConfiguration(x));
+            this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration)
+                .Skip(1)
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x => UpdateGroupingConfiguration(x));
 
             foreach (var groupKey in GroupKeys)
             {
