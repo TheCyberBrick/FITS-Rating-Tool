@@ -28,6 +28,8 @@ using FitsRatingTool.GuiApp.UI.Evaluation;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.IoC;
+using FitsRatingTool.GuiApp.UI.KeywordPicker;
+using DryIoc;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
@@ -43,8 +45,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         {
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
-            private string? _keyword;
-            public string? Keyword
+            public IKeywordPickerViewModel KeywordPicker { get; }
+
+            private string _keyword = "";
+            public string Keyword
             {
                 get => _keyword;
                 set => this.RaiseAndSetIfChanged(ref _keyword, value);
@@ -52,8 +56,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
             public IDisposable? Disposable { get; set; }
 
-            public GroupingFitsKeywordViewModel()
+            public GroupingFitsKeywordViewModel(IKeywordPickerViewModel keywordPicker)
             {
+                KeywordPicker = keywordPicker;
+
                 Remove = ReactiveCommand.Create(() => { });
             }
         }
@@ -132,30 +138,19 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         }
 
 
+        private readonly IContainer<IKeywordPickerViewModel, IKeywordPickerViewModel.OfCurrentlySelectedFile> keywordPickerContainer;
+        private readonly GroupingConfiguration? sourceGroupingConfiguration;
+
         /*
          * Designer only ctor
          */
-        public JobGroupingConfiguratorViewModel() : this(new IJobGroupingConfiguratorViewModel.OfConfiguration()) { }
+        public JobGroupingConfiguratorViewModel() : this(new IJobGroupingConfiguratorViewModel.OfConfiguration(), null!) { }
 
-        private JobGroupingConfiguratorViewModel(IJobGroupingConfiguratorViewModel.OfConfiguration args)
+        private JobGroupingConfiguratorViewModel(IJobGroupingConfiguratorViewModel.OfConfiguration args,
+            IContainer<IKeywordPickerViewModel, IKeywordPickerViewModel.OfCurrentlySelectedFile> keywordPickerContainer)
         {
-            if (args.Configuration != null)
-            {
-                IsGroupedByObject = args.Configuration.IsGroupedByObject;
-                IsGroupedByFilter = args.Configuration.IsGroupedByFilter;
-                IsGroupedByExposureTime = args.Configuration.IsGroupedByExposureTime;
-                IsGroupedByGainAndOffset = args.Configuration.IsGroupedByGainAndOffset;
-                IsGroupedByParentDir = args.Configuration.IsGroupedByParentDir;
-                IsGroupedByFitsKeyword = args.Configuration.IsGroupedByFitsKeyword;
-                GroupingParentDirs = args.Configuration.GroupingParentDirs;
-                if (args.Configuration.GroupingFitsKeywords != null)
-                {
-                    foreach (var keyword in args.Configuration.GroupingFitsKeywords)
-                    {
-                        AddGroupingFitsKeyword(keyword);
-                    }
-                }
-            }
+            this.keywordPickerContainer = keywordPickerContainer;
+            this.sourceGroupingConfiguration = args.Configuration;
 
             GroupingConfiguration = GetGroupingConfiguration();
 
@@ -187,21 +182,46 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 --GroupingParentDirs;
             });
 
-            // Add one entry by default
-            if (GroupingFitsKeywords.Count == 0)
-            {
-                AddGroupingFitsKeyword();
-            }
-
             AddNewGroupingFitsKeyword = ReactiveCommand.Create(() =>
             {
                 AddGroupingFitsKeyword();
             });
         }
 
-        public void AddGroupingFitsKeyword(string? keyword = null)
+        protected override void OnInstantiated()
         {
-            var vm = new GroupingFitsKeywordViewModel()
+            var cfg = sourceGroupingConfiguration;
+
+            if (cfg != null)
+            {
+                IsGroupedByObject = cfg.IsGroupedByObject;
+                IsGroupedByFilter = cfg.IsGroupedByFilter;
+                IsGroupedByExposureTime = cfg.IsGroupedByExposureTime;
+                IsGroupedByGainAndOffset = cfg.IsGroupedByGainAndOffset;
+                IsGroupedByParentDir = cfg.IsGroupedByParentDir;
+                IsGroupedByFitsKeyword = cfg.IsGroupedByFitsKeyword;
+                GroupingParentDirs = cfg.GroupingParentDirs;
+                if (cfg.GroupingFitsKeywords != null)
+                {
+                    foreach (var keyword in cfg.GroupingFitsKeywords)
+                    {
+                        AddGroupingFitsKeyword(keyword);
+                    }
+                }
+            }
+
+            // Add one entry by default
+            if (GroupingFitsKeywords.Count == 0)
+            {
+                AddGroupingFitsKeyword();
+            }
+        }
+
+        public void AddGroupingFitsKeyword(string keyword = "")
+        {
+            var keywordPicker = keywordPickerContainer.Instantiate(new());
+
+            var vm = new GroupingFitsKeywordViewModel(keywordPicker)
             {
                 Keyword = keyword
             };
@@ -213,6 +233,21 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => UpdateGroupingConfiguration()));
+
+            disposable.Add(Disposable.Create(() =>
+            {
+                keywordPickerContainer.Destroy(keywordPicker);
+            }));
+
+            disposable.Add(vm.WhenAnyValue(x => x.Keyword).Skip(1).Subscribe(x =>
+            {
+                if (!keywordPicker.Select(x))
+                {
+                    keywordPicker.SelectedKeyword = null;
+                }
+            }));
+            disposable.Add(vm.WhenAnyValue(x => x.KeywordPicker.SelectedKeyword).Skip(1).Where(x => x != null).Subscribe(x => vm.Keyword = x ?? ""));
+
 
             disposable.Add(vm.Remove.Subscribe(_ =>
             {

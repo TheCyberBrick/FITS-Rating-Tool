@@ -18,7 +18,7 @@
 
 using System.Collections.Generic;
 
-namespace FitsRatingTool.GuiApp.UI.Variables
+namespace FitsRatingTool.GuiApp.UI.KeywordPicker
 {
     public interface IKeywordPickerViewModel
     {

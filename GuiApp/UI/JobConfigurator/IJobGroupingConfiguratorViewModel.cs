@@ -20,6 +20,7 @@ using Avalonia.Collections;
 using ReactiveUI;
 using System.Reactive;
 using FitsRatingTool.GuiApp.Models;
+using FitsRatingTool.GuiApp.UI.KeywordPicker;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
@@ -51,14 +52,16 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         {
             ReactiveCommand<Unit, Unit> Remove { get; }
 
-            string? Keyword { get; set; }
+            IKeywordPickerViewModel KeywordPicker { get; }
+
+            string Keyword { get; set; }
         }
 
         AvaloniaList<IGroupingFitsKeywordViewModel> GroupingFitsKeywords { get; }
 
         ReactiveCommand<Unit, Unit> AddNewGroupingFitsKeyword { get; }
 
-        void AddGroupingFitsKeyword(string? keyword);
+        void AddGroupingFitsKeyword(string keyword = "");
 
         void ClearGroupingFitsKeywords();
 

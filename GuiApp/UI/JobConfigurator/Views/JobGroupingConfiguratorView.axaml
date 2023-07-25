@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:kwp_views="clr-namespace:FitsRatingTool.GuiApp.UI.KeywordPicker.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="FitsRatingTool.GuiApp.UI.JobConfigurator.Views.JobGroupingConfiguratorView">
 
@@ -70,9 +71,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <ItemsControl Items="{Binding GroupingFitsKeywords}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid ColumnDefinitions="*,4,Auto" RowDefinitions="*" Margin="0 1">
+            <Grid ColumnDefinitions="*,2,Auto,4,Auto" RowDefinitions="*" Margin="0 1">
               <TextBox Grid.Column="0" Text="{Binding Keyword}"/>
-              <Button Grid.Column="2"
+              <kwp_views:KeywordPickerButtonView
+                  Grid.Column="2"
+                  Margin="2 0 0 0"
+                  DataContext="{Binding KeywordPicker}"
+                  ToolTip.Tip="Pick a keyword from the currently selected image."/>
+              <Button Grid.Column="4"
                       Content="-"
                       Width="15" Height="15"
                       CornerRadius="1" Padding="1.5 -4 0 0"

@@ -24,7 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
-namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
+namespace FitsRatingTool.GuiApp.UI.KeywordPicker.ViewModels
 {
     [Export(typeof(IKeywordPickerViewModel)), TransientReuse, AllowDisposableTransient]
     public class KeywordPickerViewModel : ViewModelBase, IKeywordPickerViewModel
@@ -122,9 +122,9 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs e)
         {
             if (e.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata &&
-                ((resetMode == ResetMode.AnyFiles) ||
-                (resetMode == ResetMode.InitialFiles && observedFileSet.Contains(e.File)) ||
-                (resetMode == ResetMode.CurrentFile && e.File == fitsImageManager.CurrentFile)))
+                (resetMode == ResetMode.AnyFiles ||
+                resetMode == ResetMode.InitialFiles && observedFileSet.Contains(e.File) ||
+                resetMode == ResetMode.CurrentFile && e.File == fitsImageManager.CurrentFile))
             {
                 Reset(true);
             }

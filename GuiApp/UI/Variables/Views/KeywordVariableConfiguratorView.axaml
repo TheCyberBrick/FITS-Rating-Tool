@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.Variables.Views"
+             xmlns:kwp_views="clr-namespace:FitsRatingTool.GuiApp.UI.KeywordPicker.Views"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.Variables.Views.KeywordVariableConfiguratorView">
 
@@ -52,37 +53,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </Style>
         </Border.Styles>
       </Border>
-      <Button Grid.Column="1"
-              Height="20"
-              Width="22"
-              Content="..."
-              Padding="1 -2"
-              HorizontalContentAlignment="Right"
-              Margin="2 0 0 0"
-              ToolTip.Tip="Pick a keyword from the currently selected image.">
-        <Button.Flyout>
-          <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="Transient">
-            <views:KeywordPickerView DataContext="{Binding KeywordPicker}"
-                                     MinWidth="150">
-              <views:KeywordPickerView.Styles>
-                <Style Selector="ComboBox">
-                  <Style.Animations>
-                    <!--
-                    Using an animation to open up combobox to
-                    prevent buggy positioning of the dropdown
-                    -->
-                    <Animation Duration="0:0:0.1">
-                      <KeyFrame Cue="50%">
-                        <Setter Property="IsDropDownOpen" Value="True"/>
-                      </KeyFrame>
-                    </Animation>
-                  </Style.Animations>
-                </Style>
-              </views:KeywordPickerView.Styles>
-            </views:KeywordPickerView>
-          </Flyout>
-        </Button.Flyout>
-      </Button>
+      <kwp_views:KeywordPickerButtonView Grid.Column="1"
+                                         Margin="2 0 0 0"
+                                         DataContext="{Binding KeywordPicker}"
+                                         ToolTip.Tip="Pick a keyword from the currently selected image."/>
     </Grid>
 
     <TextBlock Grid.Column="0" Grid.Row="2" Text="Default Value" VerticalAlignment="Center" Margin="0 0 8 0"/>

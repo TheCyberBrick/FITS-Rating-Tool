@@ -292,10 +292,13 @@
     <Compile Update="UI\JobRunner\Windows\JobRunnerWindow.axaml.cs">
       <DependentUpon>JobRunnerWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\KeywordPicker\Views\KeywordPickerButton.axaml.cs">
+      <DependentUpon>KeywordPickerButton.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\MessageBox\Windows\MessageBoxWindow.axaml.cs">
       <DependentUpon>MessageBoxWindow.axaml</DependentUpon>
     </Compile>
-    <Compile Update="UI\Variables\Views\KeywordPickerView.axaml.cs">
+    <Compile Update="UI\KeywordPicker\Views\KeywordPickerView.axaml.cs">
       <DependentUpon>KeywordPickerView.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\Variables\Views\BaseVariableConfiguratorView.axaml.cs">

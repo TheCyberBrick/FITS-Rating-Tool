@@ -18,6 +18,7 @@
 
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
+using FitsRatingTool.GuiApp.UI.KeywordPicker;
 using FitsRatingTool.IoC;
 using FitsRatingTool.Variables.Services;
 using FitsRatingTool.Variables.Services.Impl;

@@ -1,0 +1,55 @@
+<!--
+FITS Rating Tool
+Copyright (C) 2022 TheCyberBrick
+    
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+    
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+    
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.KeywordPicker.Views"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="FitsRatingTool.GuiApp.UI.KeywordPicker.Views.KeywordPickerButtonView">
+
+  <Button Height="20"
+          Width="20"
+          Content="..."
+          Padding="1 -2 2 -2"
+          HorizontalContentAlignment="Right">
+    <Button.Flyout>
+      <Flyout Flyout.FlyoutPresenterClasses="window_compact_arrow" ShowMode="Transient">
+        <views:KeywordPickerView MinWidth="150">
+          <views:KeywordPickerView.Styles>
+            <Style Selector="ComboBox">
+              <Style.Animations>
+                <!--
+                Using an animation to open up combobox to
+                prevent buggy positioning of the dropdown
+                -->
+                <Animation Duration="0:0:0.1">
+                  <KeyFrame Cue="50%">
+                    <Setter Property="IsDropDownOpen" Value="True"/>
+                  </KeyFrame>
+                </Animation>
+              </Style.Animations>
+            </Style>
+          </views:KeywordPickerView.Styles>
+        </views:KeywordPickerView>
+      </Flyout>
+    </Button.Flyout>
+  </Button>
+
+</UserControl>

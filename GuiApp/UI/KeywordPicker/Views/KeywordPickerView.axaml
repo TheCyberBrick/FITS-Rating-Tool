@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
-             x:Class="FitsRatingTool.GuiApp.UI.Variables.Views.KeywordPickerView">
+             x:Class="FitsRatingTool.GuiApp.UI.KeywordPicker.Views.KeywordPickerView">
 
   <ComboBox HorizontalAlignment="Stretch"
             Items="{Binding Keywords}"

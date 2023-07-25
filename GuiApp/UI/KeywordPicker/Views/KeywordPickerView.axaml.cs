@@ -19,7 +19,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace FitsRatingTool.GuiApp.UI.Variables.Views
+namespace FitsRatingTool.GuiApp.UI.KeywordPicker.Views
 {
     public partial class KeywordPickerView : UserControl
     {

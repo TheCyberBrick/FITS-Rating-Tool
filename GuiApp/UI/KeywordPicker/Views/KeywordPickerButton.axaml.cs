@@ -1,4 +1,4 @@
-﻿/*
+/*
     FITS Rating Tool
     Copyright (C) 2022 TheCyberBrick
     
@@ -16,22 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.GuiApp.UI.KeywordPicker;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
-namespace FitsRatingTool.GuiApp.UI.Variables
+namespace FitsRatingTool.GuiApp.UI.KeywordPicker.Views
 {
-    public interface IKeywordVariableConfiguratorViewModel : IBaseVariableConfiguratorViewModel
+    public partial class KeywordPickerButtonView : UserControl
     {
-        public record Of();
+        public KeywordPickerButtonView()
+        {
+            InitializeComponent();
+        }
 
-        IKeywordPickerViewModel KeywordPicker { get; }
-
-        string Keyword { get; set; }
-
-        double DefaultValue { get; set; }
-
-        bool ExcludeFromAggregateFunctionsIfNotFound { get; set; }
-
-        bool IsKeywordValid { get; }
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
     }
 }
