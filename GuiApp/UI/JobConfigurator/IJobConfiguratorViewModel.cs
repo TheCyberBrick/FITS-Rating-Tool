@@ -22,6 +22,7 @@ using ReactiveUI;
 using System;
 using System.Reactive;
 using FitsRatingTool.GuiApp.UI.Evaluation;
+using FitsRatingTool.GuiApp.UI.Variables;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator
 {
@@ -30,6 +31,18 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator
         public record Of();
 
         public record OfConfigFile(string File);
+
+
+        public interface IVariableItemViewModel
+        {
+            IVariableEditorViewModel Editor { get; }
+
+            ReactiveCommand<Unit, Unit> Remove { get; }
+        }
+
+        AvaloniaList<IVariableItemViewModel> Variables { get; }
+
+        ReactiveCommand<Unit, Unit> AddVariable { get; }
 
 
         IEvaluationFormulaViewModel EvaluationFormula { get; }

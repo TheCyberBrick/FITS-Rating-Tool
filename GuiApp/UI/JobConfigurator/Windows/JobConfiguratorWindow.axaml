@@ -54,58 +54,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TabItem>
         <TabItem.Header>
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Viewbox Width="16" Height="16" Margin="-1">
-              <Image Source="/Assets/Icons/formula.png"/>
-            </Viewbox>
-            <TextBlock Text="Evaluation Formula" VerticalAlignment="Center" Margin="0 0 3 0"/>
-          </StackPanel>
-        </TabItem.Header>
-
-        <Panel ClipToBounds="True">
-          <Grid ColumnDefinitions="*" RowDefinitions="*,4,Auto">
-
-            <TextBox Text="{Binding EvaluationFormula.RatingFormula}"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-
-            <Grid Grid.Row="2"
-                  ColumnDefinitions="*,Auto">
-
-              <Border Grid.Column="0"
-                      Classes="themed"
-                      Padding="4">
-                <TextBlock Text="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
-                           ToolTip.Tip="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
-                           Foreground="#CEFA4A37"
-                           FontWeight="Black"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"/>
-              </Border>
-
-              <Button Grid.Column="1"
-                      Height="20"
-                      Width="22"
-                      Content="..."
-                      Padding="1 -2"
-                      HorizontalContentAlignment="Right"
-                      Margin="2 0 0 0"
-                      Command="{Binding EvaluationFormula.LoadFormulaWithOpenFileDialog}"/>
-
-            </Grid>
-
-          </Grid>
-
-          <eviews:EvaluationFormulaHelpView
-                  VerticalAlignment="Top"
-                  HorizontalAlignment="Right"
-                  Margin="3"/>
-        </Panel>
-      </TabItem>
-
-      <TabItem>
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal" Spacing="8">
             <Viewbox Width="18" Height="18" Margin="0 -2">
               <Image Source="/Assets/Icons/link.png"/>
             </Viewbox>
@@ -206,6 +154,102 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </Grid>
           </Panel>
         </ScrollViewer>
+      </TabItem>
+
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="12" Height="12" Margin="0 -2">
+              <Image Source="/Assets/Icons/alpha.png"/>
+            </Viewbox>
+            <TextBlock Text="Variables" VerticalAlignment="Center" Margin="0 0 3 0"/>
+          </StackPanel>
+        </TabItem.Header>
+
+        <Grid  RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="Variables" Margin="0 0 0 4"/>
+          <Button Grid.Row="0"
+                  Content="+"
+                  Width="15" Height="15"
+                  CornerRadius="1" Padding="0 -4 0 0"
+                  VerticalAlignment="Center" HorizontalAlignment="Right"
+                  VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                  Command="{Binding AddVariable}"/>
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+            <ItemsControl Items="{Binding Variables}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="*,4,Auto">
+                    <ContentControl Grid.Column="0" Grid.Row="0"
+                                    HorizontalAlignment="Stretch"
+                                    Content="{Binding Editor}"/>
+                    <Panel Grid.Column="2" Grid.Row="0"
+                           Margin="0 4 0 0">
+                      <Button Content="-"
+                              Width="15" Height="15"
+                              CornerRadius="1" Padding="1.5 -4 0 0"
+                              VerticalAlignment="Top" HorizontalAlignment="Right"
+                              VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                              Command="{Binding Remove}"/>
+                    </Panel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+      
+      <TabItem>
+        <TabItem.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Viewbox Width="16" Height="16" Margin="-1">
+              <Image Source="/Assets/Icons/formula.png"/>
+            </Viewbox>
+            <TextBlock Text="Evaluation Formula" VerticalAlignment="Center" Margin="0 0 3 0"/>
+          </StackPanel>
+        </TabItem.Header>
+
+        <Panel ClipToBounds="True">
+          <Grid ColumnDefinitions="*" RowDefinitions="*,4,Auto">
+
+            <TextBox Text="{Binding EvaluationFormula.RatingFormula}"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+            <Grid Grid.Row="2"
+                  ColumnDefinitions="*,Auto">
+
+              <Border Grid.Column="0"
+                      Classes="themed"
+                      Padding="4">
+                <TextBlock Text="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
+                           ToolTip.Tip="{Binding EvaluationFormula.RatingFormulaError, FallbackValue={}}"
+                           Foreground="#CEFA4A37"
+                           FontWeight="Black"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+              </Border>
+
+              <Button Grid.Column="1"
+                      Height="20"
+                      Width="22"
+                      Content="..."
+                      Padding="1 -2"
+                      HorizontalContentAlignment="Right"
+                      Margin="2 0 0 0"
+                      Command="{Binding EvaluationFormula.LoadFormulaWithOpenFileDialog}"/>
+
+            </Grid>
+
+          </Grid>
+
+          <eviews:EvaluationFormulaHelpView
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Right"
+                  Margin="3"/>
+        </Panel>
       </TabItem>
 
       <TabItem>

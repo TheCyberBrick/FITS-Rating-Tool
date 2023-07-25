@@ -120,6 +120,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IGroupingManager groupingManager;
         private readonly IInstrumentProfileManager instrumentProfileManager;
 
+        private readonly bool syncEvaluationConfig;
+
         private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IGroupingManager groupingManager,
             IInstrumentProfileManager instrumentProfileManager)
@@ -129,6 +131,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             this.evaluationManager = evaluationManager;
             this.groupingManager = groupingManager;
             this.instrumentProfileManager = instrumentProfileManager;
+
+            this.syncEvaluationConfig = args.SyncEvaluationConfig;
 
             AutoUpdateRatings = evaluationManager.AutoUpdateRatings;
 
@@ -142,7 +146,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
             {
                 GroupingConfigurator = vm;
-                evaluationManager.CurrentGroupingConfiguration = vm.GroupingConfiguration;
+                if (syncEvaluationConfig)
+                {
+                    evaluationManager.CurrentGroupingConfiguration = vm.GroupingConfiguration;
+                }
             });
 
             var currentFormula = evaluationManager.CurrentFormula;
@@ -254,9 +261,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private void UpdateGroupingConfiguration(GroupingConfiguration configuration)
         {
-            // Setting a new grouping (configuration) also triggers the ratings
-            // auto update, if enabled
-            evaluationManager.CurrentGroupingConfiguration = configuration;
+            if (syncEvaluationConfig)
+            {
+                // Setting a new grouping (configuration) also triggers the ratings
+                // auto update, if enabled
+                evaluationManager.CurrentGroupingConfiguration = configuration;
+            }
 
             UpdateGroupKeys(evaluationManager.CurrentGrouping);
         }
@@ -324,9 +334,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             EvaluatorInstance = errored ? null : evaluatorInstance;
 
-            // Setting a new formula also triggers the ratings
-            // auto update, if enabled
-            evaluationManager.CurrentFormula = formula;
+            if (syncEvaluationConfig)
+            {
+                // Setting a new formula also triggers the ratings
+                // auto update, if enabled
+                evaluationManager.CurrentFormula = formula;
+            }
 
             return Unit.Default;
         }

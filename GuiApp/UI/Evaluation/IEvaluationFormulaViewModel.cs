@@ -24,7 +24,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 {
     public interface IEvaluationFormulaViewModel
     {
-        public record Of();
+        public record Of(bool SyncEvaluationConfig = false);
 
         string? RatingFormula { get; set; }
 
