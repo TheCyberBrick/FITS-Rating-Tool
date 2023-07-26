@@ -29,7 +29,6 @@ using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.IoC;
 using FitsRatingTool.GuiApp.UI.KeywordPicker;
-using DryIoc;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 {
@@ -190,31 +189,36 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         protected override void OnInstantiated()
         {
-            var cfg = sourceGroupingConfiguration;
-
-            if (cfg != null)
+            using (DelayChangeNotifications())
             {
-                IsGroupedByObject = cfg.IsGroupedByObject;
-                IsGroupedByFilter = cfg.IsGroupedByFilter;
-                IsGroupedByExposureTime = cfg.IsGroupedByExposureTime;
-                IsGroupedByGainAndOffset = cfg.IsGroupedByGainAndOffset;
-                IsGroupedByParentDir = cfg.IsGroupedByParentDir;
-                IsGroupedByFitsKeyword = cfg.IsGroupedByFitsKeyword;
-                GroupingParentDirs = cfg.GroupingParentDirs;
-                if (cfg.GroupingFitsKeywords != null)
+                var cfg = sourceGroupingConfiguration;
+
+                if (cfg != null)
                 {
-                    foreach (var keyword in cfg.GroupingFitsKeywords)
+                    IsGroupedByObject = cfg.IsGroupedByObject;
+                    IsGroupedByFilter = cfg.IsGroupedByFilter;
+                    IsGroupedByExposureTime = cfg.IsGroupedByExposureTime;
+                    IsGroupedByGainAndOffset = cfg.IsGroupedByGainAndOffset;
+                    IsGroupedByParentDir = cfg.IsGroupedByParentDir;
+                    IsGroupedByFitsKeyword = cfg.IsGroupedByFitsKeyword;
+                    GroupingParentDirs = cfg.GroupingParentDirs;
+                    if (cfg.GroupingFitsKeywords != null)
                     {
-                        AddGroupingFitsKeyword(keyword);
+                        foreach (var keyword in cfg.GroupingFitsKeywords)
+                        {
+                            AddGroupingFitsKeyword(keyword);
+                        }
                     }
+                }
+
+                // Add one entry by default
+                if (GroupingFitsKeywords.Count == 0)
+                {
+                    AddGroupingFitsKeyword();
                 }
             }
 
-            // Add one entry by default
-            if (GroupingFitsKeywords.Count == 0)
-            {
-                AddGroupingFitsKeyword();
-            }
+            UpdateGroupingConfiguration();
         }
 
         public void AddGroupingFitsKeyword(string keyword = "")

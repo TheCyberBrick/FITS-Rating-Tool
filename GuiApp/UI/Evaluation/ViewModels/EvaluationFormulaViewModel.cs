@@ -109,7 +109,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         public AvaloniaList<string> GroupKeys { get; } = new() { "All" };
 
-        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
+        private IJobGroupingConfiguratorViewModel _groupingConfigurator = null!;
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator
+        {
+            get => _groupingConfigurator;
+            set => this.RaiseAndSetIfChanged(ref _groupingConfigurator, value);
+        }
 
 
 
@@ -117,19 +122,16 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IEvaluationService evaluationService;
         private readonly IEvaluationManager evaluationManager;
-        private readonly IGroupingManager groupingManager;
         private readonly IInstrumentProfileManager instrumentProfileManager;
 
         private readonly bool syncEvaluationConfig;
 
         private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IGroupingManager groupingManager,
-            IInstrumentProfileManager instrumentProfileManager)
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IInstrumentProfileManager instrumentProfileManager)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
             this.evaluationManager = evaluationManager;
-            this.groupingManager = groupingManager;
             this.instrumentProfileManager = instrumentProfileManager;
 
             this.syncEvaluationConfig = args.SyncEvaluationConfig;
