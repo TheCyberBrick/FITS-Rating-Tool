@@ -25,9 +25,14 @@ namespace FitsRatingTool.IoC
         public interface IScope : IDisposable
         {
             /// <summary>
-            /// Parent <see cref="IContainerResolver"/>, i.e., the <see cref="IContainerResolver"/> from which this scope was created via <see cref="OpenScope(object?)"/>.
+            /// Parent <see cref="IContainerResolver"/>, i.e., the <see cref="IContainerResolver"/> from which this scope was created via <see cref="OpenScopes(object?)"/>.
             /// </summary>
             IContainerResolver Resolver { get; }
+
+            /// <summary>
+            /// Whether this is a root scope, i.e., a scope without parent.
+            /// </summary>
+            bool IsRootScope { get; }
 
             /// <summary>
             /// A unique key which identifies this scope. The returned value must not change. Used by <seealso cref="Fork{Service, Implementation}(ConstructorInfo?, Action{IContainerLifecycle, IScope}, Predicate{object})"/>
@@ -48,11 +53,17 @@ namespace FitsRatingTool.IoC
         }
 
         /// <summary>
-        /// Opens a new resolution scope with an optionally specified scope name.
+        /// Opens one or more new resolution scopes with the optionally specified scope name(s).
+        /// If multiple scope names are passed then the created scopes must must be nested in
+        /// the same order, i.e. the last scope must correspond to the returned inner most scope.
+        /// Resolution begins at this inner most scope. The returned scope also takes care
+        /// of the disposal of the nested scopes.
+        /// If parent scope is null then a root scope is created.
         /// </summary>
-        /// <param name="scopeName"></param>
+        /// <param name="parent">Parent scope. Only null for a root scope.</param>
+        /// <param name="scopeNames">Scope names for additional resolution scopes. May be empty.</param>
         /// <returns></returns>
-        IScope OpenScope(object? scopeName);
+        IScope OpenScopes(IScope? parent, params object[] scopeNames);
 
         /// <summary>
         /// Returns a scope name that is unique and consistent per class.

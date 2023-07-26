@@ -30,7 +30,10 @@ using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    [Export(typeof(IWindowManager)), SingletonReuse]
+    // Window manager is scoped so that it is resolved from IAppLifecycle
+    // and thus receives the correct IResolverContext which holds all the
+    // viewmodel registrations.
+    [Export(typeof(IWindowManager)), CurrentScopeReuse(AppScopes.Services.Windowing)]
     public class WindowManager : IWindowManager
     {
         private readonly Dictionary<Type, List<Window>> windows = new();

@@ -25,23 +25,25 @@ namespace FitsRatingTool.GuiApp.UI
 {
     public class ViewLocator : IDataTemplate
     {
-        private readonly IContainer container;
+        private readonly Func<IAppLifecycle?> appLifecycleGetter;
 
-        public ViewLocator(IContainer container)
+        public ViewLocator(Func<IAppLifecycle?> appLifecycleGetter)
         {
-            this.container = container;
+            this.appLifecycleGetter = appLifecycleGetter;
         }
 
         public IControl Build(object data)
         {
+            var appLifecycle = appLifecycleGetter() ?? throw new InvalidOperationException("Cannot locate views until app lifecycle is instantiated");
+
             var name = data.GetType().FullName!.Replace("ViewModel", "View");
             var type = Type.GetType(name);
 
             if (type != null)
             {
-                if (container.IsRegistered(type))
+                if (appLifecycle.Registrator.IsRegistered(type))
                 {
-                    return (Control)container.Resolve(type);
+                    return (Control)appLifecycle.Resolver.Resolve(type);
                 }
                 return (Control)Activator.CreateInstance(type)!;
             }

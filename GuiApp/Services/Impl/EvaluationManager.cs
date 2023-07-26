@@ -35,7 +35,7 @@ using FitsRatingTool.Common.Models.Evaluation;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    [Export(typeof(IEvaluationManager)), SingletonReuse]
+    [Export(typeof(IEvaluationManager)), CurrentScopeReuse(AppScopes.Workspaces.Evaluation)]
     public class EvaluationManager : IEvaluationManager
     {
         private IEvaluationService.IEvaluator? cachedEvaluator;

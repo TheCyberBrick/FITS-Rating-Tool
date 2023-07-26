@@ -113,7 +113,7 @@ namespace FitsRatingTool.IoC.Impl
         private int reentrancyCount;
 
         private readonly IContainerResolver resolver;
-        private readonly object? scopeName;
+        private readonly object[] scopeNames;
 
         public Container(IContainerResolver parentResolver, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
         {
@@ -136,7 +136,7 @@ namespace FitsRatingTool.IoC.Impl
             }
 
             resolver = completion.Fork;
-            scopeName = completion.ScopeName;
+            scopeNames = completion.ScopeNames;
         }
 
         private void CheckDisposed()
@@ -204,7 +204,20 @@ namespace FitsRatingTool.IoC.Impl
 
                 if (!scopeKeys.Contains(scope.Key) && !loadingScopeKeys.Contains(scope.Key))
                 {
-                    throw new InvalidOperationException("Dependency was injected with unknown scope");
+                    if (scope.IsRootScope)
+                    {
+                        // If scope is a root scope then we ignore
+                        // the injected instance because it will be
+                        // part of another dependency tree.
+                        // However, previously already created scopes
+                        // and scoped instances will be propagated into
+                        // the new instance's dependency tree.
+                        return;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Dependency was injected with unknown scope");
+                    }
                 }
 
                 loadingScope2Dependencies.GetOrAdd(scope, s => new()).Add(lifecycle);
@@ -228,6 +241,11 @@ namespace FitsRatingTool.IoC.Impl
         {
             CheckReentrancy();
 
+            if (IsInitialized)
+            {
+                throw new InvalidOperationException("Container is already initialized");
+            }
+
             lock (this)
             {
                 CheckDisposed();
@@ -241,6 +259,15 @@ namespace FitsRatingTool.IoC.Impl
             IsInitialized = true;
 
             _onInitialized?.Invoke();
+        }
+
+        IContainerResolver.IScope? IContainerLifecycle.GetScope(object dependency)
+        {
+            if (dependency is Instance instance && instance2Scope.TryGetValue(instance, out var scope))
+            {
+                return scope;
+            }
+            return null;
         }
 
         private static void NotifyEventListenersOnAdded(object dependee, object dependency)
@@ -285,9 +312,17 @@ namespace FitsRatingTool.IoC.Impl
                 newGenerationKey = DestroyInternal(false);
             }
 
+            // Get parent scope. Can be null for the root
+            // container which doesn't have a parent scope.
+            IContainerResolver.IScope? parentScope = null;
+            if (parent != null && dependee != null)
+            {
+                parentScope = parent.GetScope(dependee);
+            }
+
             // Open a new scope with the scope name previously
             // passed by T to the registrar
-            newScope = resolver.OpenScope(scopeName);
+            newScope = resolver.OpenScopes(parentScope, scopeNames);
 
             void destroyInstanceAndScope(Instance? instance)
             {
@@ -793,7 +828,14 @@ namespace FitsRatingTool.IoC.Impl
             public object ClassScopeName => parentResolver.GetClassScopeName<Instance>();
 
             [DoesNotReturn]
-            public void RegisterAndReturn<TImpl>(object? scopeName = null, ConstructorInfo? constructor = null)
+            public void RegisterAndReturn<TImpl>(params object[] scopeNames)
+                where TImpl : class, Instance
+            {
+                RegisterAndReturn<TImpl>(null, scopeNames);
+            }
+
+            [DoesNotReturn]
+            public void RegisterAndReturn<TImpl>(ConstructorInfo? constructor, params object[] scopeNames)
                 where TImpl : class, Instance
             {
                 // Register implementation with appropriate reuse and factory
@@ -824,7 +866,7 @@ namespace FitsRatingTool.IoC.Impl
                 // and initializer to it
                 var fork = parentResolver.Fork<Instance, TImpl>(constructor, container.OnDependencyInjected, container.ContainsScope);
 
-                throw new RegistrationCompletion(typeof(TImpl), scopeName, fork);
+                throw new RegistrationCompletion(typeof(TImpl), scopeNames, fork);
             }
         }
 
@@ -832,14 +874,14 @@ namespace FitsRatingTool.IoC.Impl
         {
             public Type RegisteredType { get; }
 
-            public object? ScopeName { get; }
+            public object[] ScopeNames { get; }
 
             public IContainerResolver Fork { get; }
 
-            public RegistrationCompletion(Type registeredType, object? scopeName, IContainerResolver fork)
+            public RegistrationCompletion(Type registeredType, object[] scopeNames, IContainerResolver fork)
             {
                 RegisteredType = registeredType;
-                ScopeName = scopeName;
+                ScopeNames = scopeNames;
                 Fork = fork;
             }
         }

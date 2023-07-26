@@ -20,7 +20,11 @@ namespace FitsRatingTool.IoC
 {
     public interface IContainerLifecycle
     {
+        bool IsInitialized { get; }
+
         void Initialize(IContainerLifecycle? parent, object? dependee);
+
+        IContainerResolver.IScope? GetScope(object dependency);
 
         void Destroy(bool dispose);
     }

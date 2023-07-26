@@ -48,13 +48,14 @@ using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using FitsRatingTool.GuiApp.UI.AppConfig;
+using DryIocAttributes;
+using System.ComponentModel.Composition;
 
 namespace FitsRatingTool.GuiApp.UI.App.Windows
 {
+    [Export(typeof(AppWindow)), TransientReuse]
     public partial class AppWindow : ReactiveWindow<AppViewModel>
     {
-        private readonly IWindowManager windowManager;
-
         public AppWindow() : this(null!, null!) { }
 
         public AppWindow(IWindowManager windowManager, IOpenFileEventManager openFileEventManager)
@@ -63,8 +64,6 @@ namespace FitsRatingTool.GuiApp.UI.App.Windows
 #if DEBUG
             this.AttachDevTools();
 #endif
-
-            this.windowManager = windowManager;
 
             this.WhenActivated(d =>
             {

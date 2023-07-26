@@ -16,22 +16,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
-namespace FitsRatingTool.IoC
+namespace FitsRatingTool.GuiApp
 {
-    public interface IRegistrar<Instance, Parameter>
-        where Instance : class
+    public static class AppScopes
     {
-        object ClassScopeName { get; }
+        public static class Services
+        {
+            public const string Windowing = "FRT.Services.Windowing";
+        }
 
-        [DoesNotReturn]
-        void RegisterAndReturn<Implementation>(params object[] scopeNames)
-            where Implementation : class, Instance;
-
-        [DoesNotReturn]
-        void RegisterAndReturn<Implementation>(ConstructorInfo? constructor, params object[] scopeNames)
-            where Implementation : class, Instance;
+        public static class Workspaces
+        {
+            public const string Evaluation = "FRT.Workspace.Evaluation";
+        }
     }
 }

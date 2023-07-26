@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIoc;
 using DryIocAttributes;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Repositories;
@@ -34,9 +35,16 @@ namespace FitsRatingTool.GuiApp
     {
         public AppLifecycle(IRegistrar<IAppLifecycle, IAppLifecycle.Of> reg)
         {
-            reg.RegisterAndReturn<AppLifecycle>();
+            reg.RegisterAndReturn<AppLifecycle>(
+                AppScopes.Services.Windowing,
+                AppScopes.Workspaces.Evaluation
+                );
         }
 
+
+        public IResolverContext Resolver { get; }
+
+        public IRegistrator Registrator { get; }
 
         private readonly IAppConfigManager appConfigManager;
         private readonly IInstrumentProfileRepository instrumentProfileRepository;
@@ -48,6 +56,8 @@ namespace FitsRatingTool.GuiApp
 
         private AppLifecycle(
             IAppLifecycle.Of args,
+            IResolverContext resolver,
+            IRegistrator registrator,
             IAppConfigManager appConfigManager,
             IInstrumentProfileRepository instrumentProfileRepository,
             IInstrumentProfileManager instrumentProfileManager,
@@ -62,6 +72,9 @@ namespace FitsRatingTool.GuiApp
             this.instrumentProfileManager = instrumentProfileManager;
             this.evaluationExporterManager = evaluationExporterManager;
             this.variableManager = variableManager;
+
+            Resolver = resolver;
+            Registrator = registrator;
 
             this.appRoot = appRoot;
 
@@ -150,7 +163,7 @@ namespace FitsRatingTool.GuiApp
 
         public IDisposable CreateRootDataContext(out object dataContext)
         {
-            var disposable = appRoot.Instantiate(new IAppViewModel.Of(), out IAppViewModel vm, false /* TODO This should be true but currently causes an error */);
+            var disposable = appRoot.Instantiate(new IAppViewModel.Of(), out IAppViewModel vm, true);
             dataContext = vm;
             return disposable;
         }

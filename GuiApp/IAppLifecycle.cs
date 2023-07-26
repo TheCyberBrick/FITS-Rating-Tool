@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DryIoc;
 using System;
 
 namespace FitsRatingTool.GuiApp
@@ -25,5 +26,9 @@ namespace FitsRatingTool.GuiApp
         public record Of();
 
         public IDisposable CreateRootDataContext(out object dataContext);
+
+        public IResolverContext Resolver { get; }
+
+        public IRegistrator Registrator { get; }
     }
 }

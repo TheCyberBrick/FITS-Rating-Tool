@@ -20,7 +20,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using DryIoc;
-using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI;
 using FitsRatingTool.GuiApp.UI.App.Windows;
 using FitsRatingTool.IoC;
@@ -30,13 +29,15 @@ namespace FitsRatingTool.GuiApp
 {
     public partial class App : Application
     {
-        private IContainer? container;
+        private IContainer? bootstrapContainer;
+
+        private IAppLifecycle? appLifecycle;
 
         public override void Initialize()
         {
-            container = Bootstrapper.Initialize();
+            bootstrapContainer = Bootstrapper.Initialize();
 
-            DataTemplates.Add(new ViewLocator(container));
+            DataTemplates.Add(new ViewLocator(() => appLifecycle));
 
             AvaloniaXamlLoader.Load(this);
         }
@@ -47,14 +48,14 @@ namespace FitsRatingTool.GuiApp
             {
                 var disposable = new CompositeDisposable
                 {
-                    container.Resolve<IContainerRoot<IAppLifecycle, IAppLifecycle.Of>>().Instantiate(new IAppLifecycle.Of(), out var appLifecycle, true),
+                    bootstrapContainer.Resolve<IContainerRoot<IAppLifecycle, IAppLifecycle.Of>>().Instantiate(new IAppLifecycle.Of(), out appLifecycle, true),
                     appLifecycle.CreateRootDataContext(out var dataContext)
                 };
 
-                desktop.MainWindow = new AppWindow(container.Resolve<IWindowManager>(), container.Resolve<IOpenFileEventManager>())
-                {
-                    DataContext = dataContext
-                };
+                var appWindow = appLifecycle.Resolver.Resolve<AppWindow>();
+                appWindow.DataContext = dataContext;
+
+                desktop.MainWindow = appWindow;
 
                 desktop.Exit += (s, e) => disposable.Dispose();
 

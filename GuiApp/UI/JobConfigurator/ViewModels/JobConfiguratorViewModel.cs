@@ -32,7 +32,6 @@ using ReactiveUI;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
-using static FitsRatingTool.GuiApp.UI.JobConfigurator.IJobConfiguratorViewModel;
 using System.Text.RegularExpressions;
 using System.Reactive.Concurrency;
 using System.Text;
@@ -40,10 +39,7 @@ using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.GuiApp.UI.Exporters;
 using FitsRatingTool.IoC;
-using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using FitsRatingTool.GuiApp.UI.Variables;
-using DynamicData;
-using FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels;
 using FitsRatingTool.GuiApp.UI.Utils;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
@@ -53,16 +49,16 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
     {
         public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> reg)
         {
-            reg.RegisterAndReturn<JobConfiguratorViewModel>();
+            reg.RegisterAndReturn<JobConfiguratorViewModel>(AppScopes.Workspaces.Evaluation);
         }
 
         public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> reg)
         {
-            reg.RegisterAndReturn<JobConfiguratorViewModel>();
+            reg.RegisterAndReturn<JobConfiguratorViewModel>(AppScopes.Workspaces.Evaluation);
         }
 
 
-        private class VariableItemViewModel : ViewModelBase, IVariableItemViewModel
+        private class VariableItemViewModel : ViewModelBase, IJobConfiguratorViewModel.IVariableItemViewModel
         {
             public IVariableEditorViewModel Editor { get; }
 
@@ -77,7 +73,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         }
 
 
-        private class GroupingFilterViewModel : ReactiveObject, IGroupingFilterViewModel
+        private class GroupingFilterViewModel : ReactiveObject, IJobConfiguratorViewModel.IGroupingFilterViewModel
         {
             public ReactiveCommand<Unit, Unit> Remove { get; }
 
@@ -143,7 +139,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         }
 
 
-        public AvaloniaList<IVariableItemViewModel> Variables { get; } = new();
+        public AvaloniaList<IJobConfiguratorViewModel.IVariableItemViewModel> Variables { get; } = new();
 
         public ReactiveCommand<Unit, Unit> AddVariable { get; }
 
@@ -184,7 +180,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isFilteredByGrouping, value);
         }
 
-        public AvaloniaList<IGroupingFilterViewModel> GroupingFilters { get; } = new();
+        public AvaloniaList<IJobConfiguratorViewModel.IGroupingFilterViewModel> GroupingFilters { get; } = new();
 
         public ReactiveCommand<Unit, Unit> AddNewGroupingFilter { get; }
 
@@ -283,7 +279,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         public Interaction<Unit, string> SaveJobConfigSaveFileDialog { get; } = new();
 
-        public Interaction<SaveResult, Unit> SaveJobConfigResultDialog { get; } = new();
+        public Interaction<IJobConfiguratorViewModel.SaveResult, Unit> SaveJobConfigResultDialog { get; } = new();
 
 
         public Interaction<Exception, Unit> ConfigLoadErrorDialog { get; } = new();
@@ -402,9 +398,9 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 }
                 try
                 {
-                    await SaveJobConfigResultDialog.Handle(new SaveResult(file, config, exception));
+                    await SaveJobConfigResultDialog.Handle(new IJobConfiguratorViewModel.SaveResult(file, config, exception));
                 }
-                catch (UnhandledInteractionException<SaveResult, Unit>)
+                catch (UnhandledInteractionException<IJobConfiguratorViewModel.SaveResult, Unit>)
                 {
                     // OK, dialog is optional
                 }
@@ -456,7 +452,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             }
         }
 
-        private IVariableItemViewModel CreateVariable()
+        private IJobConfiguratorViewModel.IVariableItemViewModel CreateVariable()
         {
             var item = new VariableItemViewModel(variableEditorContainer.Instantiate(new()));
 
@@ -472,7 +468,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             return item;
         }
 
-        private void RemoveVariable(IVariableItemViewModel item)
+        private void RemoveVariable(IJobConfiguratorViewModel.IVariableItemViewModel item)
         {
             Variables.Remove(item);
 

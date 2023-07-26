@@ -28,25 +28,37 @@ namespace FitsRatingTool.IoC.Impl
         {
             public IContainerResolver Resolver => ioc;
 
-            public object Key => ctx;
+            public bool IsRootScope { get; }
+
+            public object Key => dryIoCResolver;
 
             private readonly IContainerResolver ioc;
-            private readonly IResolverContext ctx;
 
-            public Scope(IContainerResolver ioc, IResolverContext ctx)
+            private readonly IResolverContext[] dryIoCResolvers;
+            private readonly IResolverContext dryIoCResolver;
+
+            internal IScope DryIoCScope { get; }
+
+            public Scope(IContainerResolver ioc, IResolverContext[] dryIoCResolvers, IResolverContext dryIoCResolver, bool isRootScope)
             {
                 this.ioc = ioc;
-                this.ctx = ctx;
+                this.dryIoCResolvers = dryIoCResolvers;
+                this.dryIoCResolver = dryIoCResolver;
+                DryIoCScope = dryIoCResolver.CurrentScope;
+                IsRootScope = isRootScope;
             }
 
             public Service Resolve<Service, Parameter>(Parameter parameter)
             {
-                return ctx.Resolve<Func<Parameter, IContainerResolver, IContainerResolver.IScope, Service>>().Invoke(parameter, ioc, this);
+                return dryIoCResolver.Resolve<Func<Parameter, IContainerResolver, IContainerResolver.IScope, Service>>().Invoke(parameter, ioc, this);
             }
 
             public void Dispose()
             {
-                ctx.Dispose();
+                for (int i = dryIoCResolvers.Length - 1; i >= 0; --i)
+                {
+                    dryIoCResolvers[i].Dispose();
+                }
             }
         }
 
@@ -62,9 +74,56 @@ namespace FitsRatingTool.IoC.Impl
             return ResolutionScopeName.Of<T>();
         }
 
-        public IContainerResolver.IScope OpenScope(object? scopeName)
+        public IContainerResolver.IScope OpenScopes(IContainerResolver.IScope? parent, params object[] scopeNames)
         {
-            return new Scope(this, container.OpenScope(scopeName));
+            bool isRootScope = parent == null;
+
+            int count = 1;
+            if (scopeNames != null)
+            {
+                count += scopeNames.Length;
+            }
+
+            var dryIoCResolvers = new IResolverContext[count];
+            int i = 0;
+
+            IResolverContext dryIoCResolver;
+
+            if (container.ScopeContext != null)
+            {
+                // Opening the scope from the container instead of the passed in parent scope's
+                // ResolverContext because we must resolve from the forked container instead of
+                // the original container where the services aren't registered yet.
+                // The scopes are shared across the forked containers by a ScopeContext, which
+                // also keeps track of the currently open scope (= parent).
+                // Like this the services are resolved from the forked container while the scope
+                // is nested into the parent scope as expected.
+                dryIoCResolver = dryIoCResolvers[i++] = container.OpenScope();
+            }
+            else
+            {
+                // Create a new container that is the same as the forked container but
+                // uses the parent scope as current scope.
+                var scopedContainer = container.With(
+                    container,
+                    container.Rules,
+                    null,
+                    RegistrySharing.CloneButKeepCache,
+                    container.SingletonScope,
+                    parent is Scope parentScope ? parentScope.DryIoCScope : container.CurrentScope,
+                    IsRegistryChangePermitted.Permitted);
+                dryIoCResolver = dryIoCResolvers[i++] = scopedContainer.OpenScope();
+            }
+
+            if (scopeNames != null)
+            {
+                foreach (var scopeName in scopeNames)
+                {
+                    dryIoCResolver = dryIoCResolvers[i++] = dryIoCResolver.OpenScope(scopeName);
+                }
+            }
+
+            return new Scope(this, dryIoCResolvers, dryIoCResolver, isRootScope);
         }
 
         public IContainerResolver Fork<Service, Implementation>(ConstructorInfo? ctor, Action<IContainerLifecycle, IContainerResolver.IScope> initializer, Predicate<object> scopeKeyPredicate) where Implementation : Service

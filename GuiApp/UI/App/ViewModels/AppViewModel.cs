@@ -29,7 +29,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
-using FitsRatingTool.GuiApp.UI.Exporters;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using FitsRatingTool.GuiApp.UI.JobConfigurator;
 using FitsRatingTool.GuiApp.UI.JobRunner;
@@ -42,9 +41,6 @@ using Avalonia.Collections;
 using System.ComponentModel.Composition;
 using DryIocAttributes;
 using FitsRatingTool.IoC;
-using FitsRatingTool.GuiApp.UI.Variables;
-using FitsRatingTool.GuiApp.Repositories;
-using FitsRatingTool.GuiApp.Services.Impl;
 
 namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 {
