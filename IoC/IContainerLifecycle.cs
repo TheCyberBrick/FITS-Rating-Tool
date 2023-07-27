@@ -22,9 +22,7 @@ namespace FitsRatingTool.IoC
     {
         bool IsInitialized { get; }
 
-        void Initialize(IContainerLifecycle? parent, object? dependee);
-
-        IContainerResolver.IScope? GetScope(object dependency);
+        void Initialize(IContainerResolver.IScope? scope, IContainerLifecycle? parent, object? dependee);
 
         void Destroy(bool dispose);
     }

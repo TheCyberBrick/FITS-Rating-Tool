@@ -30,7 +30,7 @@ namespace FitsRatingTool.IoC
             IContainerResolver Resolver { get; }
 
             /// <summary>
-            /// Whether this is a root scope, i.e., a scope without parent.
+            /// Whether this is a root scope, i.e., a scope that forms its own dependency tree.
             /// </summary>
             bool IsRootScope { get; }
 
@@ -58,12 +58,12 @@ namespace FitsRatingTool.IoC
         /// the same order, i.e. the last scope must correspond to the returned inner most scope.
         /// Resolution begins at this inner most scope. The returned scope also takes care
         /// of the disposal of the nested scopes.
-        /// If parent scope is null then a root scope is created.
         /// </summary>
-        /// <param name="parent">Parent scope. Only null for a root scope.</param>
+        /// <param name="parent">Parent scope. Can only be null for a root scope, otherwise an exception is thrown.</param>
+        /// <param name="isRootScope">Whether a root scope should be created.</param>
         /// <param name="scopeNames">Scope names for additional resolution scopes. May be empty.</param>
         /// <returns></returns>
-        IScope OpenScopes(IScope? parent, params object[] scopeNames);
+        IScope OpenScopes(IScope? parent, bool isRootScope = false, params object[] scopeNames);
 
         /// <summary>
         /// Returns a scope name that is unique and consistent per class.

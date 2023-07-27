@@ -74,9 +74,34 @@ namespace FitsRatingTool.IoC.Impl
             return ResolutionScopeName.Of<T>();
         }
 
-        public IContainerResolver.IScope OpenScopes(IContainerResolver.IScope? parent, params object[] scopeNames)
+        public IContainerResolver.IScope OpenScopes(IContainerResolver.IScope? parent, bool isRootScope, params object[] scopeNames)
         {
-            bool isRootScope = parent == null;
+            if (!isRootScope && parent == null)
+            {
+                throw new ArgumentNullException(nameof(parent));
+            }
+
+            var parentDryIoCScope = (parent as Scope)?.DryIoCScope;
+
+            if (parent != null && parentDryIoCScope == null)
+            {
+                throw new ArgumentException("Invalid parent scope type", nameof(parent));
+            }
+
+            var scopedContainer = container;
+            if (scopedContainer.CurrentScope != parentDryIoCScope)
+            {
+                // Create a new container that is the same as the forked container but
+                // uses the parent scope as current scope.
+                scopedContainer = container.With(
+                    container,
+                    container.Rules,
+                    container.ScopeContext,
+                    parentDryIoCScope != null ? RegistrySharing.Share : RegistrySharing.CloneAndDropCache,
+                    container.SingletonScope,
+                    parentDryIoCScope,
+                    IsRegistryChangePermitted.Permitted);
+            }
 
             int count = 1;
             if (scopeNames != null)
@@ -84,36 +109,9 @@ namespace FitsRatingTool.IoC.Impl
                 count += scopeNames.Length;
             }
 
-            var dryIoCResolvers = new IResolverContext[count];
             int i = 0;
-
-            IResolverContext dryIoCResolver;
-
-            if (container.ScopeContext != null)
-            {
-                // Opening the scope from the container instead of the passed in parent scope's
-                // ResolverContext because we must resolve from the forked container instead of
-                // the original container where the services aren't registered yet.
-                // The scopes are shared across the forked containers by a ScopeContext, which
-                // also keeps track of the currently open scope (= parent).
-                // Like this the services are resolved from the forked container while the scope
-                // is nested into the parent scope as expected.
-                dryIoCResolver = dryIoCResolvers[i++] = container.OpenScope();
-            }
-            else
-            {
-                // Create a new container that is the same as the forked container but
-                // uses the parent scope as current scope.
-                var scopedContainer = container.With(
-                    container,
-                    container.Rules,
-                    null,
-                    RegistrySharing.CloneButKeepCache,
-                    container.SingletonScope,
-                    parent is Scope parentScope ? parentScope.DryIoCScope : container.CurrentScope,
-                    IsRegistryChangePermitted.Permitted);
-                dryIoCResolver = dryIoCResolvers[i++] = scopedContainer.OpenScope();
-            }
+            var dryIoCResolvers = new IResolverContext[count];
+            var dryIoCResolver = dryIoCResolvers[i++] = scopedContainer.OpenScope();
 
             if (scopeNames != null)
             {

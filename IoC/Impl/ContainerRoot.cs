@@ -28,15 +28,25 @@ namespace FitsRatingTool.IoC.Impl
         private readonly IContainerResolver containerResolver;
         private readonly Func<IContainerResolver.IScope, IContainer<Instance, Parameter>> containerFactory;
 
+        private readonly IContainerResolver.IScope? parentScope;
+
         public ContainerRoot(IContainerResolver containerResolver, Func<IContainerResolver.IScope, IContainer<Instance, Parameter>> containerFactory)
         {
             this.containerResolver = containerResolver;
             this.containerFactory = containerFactory;
+            this.parentScope = null;
         }
 
-        public IDisposable Initialize(out IContainer<Instance, Parameter> container, bool singleton = false)
+        public ContainerRoot(IContainerResolver containerResolver, Func<IContainerResolver.IScope, IContainer<Instance, Parameter>> containerFactory, IContainerResolver.IScope parentScope)
         {
-            var rootScope = containerResolver.OpenScopes(null);
+            this.containerResolver = containerResolver;
+            this.containerFactory = containerFactory;
+            this.parentScope = parentScope;
+        }
+
+        public IDisposable Initialize(out IContainer<Instance, Parameter> container, bool singleton = false, bool inheritParentScopes = true)
+        {
+            var rootScope = containerResolver.OpenScopes(inheritParentScopes ? parentScope : null, true);
 
             container = containerFactory.Invoke(rootScope);
 
@@ -49,7 +59,7 @@ namespace FitsRatingTool.IoC.Impl
             {
                 if (!lifecycle.IsInitialized)
                 {
-                    lifecycle.Initialize(null, null);
+                    lifecycle.Initialize(rootScope, null, null);
                 }
 
                 return Disposable.Create(() =>

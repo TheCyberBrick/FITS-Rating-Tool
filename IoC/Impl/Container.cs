@@ -31,6 +31,7 @@ namespace FitsRatingTool.IoC.Impl
     public class Container<Instance, Parameter> : IContainer<Instance, Parameter>, IContainerLifecycle, INotifyPropertyChanged, INotifyPropertyChanging
         where Instance : class
     {
+        private IContainerResolver.IScope? scope;
         private IContainerLifecycle? parent;
         private object? dependee;
 
@@ -207,10 +208,10 @@ namespace FitsRatingTool.IoC.Impl
                     if (scope.IsRootScope)
                     {
                         // If scope is a root scope then we ignore
-                        // the injected instance because it will be
-                        // part of another dependency tree.
+                        // the injected instance because it will
+                        // form another dependency tree.
                         // However, previously already created scopes
-                        // and scoped instances will be propagated into
+                        // and scoped instances can be propagated into
                         // the new instance's dependency tree.
                         return;
                     }
@@ -233,11 +234,11 @@ namespace FitsRatingTool.IoC.Impl
             // -> initialize injected dependency now
             if (injectedInstance != null)
             {
-                lifecycle.Initialize(this, injectedInstance);
+                lifecycle.Initialize(scope, this, injectedInstance);
             }
         }
 
-        void IContainerLifecycle.Initialize(IContainerLifecycle? parent, object? dependee)
+        void IContainerLifecycle.Initialize(IContainerResolver.IScope? scope, IContainerLifecycle? parent, object? dependee)
         {
             CheckReentrancy();
 
@@ -251,6 +252,7 @@ namespace FitsRatingTool.IoC.Impl
                 CheckDisposed();
 
                 this.parent = parent;
+                this.scope = scope;
                 this.dependee = dependee;
 
                 isContainerInitialized = true;
@@ -259,15 +261,6 @@ namespace FitsRatingTool.IoC.Impl
             IsInitialized = true;
 
             _onInitialized?.Invoke();
-        }
-
-        IContainerResolver.IScope? IContainerLifecycle.GetScope(object dependency)
-        {
-            if (dependency is Instance instance && instance2Scope.TryGetValue(instance, out var scope))
-            {
-                return scope;
-            }
-            return null;
         }
 
         private static void NotifyEventListenersOnAdded(object dependee, object dependency)
@@ -312,17 +305,14 @@ namespace FitsRatingTool.IoC.Impl
                 newGenerationKey = DestroyInternal(false);
             }
 
-            // Get parent scope. Can be null for the root
-            // container which doesn't have a parent scope.
-            IContainerResolver.IScope? parentScope = null;
-            if (parent != null && dependee != null)
-            {
-                parentScope = parent.GetScope(dependee);
-            }
-
             // Open a new scope with the scope name previously
-            // passed by T to the registrar
-            newScope = resolver.OpenScopes(parentScope, scopeNames);
+            // passed to the registrar
+            newScope = resolver.OpenScopes(scope, false, scopeNames);
+            if (newScope.IsRootScope)
+            {
+                newScope.Dispose();
+                throw new InvalidOperationException("Opened scope should not be a root scope");
+            }
 
             void destroyInstanceAndScope(Instance? instance)
             {
@@ -421,7 +411,7 @@ namespace FitsRatingTool.IoC.Impl
                     {
                         foreach (var dependency in dependencies)
                         {
-                            dependency.Initialize(this, newInstance);
+                            dependency.Initialize(newScope, this, newInstance);
                         }
                     }
 
