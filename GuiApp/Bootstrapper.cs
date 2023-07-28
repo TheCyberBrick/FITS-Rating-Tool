@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia.Controls;
 using DryIoc;
 using DryIoc.MefAttributedModel;
 using FitsRatingTool.Common.Services;
@@ -38,7 +39,7 @@ namespace FitsRatingTool.GuiApp
             var container = new Container(
                     rules => rules
                     .With(FactoryMethod.ConstructorWithResolvableArguments)
-                    .WithAutoConcreteTypeResolution()
+                    .WithAutoConcreteTypeResolution(req => req.ServiceType.IsSubclassOf(typeof(WindowBase)))
                 ).WithMefAttributedModel();
 
             // Common
