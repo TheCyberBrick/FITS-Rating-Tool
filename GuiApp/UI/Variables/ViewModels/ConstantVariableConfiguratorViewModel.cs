@@ -18,7 +18,6 @@
 
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Exporters.Services.Impl;
 using FitsRatingTool.IoC;
 using FitsRatingTool.Variables.Services;
 using FitsRatingTool.Variables.Services.Impl;
@@ -28,7 +27,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Xml.Linq;
 
 namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 {
@@ -57,7 +55,7 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
         private IConstantVariableFactory constantVariableFactory;
 
-        private ConstantVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IConstantVariableFactory constantVariableFactory)
+        private ConstantVariableConfiguratorViewModel(IConstantVariableConfiguratorViewModel.Of args, IConstantVariableFactory constantVariableFactory)
         {
             this.constantVariableFactory = constantVariableFactory;
 

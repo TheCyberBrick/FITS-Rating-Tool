@@ -84,7 +84,7 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
         private IKeywordVariableFactory keywordVariableFactory;
 
-        private KeywordVariableConfiguratorViewModel(IVariableEditorViewModel.Of args, IKeywordVariableFactory keywordVariableFactory,
+        private KeywordVariableConfiguratorViewModel(IKeywordVariableConfiguratorViewModel.Of args, IKeywordVariableFactory keywordVariableFactory,
             IContainer<IKeywordPickerViewModel, IKeywordPickerViewModel.OfCurrentlySelectedFile> keywordPickerContainer)
         {
             this.keywordVariableFactory = keywordVariableFactory;
