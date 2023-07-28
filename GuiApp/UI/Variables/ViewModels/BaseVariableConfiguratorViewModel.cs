@@ -72,11 +72,17 @@ namespace FitsRatingTool.GuiApp.UI.Variables.ViewModels
 
         public bool TryLoadConfig(string name, string config)
         {
+            bool success;
+
             using (DelayChangeNotifications())
             {
                 Name = name;
-                return DoTryLoadConfig(config);
+                success = DoTryLoadConfig(config);
             }
+
+            Validate();
+
+            return success;
         }
 
         protected abstract bool DoTryLoadConfig(string config);

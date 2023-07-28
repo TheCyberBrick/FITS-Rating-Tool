@@ -41,6 +41,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
+        public IReadOnlyList<IReadOnlyJobConfig.VariableConfig>? InvalidVariableConfigs { get; private set; }
+
         private IReadOnlyList<IReadOnlyVariable>? _currentVariables;
         public IReadOnlyList<IReadOnlyVariable>? CurrentVariables
         {
@@ -77,7 +79,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
             if (currentVariableConfigs != null)
             {
-                var newVariables = new List<IReadOnlyVariable>();
+                List<IReadOnlyJobConfig.VariableConfig>? invalidVariableConfigs = null;
+                List<IReadOnlyVariable> newVariables = new();
 
                 foreach (var cfg in currentVariableConfigs)
                 {
@@ -87,14 +90,17 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     }
                     else
                     {
-                        throw new Exception("Invalid or unknown variable with ID '" + cfg.Id + "' and name '" + cfg.Name + "'");
+                        invalidVariableConfigs ??= new();
+                        invalidVariableConfigs.Add(cfg);
                     }
                 }
 
+                InvalidVariableConfigs = invalidVariableConfigs;
                 CurrentVariables = newVariables;
             }
             else
             {
+                InvalidVariableConfigs = null;
                 CurrentVariables = null;
             }
         }

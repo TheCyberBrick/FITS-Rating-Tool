@@ -53,6 +53,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         IReadOnlyList<IReadOnlyJobConfig.VariableConfig>? CurrentVariableConfigs { get; set; }
 
+        IReadOnlyList<IReadOnlyJobConfig.VariableConfig>? InvalidVariableConfigs { get; }
+
         IReadOnlyList<IReadOnlyVariable>? CurrentVariables { get; }
 
 

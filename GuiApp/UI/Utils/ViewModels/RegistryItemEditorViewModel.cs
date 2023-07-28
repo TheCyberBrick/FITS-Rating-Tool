@@ -27,8 +27,12 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
     public class RegistryItemEditorViewModel<TConfigurator> : ViewModelBase, IItemEditorViewModel<TConfigurator>, IDisposable
         where TConfigurator : class, IItemConfigurator
     {
-        private readonly ObservableAsPropertyHelper<bool> _isValid;
-        public bool IsValid => _isValid.Value;
+        private bool _isValid;
+        public bool IsValid
+        {
+            get => _isValid;
+            set => this.RaiseAndSetIfChanged(ref _isValid, value);
+        }
 
         public IItemSelectorViewModel Selector { get; private set; } = null!;
 
@@ -56,7 +60,7 @@ namespace FitsRatingTool.GuiApp.UI.Utils.ViewModels
 
         public RegistryItemEditorViewModel()
         {
-            _isValid = this.WhenAnyValue(x => x.Configurator!.IsValid).ToProperty(this, x => x.IsValid);
+            this.WhenAnyValue(x => x.Configurator!.IsValid).Subscribe(x => IsValid = x);
         }
 
         protected void SetSelector(IItemSelectorViewModel selector)

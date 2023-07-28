@@ -522,6 +522,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
         private void ValidateVariables()
         {
             bool valid = true;
+
             foreach (var variable in Variables)
             {
                 if (!variable.Editor.IsValid)
@@ -530,6 +531,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                     break;
                 }
             }
+
             IsVariableValid = valid;
 
             UpdateJobConfig();
