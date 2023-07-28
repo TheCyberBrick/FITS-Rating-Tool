@@ -86,16 +86,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private readonly IInstrumentProfileRepository instrumentProfileRepository;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
-        private readonly IVariableManager variableManager;
-        private readonly IAppConfig appConfig;
 
 
-        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory, IVariableManager variableManager, IAppConfig appConfig)
+        public InstrumentProfileManager(IInstrumentProfileRepository instrumentProfileRepository, IInstrumentProfileFactory instrumentProfileFactory)
         {
             this.instrumentProfileRepository = instrumentProfileRepository;
             this.instrumentProfileFactory = instrumentProfileFactory;
-            this.variableManager = variableManager;
-            this.appConfig = appConfig;
 
             AddRecordsFromRepository();
         }
@@ -111,25 +107,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public void Load()
         {
             AddRecordsFromRepository();
-
-            var defaultProfile = appConfig.DefaultInstrumentProfileId.Length > 0 ? instrumentProfileRepository.GetProfile(appConfig.DefaultInstrumentProfileId) : null;
-            if (defaultProfile != null)
-            {
-                CurrentProfile = defaultProfile;
-            }
         }
 
         private void NotifyChange(IInstrumentProfileManager.IRecord record, bool removed)
         {
             _recordChanged?.Invoke(this, new IInstrumentProfileManager.RecordChangedEventArgs(record.ProfileId, removed));
-
-            // Make sure to update the current profile when
-            // its values have changed
-            var currentProfile = CurrentProfile;
-            if (!removed && record.Profile != null && currentProfile != null && record.ProfileId == currentProfile.Id)
-            {
-                CurrentProfile = record.Profile;
-            }
         }
 
         private IReadOnlyInstrumentProfile CreateProfileFactoryCopy(IReadOnlyInstrumentProfile profile)
@@ -156,57 +138,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             instrumentProfileRepository.AddOrUpdateProfile(profile);
             instrumentProfileRepository.Save(profile.Id);
         }
-
-        private void SyncAndLoadProfileVariables()
-        {
-            var profile = CurrentProfile;
-            if (profile != null)
-            {
-                _currentVariables ??= new();
-                _currentVariables.Clear();
-
-                if (profile.Variables != null)
-                {
-                    foreach (var cfg in profile.Variables)
-                    {
-                        if (variableManager.TryCreateVariable(cfg.Id, cfg.Name, cfg.Config, out var variable))
-                        {
-                            _currentVariables.Add(variable);
-                        }
-                        else
-                        {
-                            throw new Exception("Invalid or unknown variable '" + cfg.Id + "' in current profile");
-                        }
-                    }
-                }
-            }
-            else
-            {
-                _currentVariables = null;
-            }
-        }
-
-        private IReadOnlyInstrumentProfile? _currentProfile;
-        public IReadOnlyInstrumentProfile? CurrentProfile
-        {
-            get => _currentProfile;
-            set
-            {
-                if (!EqualityComparer<IReadOnlyInstrumentProfile?>.Default.Equals(_currentProfile, value))
-                {
-                    var old = _currentProfile;
-
-                    _currentProfile = value;
-
-                    SyncAndLoadProfileVariables();
-
-                    _currentProfileChanged?.Invoke(this, new IInstrumentProfileManager.ProfileChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        private List<IReadOnlyVariable>? _currentVariables;
-        public IReadOnlyList<IReadOnlyVariable>? CurrentVariables => _currentVariables;
 
         public IReadOnlyCollection<string> ProfileIds => instrumentProfileRepository.ProfileIds;
 
@@ -269,13 +200,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             return instrumentProfileFactory.Load(data);
         }
 
-
-        private EventHandler<IInstrumentProfileManager.ProfileChangedEventArgs>? _currentProfileChanged;
-        public event EventHandler<IInstrumentProfileManager.ProfileChangedEventArgs> CurrentProfileChanged
-        {
-            add => _currentProfileChanged += value;
-            remove => _currentProfileChanged -= value;
-        }
 
         private EventHandler<IInstrumentProfileManager.RecordChangedEventArgs>? _recordChanged;
         public event EventHandler<IInstrumentProfileManager.RecordChangedEventArgs> RecordChanged

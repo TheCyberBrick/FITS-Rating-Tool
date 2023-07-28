@@ -47,14 +47,20 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
     [Export(typeof(IJobConfiguratorViewModel)), TransientReuse]
     public class JobConfiguratorViewModel : ViewModelBase, IJobConfiguratorViewModel
     {
-        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> reg)
+        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.Of> reg,
+            IEvaluationContext parentEvaluationContext, IVariableContext parentVariableContext)
         {
-            reg.RegisterAndReturn<JobConfiguratorViewModel>(AppScopes.Workspaces.Evaluation);
+            reg.WithScopes(AppScopes.Context.Evaluation, AppScopes.Context.Variable)
+                .WithInitializer(p => new IJobConfiguratorViewModel.Of(p.ParentEvaluationContext ?? parentEvaluationContext, p.ParentVariableContext ?? parentVariableContext))
+                .RegisterAndReturn<JobConfiguratorViewModel>();
         }
 
-        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> reg)
+        public JobConfiguratorViewModel(IRegistrar<IJobConfiguratorViewModel, IJobConfiguratorViewModel.OfConfigFile> reg,
+            IEvaluationContext parentEvaluationContext, IVariableContext parentVariableContext)
         {
-            reg.RegisterAndReturn<JobConfiguratorViewModel>(AppScopes.Workspaces.Evaluation);
+            reg.WithScopes(AppScopes.Context.Evaluation, AppScopes.Context.Variable)
+                .WithInitializer(p => new IJobConfiguratorViewModel.OfConfigFile(p.File, p.ParentEvaluationContext ?? parentEvaluationContext, p.ParentVariableContext ?? parentVariableContext))
+                .RegisterAndReturn<JobConfiguratorViewModel>();
         }
 
 
@@ -287,38 +293,46 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         private readonly IJobConfigFactory jobConfigFactory;
         private readonly IGroupingManager groupingManager;
+        private readonly IVariableContext variableContext;
 
         private readonly IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer;
 
         private readonly string? configFile;
 
+        private bool isLoaded = false;
+
         private JobConfiguratorViewModel(IJobConfiguratorViewModel.OfConfigFile args,
-            IEvaluationManager evaluationManager,
+            IEvaluationContext evaluationContext,
+            IVariableContext variableContext,
             IJobConfigFactory jobConfigFactory,
             IGroupingManager groupingManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
             IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
             IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer,
             IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer)
-            : this(args.File, evaluationManager, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer, variableEditorContainer)
+            : this(args.File, args.ParentEvaluationContext, args.ParentVariableContext, evaluationContext, variableContext, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer, variableEditorContainer)
         {
         }
 
         private JobConfiguratorViewModel(IJobConfiguratorViewModel.Of args,
-            IEvaluationManager evaluationManager,
+            IEvaluationContext evaluationContext,
+            IVariableContext variableContext,
             IJobConfigFactory jobConfigFactory,
             IGroupingManager groupingManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
             IContainer<IEvaluationFormulaViewModel, IEvaluationFormulaViewModel.Of> evaluationFormulaContainer,
             IContainer<IEvaluationExporterConfiguratorViewModel, IEvaluationExporterConfiguratorViewModel.Of> evaluationExporterConfiguratorContainer,
             IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer)
-            : this((string?)null, evaluationManager, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer, variableEditorContainer)
+            : this(null, args.ParentEvaluationContext, args.ParentVariableContext, evaluationContext, variableContext, jobConfigFactory, groupingManager, groupingConfiguratorContainer, evaluationFormulaContainer, evaluationExporterConfiguratorContainer, variableEditorContainer)
         {
         }
 
         private JobConfiguratorViewModel(
             string? configFile,
-            IEvaluationManager evaluationManager,
+            IEvaluationContext? parentEvaluationContext,
+            IVariableContext? parentVariableContext,
+            IEvaluationContext evaluationContext,
+            IVariableContext variableContext,
             IJobConfigFactory jobConfigFactory,
             IGroupingManager groupingManager,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
@@ -329,25 +343,28 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             this.configFile = configFile;
             this.jobConfigFactory = jobConfigFactory;
             this.groupingManager = groupingManager;
+            this.variableContext = variableContext;
 
             this.variableEditorContainer = variableEditorContainer;
 
-            evaluationExporterConfiguratorContainer.Singleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm =>
+            if (parentEvaluationContext != null)
             {
-                EvaluationExporterConfigurator = vm;
-                EvaluationExporterConfigurator.ConfigurationChanged += (s, e) => UpdateJobConfig();
-            });
+                // If we have a parent evaluation context then we try
+                // to clone it
+                evaluationContext.LoadFromOther(parentEvaluationContext);
+            }
+            else
+            {
+                evaluationContext.LoadFromConfig();
+            }
 
-            SelectOutputLogsPathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
+            if (parentVariableContext != null)
             {
-                OutputLogsPath = await SelectOutputLogsPathOpenFolderDialog.Handle(Unit.Default);
-            });
-            SelectCachePathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
-            {
-                CachePath = await SelectCachePathOpenFolderDialog.Handle(Unit.Default);
-            });
+                // And also clone the variable context if possible
+                variableContext.LoadFromOther(parentVariableContext);
+            }
 
-            var defaultGroupingConfiguration = evaluationManager.CurrentGroupingConfiguration;
+            var defaultGroupingConfiguration = evaluationContext.CurrentGroupingConfiguration;
             if (defaultGroupingConfiguration == null)
             {
                 // By default group by object and filter
@@ -359,7 +376,13 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             evaluationFormulaContainer.Singleton().Inject(new IEvaluationFormulaViewModel.Of(), vm =>
             {
                 EvaluationFormula = vm;
-                EvaluationFormula.RatingFormula = evaluationManager.CurrentFormula;
+                EvaluationFormula.RatingFormula = evaluationContext.CurrentFormula;
+            });
+
+            evaluationExporterConfiguratorContainer.Singleton().Inject(new IEvaluationExporterConfiguratorViewModel.Of(), vm =>
+            {
+                EvaluationExporterConfigurator = vm;
+                EvaluationExporterConfigurator.ConfigurationChanged += (s, e) => UpdateJobConfig();
             });
 
             GroupingFilters.CollectionChanged += (_, args) =>
@@ -420,6 +443,15 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             {
                 ValidateVariables();
             };
+
+            SelectOutputLogsPathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
+            {
+                OutputLogsPath = await SelectOutputLogsPathOpenFolderDialog.Handle(Unit.Default);
+            });
+            SelectCachePathWithOpenFolderDialog = ReactiveCommand.CreateFromTask(async () =>
+            {
+                CachePath = await SelectCachePathOpenFolderDialog.Handle(Unit.Default);
+            });
         }
 
         protected override void OnInstantiated()
@@ -436,19 +468,24 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             this.WhenAnyValue(x => x.OutputLogsPath).Subscribe(x => UpdateJobConfig());
             this.WhenAnyValue(x => x.CachePath).Subscribe(x => UpdateJobConfig());
 
-            ValidateVariables();
-
-            UpdateJobConfig();
-
-            // Add one entry by default
-            if (GroupingFilters.Count == 0)
-            {
-                AddGroupingFilter();
-            }
-
             if (configFile != null)
             {
                 RxApp.MainThreadScheduler.Schedule(() => TryImportConfigFile(configFile));
+            }
+            else
+            {
+                TryLoadVariables(variableContext.CurrentVariableConfigs);
+
+                // Add one entry by default
+                if (GroupingFilters.Count == 0)
+                {
+                    AddGroupingFilter();
+                }
+
+                ValidateVariables();
+
+                isLoaded = true;
+                UpdateJobConfig();
             }
         }
 
@@ -496,6 +533,48 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             IsVariableValid = valid;
 
             UpdateJobConfig();
+        }
+
+        private bool TryLoadVariables(IReadOnlyList<IJobConfig.VariableConfig>? configs)
+        {
+            // Remove all variables first
+            while (Variables.Count > 0)
+            {
+                RemoveVariable(Variables[Variables.Count - 1]);
+            }
+
+            // And then try loading them from configs
+            if (configs != null)
+            {
+                foreach (var varCfg in configs)
+                {
+                    var item = CreateVariable();
+
+                    bool loaded = false;
+
+                    try
+                    {
+                        loaded = item.Editor.Configure(varCfg.Id, configurator =>
+                        {
+                            return configurator.TryLoadConfig(varCfg.Name, varCfg.Config);
+                        });
+                    }
+                    finally
+                    {
+                        if (!loaded)
+                        {
+                            RemoveVariable(item);
+                        }
+                    }
+
+                    if (!loaded)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         private async void TryImportConfigFile(string file)
@@ -594,6 +673,16 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
         private void UpdateJobConfig()
         {
+            if (!isLoaded)
+            {
+                // Skip updating job config until default values
+                // have been loaded. This is also necessary to
+                // prevent variableContext.CurrentVariableConfigs
+                // from being changed before TryLoadVariables
+                // is called.
+                return;
+            }
+
             var config = jobConfigFactory.Builder().Build();
 
             config.EvaluationFormula = EvaluationFormula.RatingFormula ?? "";
@@ -644,6 +733,10 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
                 }
 
                 config.Variables = variables;
+
+                // Also update the variable context so that
+                // evaluation formula can use them
+                variableContext.CurrentVariableConfigs = variables;
             }
 
             JobConfig = config;
@@ -741,45 +834,11 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
 
                 EvaluationExporterConfigurator.SetExporterConfigurator(exporterDelegatedFactory);
 
-                // Remove all variables first
-                while (Variables.Count > 0)
-                {
-                    RemoveVariable(Variables[Variables.Count - 1]);
-                }
-                // And then try loading them from configs
-                if (config.Variables != null)
-                {
-                    foreach (var varCfg in config.Variables)
-                    {
-                        var item = CreateVariable();
-
-                        bool loaded = false;
-
-                        try
-                        {
-                            loaded = item.Editor.Configure(varCfg.Id, configurator =>
-                            {
-                                return configurator.TryLoadConfig(varCfg.Name, varCfg.Config);
-                            });
-                        }
-                        finally
-                        {
-                            if (!loaded)
-                            {
-                                RemoveVariable(item);
-                            }
-                        }
-
-                        if (!loaded)
-                        {
-                            return false;
-                        }
-                    }
-                }
+                TryLoadVariables(config.Variables);
 
                 ValidateVariables();
 
-
+                isLoaded = true;
                 UpdateJobConfig();
 
                 return true;

@@ -122,23 +122,21 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IEvaluationService evaluationService;
         private readonly IEvaluationManager evaluationManager;
-        private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IEvaluationContext evaluationContext;
+        private readonly IVariableContext variableContext;
 
-        private readonly bool syncEvaluationConfig;
-
-        private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IInstrumentProfileManager instrumentProfileManager)
+        private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager, IEvaluationContext evaluationContext,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IVariableContext variableContext)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
             this.evaluationManager = evaluationManager;
-            this.instrumentProfileManager = instrumentProfileManager;
-
-            this.syncEvaluationConfig = args.SyncEvaluationConfig;
+            this.evaluationContext = evaluationContext;
+            this.variableContext = variableContext;
 
             AutoUpdateRatings = evaluationManager.AutoUpdateRatings;
 
-            var defaultGroupingConfiguration = evaluationManager.CurrentGroupingConfiguration;
+            var defaultGroupingConfiguration = evaluationContext.CurrentGroupingConfiguration;
             if (defaultGroupingConfiguration == null)
             {
                 // By default group by object and filter
@@ -148,13 +146,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
             {
                 GroupingConfigurator = vm;
-                if (syncEvaluationConfig)
-                {
-                    evaluationManager.CurrentGroupingConfiguration = vm.GroupingConfiguration;
-                }
+                evaluationContext.CurrentGroupingConfiguration = vm.GroupingConfiguration;
             });
 
-            var currentFormula = evaluationManager.CurrentFormula;
+            var currentFormula = evaluationContext.CurrentFormula;
 
             UpdateRatings = ReactiveCommand.CreateFromTask(UpdateRatingsAsync, this.WhenAnyValue(x => x.EvaluatorInstance).Select(x => x != null));
 
@@ -222,33 +217,23 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             });
 
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationFormulaViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
-
-            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, EvaluationFormulaViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
-            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, EvaluationFormulaViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.RecordChanged), OnProfileChanged);
+            SubscribeToEvent<IVariableContext, IVariableContext.VariablesChangedEventArgs, EvaluationFormulaViewModel>(variableContext, nameof(variableContext.CurrentVariablesChanged), OnCurrentVariablesChanged);
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
             if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && args.AddedOrUpdated)
             {
-                UpdateGroupKeys(evaluationManager.CurrentGrouping, args.File);
+                UpdateGroupKeys(evaluationContext.CurrentGrouping, args.File);
             }
         }
 
-        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs args)
+        private void OnCurrentVariablesChanged(object? sender, IVariableContext.VariablesChangedEventArgs args)
         {
-            HandleProfileChanged();
+            InvalidateEvaluator();
         }
 
-        private void OnProfileChanged(object? sender, IInstrumentProfileManager.RecordChangedEventArgs args)
-        {
-            if (args.AddedOrUpdated && args.ProfileId == instrumentProfileManager.CurrentProfile?.Id)
-            {
-                HandleProfileChanged();
-            }
-        }
-
-        private void HandleProfileChanged()
+        private void InvalidateEvaluator()
         {
             async void update()
             {
@@ -263,14 +248,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private void UpdateGroupingConfiguration(GroupingConfiguration configuration)
         {
-            if (syncEvaluationConfig)
-            {
-                // Setting a new grouping (configuration) also triggers the ratings
-                // auto update, if enabled
-                evaluationManager.CurrentGroupingConfiguration = configuration;
-            }
+            // Setting a new grouping (configuration) also triggers the ratings
+            // auto update, if enabled
+            evaluationContext.CurrentGroupingConfiguration = configuration;
 
-            UpdateGroupKeys(evaluationManager.CurrentGrouping);
+            UpdateGroupKeys(evaluationContext.CurrentGrouping);
         }
 
         private void UpdateGroupKeys(IGroupingManager.IGrouping? grouping, string? file = null)
@@ -315,7 +297,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             bool errored;
 
-            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, instrumentProfileManager.CurrentVariables, out evaluatorInstance, out var errorMessage) && errorMessage != null)
+            if (formula != null && formula.Length > 0 && !evaluationService.Build(formula, variableContext.CurrentVariables, out evaluatorInstance, out var errorMessage) && errorMessage != null)
             {
                 errored = true;
                 RatingFormulaError = errorMessage;
@@ -336,12 +318,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             EvaluatorInstance = errored ? null : evaluatorInstance;
 
-            if (syncEvaluationConfig)
-            {
-                // Setting a new formula also triggers the ratings
-                // auto update, if enabled
-                evaluationManager.CurrentFormula = formula;
-            }
+            // Setting a new formula also triggers the ratings
+            // auto update, if enabled
+            evaluationContext.CurrentFormula = formula;
 
             return Unit.Default;
         }

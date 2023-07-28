@@ -101,21 +101,21 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IExporterConfiguratorViewModel exporterConfigurator;
 
         private readonly IFitsImageManager fitsImageManager;
-        private readonly IEvaluationManager evaluationManager;
+        private readonly IEvaluationContext evaluationContext;
         private readonly IEvaluationService evaluationService;
-        private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IVariableContext variableContext;
 
         private EvaluationExportProgressViewModel(
             IEvaluationExportProgressViewModel.OfExporter args, IFitsImageManager fitsImageManager,
-            IEvaluationManager evaluationManager, IEvaluationService evaluationService,
-            IInstrumentProfileManager instrumentProfileManager) : base(null)
+            IEvaluationContext evaluationContext, IEvaluationService evaluationService,
+            IVariableContext variableContext) : base(null)
         {
             this.exporterId = args.ExporterId;
             this.exporterConfigurator = args.ExporterConfigurator;
             this.fitsImageManager = fitsImageManager;
-            this.evaluationManager = evaluationManager;
+            this.evaluationContext = evaluationContext;
             this.evaluationService = evaluationService;
-            this.instrumentProfileManager = instrumentProfileManager;
+            this.variableContext = variableContext;
         }
 
         protected override Func<Task<Result<ExportResult>>> CreateTask(ProgressSynchronizationContext synchronizationContext)
@@ -169,10 +169,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                         }
                     }
 
-                    var grouping = evaluationManager.CurrentGrouping;
-                    var evaluationFormula = evaluationManager.CurrentFormula;
+                    var grouping = evaluationContext.CurrentGrouping;
+                    var evaluationFormula = evaluationContext.CurrentFormula;
 
-                    var variables = instrumentProfileManager.CurrentVariables;
+                    var variables = variableContext.CurrentVariables;
 
                     if (!evaluationService.Build(evaluationFormula ?? "", variables, out var evaluator, out var formulaErrorMessage) || evaluator == null)
                     {

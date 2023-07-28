@@ -18,7 +18,6 @@
 
 using FitsRatingTool.Common.Models.Evaluation;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
 
 namespace FitsRatingTool.Common.Services.Impl
 {

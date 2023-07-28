@@ -23,14 +23,15 @@ using System;
 using System.Reactive;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Variables;
+using FitsRatingTool.GuiApp.Services;
 
 namespace FitsRatingTool.GuiApp.UI.JobConfigurator
 {
     public interface IJobConfiguratorViewModel
     {
-        public record Of();
+        public record Of(IEvaluationContext? ParentEvaluationContext = null, IVariableContext? ParentVariableContext = null);
 
-        public record OfConfigFile(string File);
+        public record OfConfigFile(string File, IEvaluationContext? ParentEvaluationContext = null, IVariableContext? ParentVariableContext = null);
 
 
         public interface IVariableItemViewModel

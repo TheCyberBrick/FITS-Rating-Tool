@@ -115,6 +115,7 @@ namespace FitsRatingTool.IoC.Impl
 
         private readonly IContainerResolver resolver;
         private readonly object[] scopeNames;
+        private readonly Func<Parameter, Parameter>? initializer;
 
         public Container(IContainerResolver parentResolver, Func<IRegistrar<Instance, Parameter>, Instance> regCtor)
         {
@@ -138,6 +139,7 @@ namespace FitsRatingTool.IoC.Impl
 
             resolver = completion.Fork;
             scopeNames = completion.ScopeNames;
+            initializer = completion.Initializer;
         }
 
         private void CheckDisposed()
@@ -348,6 +350,12 @@ namespace FitsRatingTool.IoC.Impl
                     // new scope because Instantiate will take
                     // care of the destruction
                     loadingScopeKeys.Add(newScope.Key);
+                }
+
+                // Run initializer if set
+                if (initializer != null)
+                {
+                    parameter = initializer.Invoke(parameter);
                 }
 
                 // Create a new instance.
@@ -809,6 +817,10 @@ namespace FitsRatingTool.IoC.Impl
             private readonly Container<Instance, Parameter> container;
             private readonly IContainerResolver parentResolver;
 
+            private ConstructorInfo? constructor;
+            private object[] scopeNames = Array.Empty<object>();
+            private Func<Parameter, Parameter>? initializer;
+
             public Registrar(Container<Instance, Parameter> container, IContainerResolver parentResolver)
             {
                 this.container = container;
@@ -817,35 +829,46 @@ namespace FitsRatingTool.IoC.Impl
 
             public object ClassScopeName => parentResolver.GetClassScopeName<Instance>();
 
-            [DoesNotReturn]
-            public void RegisterAndReturn<TImpl>(params object[] scopeNames)
-                where TImpl : class, Instance
+            public IRegistrar<Instance, Parameter> WithConstructor(ConstructorInfo constructor)
             {
-                RegisterAndReturn<TImpl>(null, scopeNames);
+                this.constructor = constructor;
+                return this;
+            }
+
+            public IRegistrar<Instance, Parameter> WithScopes(params object[] scopeNames)
+            {
+                this.scopeNames = scopeNames;
+                return this;
+            }
+
+            public IRegistrar<Instance, Parameter> WithInitializer(Func<Parameter, Parameter> initializer)
+            {
+                this.initializer = initializer;
+                return this;
             }
 
             [DoesNotReturn]
-            public void RegisterAndReturn<TImpl>(ConstructorInfo? constructor, params object[] scopeNames)
-                where TImpl : class, Instance
+            public void RegisterAndReturn<Implementation>()
+                where Implementation : class, Instance
             {
                 // Register implementation with appropriate reuse and factory
 
                 if (constructor != null)
                 {
-                    if (constructor.DeclaringType != typeof(TImpl))
+                    if (constructor.DeclaringType != typeof(Implementation))
                     {
-                        throw new InvalidOperationException($"Constructor is not declared by {typeof(TImpl).FullName}");
+                        throw new InvalidOperationException($"Constructor is not declared by {typeof(Implementation).FullName}");
                     }
                 }
                 else
                 {
-                    foreach (var ctor in typeof(TImpl).GetTypeInfo().DeclaredConstructors)
+                    foreach (var ctor in typeof(Implementation).GetTypeInfo().DeclaredConstructors)
                     {
                         if (ctor.GetCustomAttribute<InstantiatorAttribute>() != null)
                         {
                             if (constructor != null)
                             {
-                                throw new InvalidOperationException($"Multiple instantiator constructors in {typeof(TImpl).FullName}");
+                                throw new InvalidOperationException($"Multiple instantiator constructors in {typeof(Implementation).FullName}");
                             }
                             constructor = ctor;
                         }
@@ -854,9 +877,9 @@ namespace FitsRatingTool.IoC.Impl
 
                 // Fork the resolver and register the constructor
                 // and initializer to it
-                var fork = parentResolver.Fork<Instance, TImpl>(constructor, container.OnDependencyInjected, container.ContainsScope);
+                var fork = parentResolver.Fork<Instance, Implementation>(constructor, container.OnDependencyInjected, container.ContainsScope);
 
-                throw new RegistrationCompletion(typeof(TImpl), scopeNames, fork);
+                throw new RegistrationCompletion(typeof(Implementation), scopeNames, initializer, fork);
             }
         }
 
@@ -866,12 +889,15 @@ namespace FitsRatingTool.IoC.Impl
 
             public object[] ScopeNames { get; }
 
+            public Func<Parameter, Parameter>? Initializer { get; }
+
             public IContainerResolver Fork { get; }
 
-            public RegistrationCompletion(Type registeredType, object[] scopeNames, IContainerResolver fork)
+            public RegistrationCompletion(Type registeredType, object[] scopeNames, Func<Parameter, Parameter>? initializer, IContainerResolver fork)
             {
                 RegisteredType = registeredType;
                 ScopeNames = scopeNames;
+                Initializer = initializer;
                 Fork = fork;
             }
         }

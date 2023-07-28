@@ -36,19 +36,6 @@ namespace FitsRatingTool.GuiApp.Services
             bool IsValid { get; }
         }
 
-        public class ProfileChangedEventArgs : EventArgs
-        {
-            public IReadOnlyInstrumentProfile? OldProfile { get; }
-
-            public IReadOnlyInstrumentProfile? NewProfile { get; }
-
-            public ProfileChangedEventArgs(IReadOnlyInstrumentProfile? oldProfile, IReadOnlyInstrumentProfile? newProfile)
-            {
-                OldProfile = oldProfile;
-                NewProfile = newProfile;
-            }
-        }
-
         public class RecordChangedEventArgs : EventArgs
         {
             public string ProfileId { get; }
@@ -70,6 +57,7 @@ namespace FitsRatingTool.GuiApp.Services
 
         IReadOnlyCollection<string> ProfileIds { get; }
 
+
         void Load();
 
         bool Contains(string profileId);
@@ -84,11 +72,6 @@ namespace FitsRatingTool.GuiApp.Services
 
         IReadOnlyInstrumentProfile? Load(string data);
 
-        IReadOnlyInstrumentProfile? CurrentProfile { get; set; }
-
-        IReadOnlyList<IReadOnlyVariable>? CurrentVariables { get; }
-
-        event EventHandler<ProfileChangedEventArgs> CurrentProfileChanged;
 
         event EventHandler<RecordChangedEventArgs> RecordChanged;
     }

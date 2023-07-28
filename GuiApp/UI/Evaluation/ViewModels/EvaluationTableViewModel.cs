@@ -210,22 +210,19 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
 
         private readonly IFitsImageManager manager;
-        private readonly IGroupingManager groupingManager;
-        private readonly IEvaluationManager evaluationManager;
+        private readonly IEvaluationContext evaluationContext;
 
 
         private EvaluationTableViewModel(IEvaluationTableViewModel.Of args,
             IFitsImageManager manager,
-            IGroupingManager groupingManager,
-            IEvaluationManager evaluationManager,
+            IEvaluationContext evaluationContext,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
             IFactoryRoot<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
         {
             this.manager = manager;
-            this.groupingManager = groupingManager;
-            this.evaluationManager = evaluationManager;
+            this.evaluationContext = evaluationContext;
 
-            var defaultGroupingConfiguration = evaluationManager.CurrentFilterGroupingConfiguration;
+            var defaultGroupingConfiguration = evaluationContext.CurrentFilterGroupingConfiguration;
             if (defaultGroupingConfiguration == null)
             {
                 // By default group by object
@@ -235,10 +232,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
             {
                 GroupingConfigurator = vm;
-                evaluationManager.CurrentFilterGroupingConfiguration = vm.GroupingConfiguration;
+                evaluationContext.CurrentFilterGroupingConfiguration = vm.GroupingConfiguration;
             });
 
-            var currentGroupKey = evaluationManager.CurrentFilterGroupKey;
+            var currentGroupKey = evaluationContext.CurrentFilterGroupKey;
 
             using (DelayChangeNotifications())
             {
@@ -270,7 +267,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             this.WhenAnyValue(x => x.SelectedGroupKey).Skip(1).Subscribe(x =>
             {
-                evaluationManager.CurrentFilterGroupKey = x;
+                evaluationContext.CurrentFilterGroupKey = x;
                 UpdateRecords();
                 UpdateGraphsImmediately();
             });
@@ -356,7 +353,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 record.Statistics = stats;
             }
 
-            UpdateRecordGroup(evaluationManager.CurrentFilterGrouping, record, manager.Get(record.File)?.Metadata);
+            UpdateRecordGroup(evaluationContext.CurrentFilterGrouping, record, manager.Get(record.File)?.Metadata);
 
             if (IsRecordShown(record))
             {
@@ -701,9 +698,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         {
             using (DelayChangeNotifications())
             {
-                evaluationManager.CurrentFilterGroupingConfiguration = GroupingConfigurator.GroupingConfiguration;
+                evaluationContext.CurrentFilterGroupingConfiguration = GroupingConfigurator.GroupingConfiguration;
 
-                var grouping = evaluationManager.CurrentFilterGrouping;
+                var grouping = evaluationContext.CurrentFilterGrouping;
 
                 if (file == null)
                 {
@@ -741,12 +738,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     if (GroupKeys.Contains(prevSelectedGroupKey))
                     {
                         SelectedGroupKey = prevSelectedGroupKey;
-                        evaluationManager.CurrentFilterGroupKey = SelectedGroupKey;
+                        evaluationContext.CurrentFilterGroupKey = SelectedGroupKey;
                     }
                     else
                     {
                         SelectedGroupKey = GroupKeys[0];
-                        evaluationManager.CurrentFilterGroupKey = null;
+                        evaluationContext.CurrentFilterGroupKey = null;
                     }
                 }
                 else
@@ -851,7 +848,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private void UpdateGroupingConfiguration(GroupingConfiguration configuration)
         {
-            evaluationManager.CurrentFilterGroupingConfiguration = configuration;
+            evaluationContext.CurrentFilterGroupingConfiguration = configuration;
             UpdateGroupsAndRecords();
             UpdateGraphsImmediately();
         }

@@ -20,14 +20,16 @@ namespace FitsRatingTool.GuiApp
 {
     public static class AppScopes
     {
-        public static class Services
+        public static class Service
         {
-            public const string Windowing = "FRT.Services.Windowing";
+            public const string Windowing = "FRT.Service.Windowing";
         }
 
-        public static class Workspaces
+        public static class Context
         {
-            public const string Evaluation = "FRT.Workspace.Evaluation";
+            public const string Evaluation = "FRT.Context.Evaluation";
+            public const string Variable = "FRT.Context.Variable";
+            public const string InstrumentProfile = "FRT.Context.InstrumentProfile";
         }
     }
 }

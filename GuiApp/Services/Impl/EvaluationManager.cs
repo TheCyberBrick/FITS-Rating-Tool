@@ -18,7 +18,6 @@
 
 using FitsRatingTool.Common.Services;
 using System;
-using FitsRatingTool.GuiApp.Models;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.FitsImage;
 using System.Collections.Concurrent;
@@ -27,73 +26,52 @@ using System.Collections.Generic;
 using ReactiveUI;
 using System.Reactive.Concurrency;
 using Avalonia.Utilities;
-using System.IO;
-using System.Linq;
 using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.Common.Models.Evaluation;
 
 namespace FitsRatingTool.GuiApp.Services.Impl
 {
-    [Export(typeof(IEvaluationManager)), CurrentScopeReuse(AppScopes.Workspaces.Evaluation)]
+    [Export(typeof(IEvaluationManager)), SingletonReuse]
     public class EvaluationManager : IEvaluationManager
     {
-        private IEvaluationService.IEvaluator? cachedEvaluator;
-        private string? cachedEvaluatorFormula;
+        private IEvaluationContext? _evaluationContext;
+        public IEvaluationContext? EvaluationContext
+        {
+            get => _evaluationContext;
+            set
+            {
+                if (_evaluationContext != value)
+                {
+                    _evaluationContext = value;
+                    InvalidateEvaluation();
+                }
+            }
+        }
 
+        private IVariableContext? _variableContext;
+        public IVariableContext? VariableContext
+        {
+            get => _variableContext;
+            set
+            {
+                if (_variableContext != value)
+                {
+                    _variableContext = value;
+                    InvalidateEvaluation();
+                }
+            }
+        }
 
         private readonly IEvaluationService evaluationService;
         private readonly IFitsImageManager manager;
-        private readonly IGroupingManager groupingManager;
-        private readonly IInstrumentProfileManager instrumentProfileManager;
 
-        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager, IGroupingManager groupingManager, IAppConfig appConfig, IInstrumentProfileManager instrumentProfileManager)
+        public EvaluationManager(IEvaluationService evaluationService, IFitsImageManager manager)
         {
             this.evaluationService = evaluationService;
             this.manager = manager;
-            this.groupingManager = groupingManager;
-            this.instrumentProfileManager = instrumentProfileManager;
-
-            CurrentGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
-
-            CurrentFormulaChanged += (s, e) =>
-            {
-                if (AutoUpdateRatings)
-                {
-                    ScheduleUpdateRatings();
-                }
-            };
-
-            CurrentGroupingChanged += (s, e) =>
-            {
-                if (AutoUpdateRatings)
-                {
-                    ScheduleUpdateRatings();
-                }
-            };
 
             WeakEventHandlerManager.Subscribe<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationManager>(manager, nameof(manager.RecordChanged), OnRecordChanged);
-
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, EvaluationManager>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.RecordChangedEventArgs, EvaluationManager>(instrumentProfileManager, nameof(instrumentProfileManager.RecordChanged), OnProfileChanged);
-
-            LoadDefaultFormula(appConfig);
-        }
-
-        private void LoadDefaultFormula(IAppConfig appConfig)
-        {
-            var file = appConfig.DefaultEvaluationFormulaPath;
-            if (file.Length > 0)
-            {
-                try
-                {
-                    CurrentFormula = File.ReadAllText(file);
-                }
-                catch (Exception)
-                {
-                    CurrentFormula = $"Could not load default formula from file '{file}'. Please make sure it exists and is readable or adjust the default evaluation formula setting.";
-                }
-            }
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
@@ -109,8 +87,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 // Updating ratings only makes sense if both the metadata and stats are available
                 if (metadata != null && stats != null)
                 {
-                    var currentGrouping = CurrentGrouping;
+                    var currentGrouping = EvaluationContext?.CurrentGrouping;
 
+                    // Try to find group key for the changed image
+                    // so we can only update the ratings of images
+                    // in the same group
                     string? groupKey = null;
                     if (currentGrouping != null && !currentGrouping.IsAll)
                     {
@@ -132,30 +113,27 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs args)
+        public void InvalidateEvaluation()
         {
-            HandleProfileChanged();
-        }
-
-        private void OnProfileChanged(object? sender, IInstrumentProfileManager.RecordChangedEventArgs args)
-        {
-            if (args.AddedOrUpdated && args.ProfileId == instrumentProfileManager.CurrentProfile?.Id)
-            {
-                HandleProfileChanged();
-            }
-        }
-
-        private void HandleProfileChanged()
-        {
-            // Invalidate cached formula and evaluator because
-            // variables may now (no longer) be available
-            InvalidateCachedEvaluator();
-
-            // TODO Should this always update?
             if (AutoUpdateRatings)
             {
                 ScheduleUpdateRatings();
             }
+        }
+
+        public void InvalidateStatistics()
+        {
+            foreach (var file in manager.Files)
+            {
+                var record = manager.Get(file);
+
+                if (record != null)
+                {
+                    record.IsOutdated = true;
+                }
+            }
+
+            InvalidateEvaluation();
         }
 
         private void ScheduleUpdateRatings(string? specificGroupKey = null)
@@ -170,33 +148,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public async Task UpdateRatingsAsync(string? specificGroupKey = null, IEvaluationService.IEvaluator? evaluator = null)
         {
-            var evaluatorInstance = evaluator;
+            var variables = VariableContext?.CurrentVariables;
 
-            var variables = instrumentProfileManager.CurrentVariables;
-
-            if (evaluatorInstance == null)
-            {
-                if (cachedEvaluatorFormula != null && cachedEvaluatorFormula.Equals(CurrentFormula))
-                {
-                    evaluatorInstance = cachedEvaluator;
-                }
-                else
-                {
-                    cachedEvaluator = null;
-                    cachedEvaluatorFormula = CurrentFormula;
-
-                    if (cachedEvaluatorFormula != null && evaluationService.Build(cachedEvaluatorFormula, variables, out var newEvaluatorInstance, out var _) && newEvaluatorInstance != null)
-                    {
-                        evaluatorInstance = cachedEvaluator = newEvaluatorInstance;
-                    }
-                }
-            }
-
-            IsCurrentFormulaValid = evaluatorInstance != null;
+            var evaluatorInstance = EvaluationContext?.CurrentEvaluator;
 
             if (evaluatorInstance != null)
             {
-                var currentGrouping = CurrentGrouping;
+                var currentGrouping = EvaluationContext?.CurrentGrouping;
 
                 Dictionary<string, List<EvaluationItem>> groups = new();
 
@@ -289,76 +247,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             }
         }
 
-        private void InvalidateCachedEvaluator()
-        {
-            cachedEvaluator = null;
-            cachedEvaluatorFormula = null;
-        }
-
-
-
-        private IGroupingManager.IGrouping? _currentGrouping;
-        public IGroupingManager.IGrouping? CurrentGrouping
-        {
-            get => _currentGrouping;
-            private set
-            {
-                if (_currentGrouping != value)
-                {
-                    var old = _currentGrouping;
-                    _currentGrouping = value;
-                    _currentGroupingChanged?.Invoke(this, new IEvaluationManager.GroupingChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        private IGroupingManager.IGrouping? _currentFilterGrouping;
-        public IGroupingManager.IGrouping? CurrentFilterGrouping
-        {
-            get => _currentFilterGrouping;
-            private set
-            {
-                if (_currentFilterGrouping != value)
-                {
-                    var old = _currentFilterGrouping;
-                    _currentFilterGrouping = value;
-                    _currentFilterGroupingChanged?.Invoke(this, new IEvaluationManager.GroupingChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        private string? _currentFilterGroupKey;
-        public string? CurrentFilterGroupKey
-        {
-            get => _currentFilterGroupKey;
-            set
-            {
-                if (!string.Equals(_currentFilterGroupKey, value))
-                {
-                    var old = _currentFilterGroupKey;
-                    _currentFilterGroupKey = value;
-                    _currentFilterGroupKeyChanged?.Invoke(this, new IEvaluationManager.GroupKeyChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        private string? _currentFormula;
-        public string? CurrentFormula
-        {
-            get => _currentFormula;
-            set
-            {
-                if (!string.Equals(_currentFormula, value))
-                {
-                    var old = _currentFormula;
-                    _currentFormula = value;
-                    _currentFormulaChanged?.Invoke(this, new IEvaluationManager.FormulaChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        public bool IsCurrentFormulaValid { get; private set; }
-
         private bool _autoUpdateRatings = true;
         public bool AutoUpdateRatings
         {
@@ -371,136 +259,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     ScheduleUpdateRatings();
                 }
-            }
-        }
-
-        private GroupingConfiguration? _currentGroupingConfiguration;
-        public GroupingConfiguration? CurrentGroupingConfiguration
-        {
-            get => _currentGroupingConfiguration;
-            set
-            {
-                if (!EqualityComparer<GroupingConfiguration?>.Default.Equals(_currentGroupingConfiguration, value))
-                {
-                    var old = _currentGroupingConfiguration;
-                    _currentGroupingConfiguration = value;
-                    _currentGroupingConfigurationChanged?.Invoke(this, new IEvaluationManager.GroupingConfigurationChangedEventArgs(old, value));
-
-                    if (value != null)
-                    {
-                        var grouping = groupingManager.BuildGrouping(value.GroupingKeys.ToArray());
-                        CurrentGrouping = grouping.IsEmpty ? null : grouping;
-                    }
-                    else
-                    {
-                        CurrentGrouping = null;
-                    }
-                }
-            }
-        }
-
-        private GroupingConfiguration? _currentFilterGroupingConfiguration;
-        public GroupingConfiguration? CurrentFilterGroupingConfiguration
-        {
-            get => _currentFilterGroupingConfiguration;
-            set
-            {
-                if (!EqualityComparer<GroupingConfiguration?>.Default.Equals(_currentFilterGroupingConfiguration, value))
-                {
-                    var old = _currentFilterGroupingConfiguration;
-                    _currentFilterGroupingConfiguration = value;
-                    _currentFilterGroupingConfigurationChanged?.Invoke(this, new IEvaluationManager.GroupingConfigurationChangedEventArgs(old, value));
-
-                    if (value != null)
-                    {
-                        var grouping = groupingManager.BuildGrouping(value.GroupingKeys.ToArray());
-                        CurrentFilterGrouping = grouping.IsEmpty ? null : grouping;
-                    }
-                    else
-                    {
-                        CurrentFilterGrouping = null;
-                    }
-                }
-            }
-        }
-
-
-
-        private event EventHandler<IEvaluationManager.GroupingChangedEventArgs>? _currentGroupingChanged;
-        public event EventHandler<IEvaluationManager.GroupingChangedEventArgs> CurrentGroupingChanged
-        {
-            add
-            {
-                _currentGroupingChanged += value;
-            }
-            remove
-            {
-                _currentGroupingChanged -= value;
-            }
-        }
-
-        private event EventHandler<IEvaluationManager.GroupingChangedEventArgs>? _currentFilterGroupingChanged;
-        public event EventHandler<IEvaluationManager.GroupingChangedEventArgs> CurrentFilterGroupingChanged
-        {
-            add
-            {
-                _currentFilterGroupingChanged += value;
-            }
-            remove
-            {
-                _currentFilterGroupingChanged -= value;
-            }
-        }
-
-        private event EventHandler<IEvaluationManager.GroupKeyChangedEventArgs>? _currentFilterGroupKeyChanged;
-        public event EventHandler<IEvaluationManager.GroupKeyChangedEventArgs> CurrentFilterGroupKeyChanged
-        {
-            add
-            {
-                _currentFilterGroupKeyChanged += value;
-            }
-            remove
-            {
-                _currentFilterGroupKeyChanged -= value;
-            }
-        }
-
-        private event EventHandler<IEvaluationManager.GroupingConfigurationChangedEventArgs>? _currentGroupingConfigurationChanged;
-        public event EventHandler<IEvaluationManager.GroupingConfigurationChangedEventArgs> CurrentGroupingConfigurationChanged
-        {
-            add
-            {
-                _currentGroupingConfigurationChanged += value;
-            }
-            remove
-            {
-                _currentGroupingConfigurationChanged -= value;
-            }
-        }
-
-        private event EventHandler<IEvaluationManager.GroupingConfigurationChangedEventArgs>? _currentFilterGroupingConfigurationChanged;
-        public event EventHandler<IEvaluationManager.GroupingConfigurationChangedEventArgs> CurrentFilterGroupingConfigurationChanged
-        {
-            add
-            {
-                _currentFilterGroupingConfigurationChanged += value;
-            }
-            remove
-            {
-                _currentFilterGroupingConfigurationChanged -= value;
-            }
-        }
-
-        private event EventHandler<IEvaluationManager.FormulaChangedEventArgs>? _currentFormulaChanged;
-        public event EventHandler<IEvaluationManager.FormulaChangedEventArgs> CurrentFormulaChanged
-        {
-            add
-            {
-                _currentFormulaChanged += value;
-            }
-            remove
-            {
-                _currentFormulaChanged -= value;
             }
         }
     }

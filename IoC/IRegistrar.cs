@@ -26,12 +26,14 @@ namespace FitsRatingTool.IoC
     {
         object ClassScopeName { get; }
 
-        [DoesNotReturn]
-        void RegisterAndReturn<Implementation>(params object[] scopeNames)
-            where Implementation : class, Instance;
+        IRegistrar<Instance, Parameter> WithConstructor(ConstructorInfo constructor);
+
+        IRegistrar<Instance, Parameter> WithScopes(params object[] scopeNames);
+
+        IRegistrar<Instance, Parameter> WithInitializer(Func<Parameter, Parameter> initializer);
 
         [DoesNotReturn]
-        void RegisterAndReturn<Implementation>(ConstructorInfo? constructor, params object[] scopeNames)
+        void RegisterAndReturn<Implementation>()
             where Implementation : class, Instance;
     }
 }

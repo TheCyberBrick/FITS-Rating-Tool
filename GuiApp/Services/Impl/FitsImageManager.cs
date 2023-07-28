@@ -22,7 +22,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FitsRatingTool.GuiApp.Repositories;
 using FitsRatingTool.GuiApp.UI.FitsImage;
-using Avalonia.Utilities;
 using System.Threading;
 using FitsRatingTool.GuiApp.Models;
 using System.Collections.Specialized;
@@ -214,21 +213,11 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private readonly IFitsImageMetadataRepository metadataRepository;
 
 
-        public FitsImageManager(IFileRepository fileRepository, IAnalysisRepository analysisRepository, IFitsImageMetadataRepository metadataRepository, IInstrumentProfileManager instrumentProfileManager)
+        public FitsImageManager(IFileRepository fileRepository, IAnalysisRepository analysisRepository, IFitsImageMetadataRepository metadataRepository)
         {
             this.fileRepository = fileRepository;
             this.analysisRepository = analysisRepository;
             this.metadataRepository = metadataRepository;
-
-            WeakEventHandlerManager.Subscribe<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, FitsImageManager>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
-        }
-
-        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs e)
-        {
-            foreach (var record in records.Values)
-            {
-                record.IsOutdated = true;
-            }
         }
 
         private void NotifyChange(IFitsImageManager.IRecord record, IFitsImageManager.RecordChangedEventArgs.DataType type, bool removed)

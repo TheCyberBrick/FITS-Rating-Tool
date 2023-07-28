@@ -51,14 +51,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private AppProfileSelectorViewModel(IAppProfileSelectorViewModel.Of args,
             IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
-            IInstrumentProfileManager instrumentProfileManager, IAppConfig appConfig)
+            IInstrumentProfileContext instrumentProfileContext, IAppConfig appConfig)
         {
             instrumentProfileSelectorContainer.Singleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm =>
             {
                 Selector = vm;
                 Selector.IsReadOnly = true;
 
-                var initiallySelectedProfileId = instrumentProfileManager.CurrentProfile?.Id;
+                var initiallySelectedProfileId = instrumentProfileContext.CurrentProfile?.Id;
                 if (initiallySelectedProfileId != null)
                 {
                     Selector.SelectById(initiallySelectedProfileId);
@@ -86,13 +86,13 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 {
                     try
                     {
-                        instrumentProfileManager.CurrentProfile = profile?.CreateProfile();
+                        instrumentProfileContext.CurrentProfile = profile?.CreateProfile();
                     }
                     catch
                     {
                         // If profile is invalid we fallback to the
                         // source profile
-                        instrumentProfileManager.CurrentProfile = profile?.SourceProfile;
+                        instrumentProfileContext.CurrentProfile = profile?.SourceProfile;
                     }
 
                     suppressChangeCommand = true;
@@ -137,7 +137,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 return confirmed;
             });
 
-            SubscribeToEvent<IInstrumentProfileManager, IInstrumentProfileManager.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileManager, nameof(instrumentProfileManager.CurrentProfileChanged), OnCurrentProfileChanged);
+            SubscribeToEvent<IInstrumentProfileContext, IInstrumentProfileContext.ProfileChangedEventArgs, AppProfileSelectorViewModel>(instrumentProfileContext, nameof(instrumentProfileContext.CurrentProfileChanged), OnCurrentProfileChanged);
         }
 
         protected override void OnInstantiated()
@@ -151,7 +151,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             });
         }
 
-        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileManager.ProfileChangedEventArgs e)
+        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileContext.ProfileChangedEventArgs e)
         {
             var newProfile = e.NewProfile;
             if (newProfile != null)

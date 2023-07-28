@@ -430,7 +430,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
             ShowEvaluationTable = ReactiveCommand.Create(() => evaluationTableFactory.Parameterized(new IEvaluationTableViewModel.Of()));
 
-            ShowEvaluationFormula = ReactiveCommand.Create(() => evaluationFormulaFactory.Parameterized(new IEvaluationFormulaViewModel.Of(true)));
+            ShowEvaluationFormula = ReactiveCommand.Create(() => evaluationFormulaFactory.Parameterized(new IEvaluationFormulaViewModel.Of()));
 
             ShowEvaluationTableAndFormula = ReactiveCommand.Create(() => { });
             HideEvaluationTableAndFormula = ReactiveCommand.Create(() => { });

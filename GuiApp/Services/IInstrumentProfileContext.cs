@@ -16,23 +16,35 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using FitsRatingTool.Common.Services;
-using System.Threading.Tasks;
+using FitsRatingTool.Common.Models.Instrument;
+using System;
 
 namespace FitsRatingTool.GuiApp.Services
 {
-    public interface IEvaluationManager
+    public interface IInstrumentProfileContext
     {
-        IEvaluationContext? EvaluationContext { get; set; }
+        public class ProfileChangedEventArgs : EventArgs
+        {
+            public IReadOnlyInstrumentProfile? OldProfile { get; }
 
-        IVariableContext? VariableContext { get; set; }
+            public IReadOnlyInstrumentProfile? NewProfile { get; }
 
-        bool AutoUpdateRatings { get; set; }
+            public ProfileChangedEventArgs(IReadOnlyInstrumentProfile? oldProfile, IReadOnlyInstrumentProfile? newProfile)
+            {
+                OldProfile = oldProfile;
+                NewProfile = newProfile;
+            }
+        }
 
-        void InvalidateStatistics();
 
-        void InvalidateEvaluation();
+        IReadOnlyInstrumentProfile? CurrentProfile { get; set; }
 
-        Task UpdateRatingsAsync(string? specificGroupKey = null, IEvaluationService.IEvaluator? evaluator = null);
+
+        void LoadFromConfig();
+
+        void LoadFromOther(IInstrumentProfileContext ctx);
+
+
+        event EventHandler<ProfileChangedEventArgs> CurrentProfileChanged;
     }
 }

@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using Avalonia.Utilities;
 using DryIoc;
 using DryIocAttributes;
 using FitsRatingTool.Common.Services;
@@ -35,10 +36,12 @@ namespace FitsRatingTool.GuiApp
     {
         public AppLifecycle(IRegistrar<IAppLifecycle, IAppLifecycle.Of> reg)
         {
-            reg.RegisterAndReturn<AppLifecycle>(
-                AppScopes.Services.Windowing,
-                AppScopes.Workspaces.Evaluation
-                );
+            reg.WithScopes(
+                AppScopes.Service.Windowing,
+                AppScopes.Context.Evaluation,
+                AppScopes.Context.Variable,
+                AppScopes.Context.InstrumentProfile
+                ).RegisterAndReturn<AppLifecycle>();
         }
 
 
@@ -46,11 +49,19 @@ namespace FitsRatingTool.GuiApp
 
         public IRegistrator Registrator { get; }
 
+
         private readonly IAppConfigManager appConfigManager;
+
         private readonly IInstrumentProfileRepository instrumentProfileRepository;
         private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IInstrumentProfileContext instrumentProfileContext;
+
+        private readonly IEvaluationManager evaluationManager;
+        private readonly IEvaluationContext evaluationContext;
         private readonly IEvaluationExporterManager evaluationExporterManager;
+
         private readonly IVariableManager variableManager;
+        private readonly IVariableContext variableContext;
 
         private readonly IContainerRoot<IAppViewModel, IAppViewModel.Of> appRoot;
 
@@ -61,22 +72,33 @@ namespace FitsRatingTool.GuiApp
             IAppConfigManager appConfigManager,
             IInstrumentProfileRepository instrumentProfileRepository,
             IInstrumentProfileManager instrumentProfileManager,
+            IInstrumentProfileContext instrumentProfileContext,
+            IEvaluationManager evaluationManager,
+            IEvaluationContext evaluationContext,
             IEvaluationExporterManager evaluationExporterManager,
             IVariableManager variableManager,
+            IVariableContext variableContext,
+            IContainerRoot<IAppViewModel, IAppViewModel.Of> appRoot,
             IContainer<IComponentRegistry<IExporterConfiguratorViewModel>, IComponentRegistry<IExporterConfiguratorViewModel>.Of> exporterConfiguratorRegistryContainer,
-            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer,
-            IContainerRoot<IAppViewModel, IAppViewModel.Of> appRoot)
+            IContainer<IComponentRegistry<IVariableConfiguratorViewModel>, IComponentRegistry<IVariableConfiguratorViewModel>.Of> variableConfiguratorRegistryContainer)
         {
             this.appConfigManager = appConfigManager;
+
             this.instrumentProfileRepository = instrumentProfileRepository;
             this.instrumentProfileManager = instrumentProfileManager;
+            this.instrumentProfileContext = instrumentProfileContext;
+
+            this.evaluationManager = evaluationManager;
+            this.evaluationContext = evaluationContext;
             this.evaluationExporterManager = evaluationExporterManager;
+
             this.variableManager = variableManager;
+            this.variableContext = variableContext;
+
+            this.appRoot = appRoot;
 
             Resolver = resolver;
             Registrator = registrator;
-
-            this.appRoot = appRoot;
 
             exporterConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IExporterConfiguratorViewModel>.Of(), RegisterExporters);
             variableConfiguratorRegistryContainer.Singleton().Inject(new IComponentRegistry<IVariableConfiguratorViewModel>.Of(), RegisterVariables);
@@ -84,9 +106,28 @@ namespace FitsRatingTool.GuiApp
 
         public void OnInstantiated()
         {
+            SetupServices();
+            SetupContext();
+        }
+
+        private void SetupServices()
+        {
             appConfigManager.Load();
             instrumentProfileRepository.Load();
             instrumentProfileManager.Load();
+        }
+
+        private void SetupContext()
+        {
+            instrumentProfileContext.LoadFromConfig();
+            evaluationContext.LoadFromConfig();
+
+            evaluationManager.EvaluationContext = evaluationContext;
+            evaluationManager.VariableContext = variableContext;
+
+            WeakEventHandlerManager.Subscribe<IInstrumentProfileContext, IInstrumentProfileContext.ProfileChangedEventArgs, AppLifecycle>(instrumentProfileContext, nameof(instrumentProfileContext.CurrentProfileChanged), OnCurrentProfileChanged);
+            WeakEventHandlerManager.Subscribe<IEvaluationContext, IEvaluationContext.FormulaChangedEventArgs, AppLifecycle>(evaluationContext, nameof(evaluationContext.CurrentFormulaChanged), OnCurrentFormulaChanged);
+            WeakEventHandlerManager.Subscribe<IEvaluationContext, IEvaluationContext.GroupingConfigurationChangedEventArgs, AppLifecycle>(evaluationContext, nameof(evaluationContext.CurrentGroupingConfigurationChanged), OnCurrentGroupingConfigurationChanged);
         }
 
         public void OnDestroying()
@@ -166,6 +207,28 @@ namespace FitsRatingTool.GuiApp
             var disposable = appRoot.Instantiate(new IAppViewModel.Of(), out IAppViewModel vm, true);
             dataContext = vm;
             return disposable;
+        }
+
+        private void OnCurrentProfileChanged(object? sender, IInstrumentProfileContext.ProfileChangedEventArgs e)
+        {
+            // Keep current variables in sync with the currently
+            // selected profile
+            variableContext.LoadFromCurrentProfile(instrumentProfileContext);
+
+            // Image statistics need to be invalidated when
+            // profile has changed because they have to be
+            // reanalyzed
+            evaluationManager.InvalidateStatistics();
+        }
+
+        private void OnCurrentFormulaChanged(object? sender, IEvaluationContext.FormulaChangedEventArgs args)
+        {
+            evaluationManager.InvalidateEvaluation();
+        }
+
+        private void OnCurrentGroupingConfigurationChanged(object? sender, IEvaluationContext.GroupingConfigurationChangedEventArgs args)
+        {
+            evaluationManager.InvalidateEvaluation();
         }
     }
 }
