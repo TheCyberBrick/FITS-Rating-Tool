@@ -188,6 +188,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private string? preSwitchFile = null;
 
         private readonly IFitsImageManager manager;
+        private readonly IImageSelectionContext imageSelectionContext;
         private readonly IAppConfig appConfig;
         private readonly IVoyagerIntegration voyagerIntegration;
 
@@ -207,6 +208,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private AppViewModel(IAppViewModel.Of args,
             IFitsImageManager manager,
+            IImageSelectionContext imageSelectionContext,
             IFileSystemService fileSystemService,
             IOpenFileEventManager openFileEventManager,
             IAppConfigManager appConfigManager,
@@ -233,6 +235,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             IFactoryRoot<IAppViewerOverlayViewModel, IAppViewerOverlayViewModel.Of> appViewerOverlayFactory)
         {
             this.manager = manager;
+            this.imageSelectionContext = imageSelectionContext;
             this.appConfig = appConfig;
             this.voyagerIntegration = voyagerIntegration;
 
@@ -499,7 +502,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 prevImageFile = currentImageFile;
                 currentImageFile = file;
 
-                manager.CurrentFile = file;
+                imageSelectionContext.CurrentFile = file;
             });
 
             this.WhenAnyValue(x => x.ThumbnailScale).Subscribe(x =>
@@ -634,7 +637,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File && args.Removed)
             {
                 OnImageRemoved(args.File);
             }

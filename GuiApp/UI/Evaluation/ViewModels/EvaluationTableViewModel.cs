@@ -188,6 +188,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _ratingThreeSigmaRange, value);
         }
 
+        private bool _autoSelectGroupKey;
+        public bool AutoSelectGroupKey
+        {
+            get => _autoSelectGroupKey;
+            set => this.RaiseAndSetIfChanged(ref _autoSelectGroupKey, value);
+        }
+
         public AvaloniaList<string> GroupKeys { get; } = new() { "All" };
 
         private string _selectedGroupKey = "All";
@@ -215,12 +222,16 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private EvaluationTableViewModel(IEvaluationTableViewModel.Of args,
             IFitsImageManager manager,
+            IImageSelectionContext imageSelectionContext,
             IEvaluationContext evaluationContext,
+            IAppConfig appConfig,
             IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer,
             IFactoryRoot<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of> evaluationExporterFactory)
         {
             this.manager = manager;
             this.evaluationContext = evaluationContext;
+
+            AutoSelectGroupKey = appConfig.AutoSelectGroupKey;
 
             var defaultGroupingConfiguration = evaluationContext.CurrentFilterGroupingConfiguration;
             if (defaultGroupingConfiguration == null)
@@ -261,6 +272,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 }
             });
 
+            this.WhenAnyValue(x => x.SelectedRecord)
+                .Skip(1)
+                .Throttle(TimeSpan.FromMilliseconds(10))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    if (AutoSelectGroupKey && x != null) TrySelectMatchingGroupKey(x);
+                });
+
             this.WhenAnyValue(x => x.DataKeyIndex).Skip(1).Subscribe(x => UpdateGraphsImmediately());
 
             this.WhenAnyValue(x => x.GraphRangeInMADSigmas).Skip(1).Subscribe(x => UpdateGraphsImmediately());
@@ -278,6 +298,11 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => UpdateGroupingConfiguration(x));
 
+            this.WhenAnyValue(x => x.AutoSelectGroupKey).Skip(1).Subscribe(x =>
+            {
+                if (x) TrySelectMatchingGroupKey(imageSelectionContext.CurrentFile);
+            });
+
             foreach (var groupKey in GroupKeys)
             {
                 if (groupKey.Equals(currentGroupKey))
@@ -292,6 +317,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
+            SubscribeToEvent<IImageSelectionContext, IImageSelectionContext.FileChangedEventArgs, EvaluationTableViewModel>(imageSelectionContext, nameof(imageSelectionContext.CurrentFileChanged), OnCurrentFileChanged);
 
             ShowEvaluationExporter = ReactiveCommand.Create(() => evaluationExporterFactory.Parameterized(new IEvaluationExporterViewModel.Of()));
 
@@ -405,7 +431,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File)
             {
                 if (args.AddedOrUpdated)
                 {
@@ -420,15 +446,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     RemoveRecord(args.File, out _);
                 }
             }
-            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Statistics)
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Statistics)
             {
                 UpdateRecordState(args.File);
             }
-            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && args.AddedOrUpdated)
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata && args.AddedOrUpdated)
             {
                 UpdateRecordState(args.File);
             }
-            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Outdated)
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Outdated)
             {
                 UpdateRecordState(args.File);
             }
@@ -851,6 +877,53 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             evaluationContext.CurrentFilterGroupingConfiguration = configuration;
             UpdateGroupsAndRecords();
             UpdateGraphsImmediately();
+        }
+
+        private void OnCurrentFileChanged(object? sender, IImageSelectionContext.FileChangedEventArgs args)
+        {
+            if (AutoSelectGroupKey)
+            {
+                TrySelectMatchingGroupKey(args.NewFile);
+            }
+        }
+
+        private bool TrySelectMatchingGroupKey(string? file)
+        {
+            if (file != null)
+            {
+                foreach (var record in recordMap.Values)
+                {
+                    if (record.File.Equals(file))
+                    {
+                        return TrySelectMatchingGroupKey(record);
+                    }
+                }
+            }
+            else
+            {
+                SelectedGroupKey = "All";
+                return true;
+            }
+            return false;
+        }
+
+        private bool TrySelectMatchingGroupKey(IEvaluationTableViewModel.Record record)
+        {
+            var grouping = evaluationContext.CurrentFilterGrouping;
+            var metadata = manager.Get(record.File)?.Metadata;
+
+            if (grouping != null && metadata != null)
+            {
+                var match = grouping.GetGroupMatch(metadata);
+
+                if (match != null && GroupKeys.Contains(match.GroupKey))
+                {
+                    SelectedGroupKey = match.GroupKey;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

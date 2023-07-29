@@ -77,9 +77,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
             if (AutoUpdateRatings &&
-                (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed
-                || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Statistics
-                || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata))
+                (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File && args.Removed
+                || args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Statistics
+                || args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata))
             {
                 var metadata = manager.Get(args.File)?.Metadata;
                 var stats = manager.Get(args.File)?.Statistics;
@@ -105,7 +105,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
                     ScheduleUpdateRatings(groupKey);
                 }
-                else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File)
+                else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File)
                 {
                     // Or when the file is removed
                     ScheduleUpdateRatings();

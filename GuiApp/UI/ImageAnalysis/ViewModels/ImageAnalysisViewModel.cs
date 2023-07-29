@@ -298,7 +298,7 @@ namespace FitsRatingTool.GuiApp.UI.ImageAnalysis.ViewModels
                 {
                     RawData = Data = new double[0, 0];
                 }
-                else if (args.AddedOrUpdated && args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Photometry)
+                else if (args.AddedOrUpdated && args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Photometry)
                 {
                     UpdateData();
                 }

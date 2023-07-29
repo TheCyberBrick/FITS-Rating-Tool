@@ -70,28 +70,30 @@ namespace FitsRatingTool.GuiApp.UI.KeywordPicker.ViewModels
         }
 
 
-        private KeywordPickerViewModel(IKeywordPickerViewModel.OfFile args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => new[] { args.File }, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
+        private KeywordPickerViewModel(IKeywordPickerViewModel.OfFile args, IFitsImageManager fitsImageManager, IImageSelectionContext imageSelectionContext)
+            : this(fitsImageManager, imageSelectionContext, () => new[] { args.File }, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
         {
         }
 
-        private KeywordPickerViewModel(IKeywordPickerViewModel.OfFiles args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => args.Files, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
+        private KeywordPickerViewModel(IKeywordPickerViewModel.OfFiles args, IFitsImageManager fitsImageManager, IImageSelectionContext imageSelectionContext)
+            : this(fitsImageManager, imageSelectionContext, () => args.Files, args.AutoReset ? ResetMode.InitialFiles : ResetMode.None)
         {
         }
 
-        private KeywordPickerViewModel(IKeywordPickerViewModel.OfAllFiles args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => fitsImageManager.Files, args.AutoReset ? ResetMode.AnyFiles : ResetMode.None)
+        private KeywordPickerViewModel(IKeywordPickerViewModel.OfAllFiles args, IFitsImageManager fitsImageManager, IImageSelectionContext imageSelectionContext)
+            : this(fitsImageManager, imageSelectionContext, () => fitsImageManager.Files, args.AutoReset ? ResetMode.AnyFiles : ResetMode.None)
         {
         }
 
-        private KeywordPickerViewModel(IKeywordPickerViewModel.OfCurrentlySelectedFile args, IFitsImageManager fitsImageManager)
-            : this(fitsImageManager, () => new[] { fitsImageManager.CurrentFile }, args.AutoReset ? ResetMode.CurrentFile : ResetMode.None)
+        private KeywordPickerViewModel(IKeywordPickerViewModel.OfCurrentlySelectedFile args, IFitsImageManager fitsImageManager, IImageSelectionContext imageSelectionContext)
+            : this(fitsImageManager, imageSelectionContext, () => new[] { imageSelectionContext.CurrentFile }, args.AutoReset ? ResetMode.CurrentFile : ResetMode.None)
         {
         }
 
 
         private readonly IFitsImageManager fitsImageManager;
+        private readonly IImageSelectionContext imageSelectionContext;
+
         private readonly Func<IEnumerable<string?>> filesProvider;
         private readonly ResetMode resetMode;
 
@@ -99,9 +101,12 @@ namespace FitsRatingTool.GuiApp.UI.KeywordPicker.ViewModels
 
         private HashSet<string> keywordSet = new();
 
-        private KeywordPickerViewModel(IFitsImageManager fitsImageManager, Func<IEnumerable<string?>> filesProvider, ResetMode resetMode)
+        private KeywordPickerViewModel(IFitsImageManager fitsImageManager, IImageSelectionContext imageSelectionContext,
+            Func<IEnumerable<string?>> filesProvider, ResetMode resetMode)
         {
             this.fitsImageManager = fitsImageManager;
+            this.imageSelectionContext = imageSelectionContext;
+
             this.filesProvider = filesProvider;
             this.resetMode = resetMode;
 
@@ -110,7 +115,7 @@ namespace FitsRatingTool.GuiApp.UI.KeywordPicker.ViewModels
             switch (resetMode)
             {
                 case ResetMode.CurrentFile:
-                    SubscribeToEvent<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, KeywordPickerViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+                    SubscribeToEvent<IImageSelectionContext, IImageSelectionContext.FileChangedEventArgs, KeywordPickerViewModel>(imageSelectionContext, nameof(imageSelectionContext.CurrentFileChanged), OnCurrentFileChanged);
                     goto case ResetMode.InitialFiles;
                 case ResetMode.InitialFiles:
                 case ResetMode.AnyFiles:
@@ -121,16 +126,16 @@ namespace FitsRatingTool.GuiApp.UI.KeywordPicker.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs e)
         {
-            if (e.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata &&
+            if (e.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata &&
                 (resetMode == ResetMode.AnyFiles ||
                 resetMode == ResetMode.InitialFiles && observedFileSet.Contains(e.File) ||
-                resetMode == ResetMode.CurrentFile && e.File == fitsImageManager.CurrentFile))
+                resetMode == ResetMode.CurrentFile && e.File == imageSelectionContext.CurrentFile))
             {
                 Reset(true);
             }
         }
 
-        private void OnCurrentFileChanged(object? sender, IFitsImageManager.CurrentFileChangedEventArgs e)
+        private void OnCurrentFileChanged(object? sender, IImageSelectionContext.FileChangedEventArgs e)
         {
             Reset(true);
         }

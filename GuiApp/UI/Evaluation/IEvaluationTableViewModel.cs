@@ -175,6 +175,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         #endregion
 
         #region +++ Grouping +++
+        bool AutoSelectGroupKey { get; set; }
+
         AvaloniaList<string> GroupKeys { get; }
 
         string SelectedGroupKey { get; set; }

@@ -222,7 +222,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && args.AddedOrUpdated)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata && args.AddedOrUpdated)
             {
                 UpdateGroupKeys(evaluationContext.CurrentGrouping, args.File);
             }

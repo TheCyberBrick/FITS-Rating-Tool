@@ -40,7 +40,8 @@ namespace FitsRatingTool.GuiApp
                 AppScopes.Service.Windowing,
                 AppScopes.Context.Evaluation,
                 AppScopes.Context.Variable,
-                AppScopes.Context.InstrumentProfile
+                AppScopes.Context.InstrumentProfile,
+                AppScopes.Context.ImageSelection
                 ).RegisterAndReturn<AppLifecycle>();
         }
 

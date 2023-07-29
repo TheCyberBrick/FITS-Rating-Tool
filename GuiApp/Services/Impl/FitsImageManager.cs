@@ -51,13 +51,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         EnsureInRepository();
                         manager.analysisRepository.AddStatistics(File, value);
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Statistics, false);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Statistics, false);
                     }
                     else
                     {
                         if (manager.analysisRepository.RemoveStatistics(File) != null)
                         {
-                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Statistics, true);
+                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Statistics, true);
                         }
                     }
                 }
@@ -72,13 +72,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         EnsureInRepository();
                         manager.analysisRepository.AddPhotometry(File, value);
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Photometry, false);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Photometry, false);
                     }
                     else
                     {
                         if (manager.analysisRepository.RemovePhotometry(File) != null)
                         {
-                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Photometry, true);
+                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Photometry, true);
                         }
                     }
                 }
@@ -93,13 +93,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         EnsureInRepository();
                         manager.analysisRepository.AddRating(File, value.Value);
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Rating, false);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Rating, false);
                     }
                     else
                     {
                         if (manager.analysisRepository.RemoveRating(File) != null)
                         {
-                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Rating, true);
+                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Rating, true);
                         }
                     }
                 }
@@ -114,13 +114,13 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         EnsureInRepository();
                         manager.metadataRepository.AddMetadata(value);
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Metadata, false);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata, false);
                     }
                     else
                     {
                         if (manager.metadataRepository.RemoveMetadata(File) != null)
                         {
-                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Metadata, true);
+                            manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata, true);
                         }
                     }
                 }
@@ -135,7 +135,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     if (_outdated != value)
                     {
                         _outdated = value;
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.Outdated, false);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.Outdated, false);
                     }
                 }
             }
@@ -171,7 +171,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         _containers.Add(container);
                     }
-                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, false);
+                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.ImageContainers, false);
                 }
             }
 
@@ -181,12 +181,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     if (_containers.Remove(container))
                     {
-                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, true);
+                        manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.ImageContainers, true);
                     }
                 }
                 else
                 {
-                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers, false);
+                    manager.NotifyChange(this, IFitsImageManager.RecordChangedEventArgs.ChangeType.ImageContainers, false);
                 }
             }
 
@@ -220,7 +220,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             this.metadataRepository = metadataRepository;
         }
 
-        private void NotifyChange(IFitsImageManager.IRecord record, IFitsImageManager.RecordChangedEventArgs.DataType type, bool removed)
+        private void NotifyChange(IFitsImageManager.IRecord record, IFitsImageManager.RecordChangedEventArgs.ChangeType type, bool removed)
         {
             _recordChanged?.Invoke(this, new IFitsImageManager.RecordChangedEventArgs(record.File, type, removed));
         }
@@ -253,7 +253,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 fileRepository.AddFile(file);
 
-                NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.DataType.File, false);
+                NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.ChangeType.File, false);
 
                 lock (containers)
                 {
@@ -283,7 +283,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 analysisRepository.RemoveRating(file);
                 metadataRepository.RemoveMetadata(file);
 
-                NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.DataType.File, true);
+                NotifyChange(record, IFitsImageManager.RecordChangedEventArgs.ChangeType.File, true);
 
                 return record;
             }
@@ -379,28 +379,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         {
             add => _recordChanged += value;
             remove => _recordChanged -= value;
-        }
-
-        private string? _currentFile;
-        public string? CurrentFile
-        {
-            get => _currentFile;
-            set
-            {
-                if (_currentFile != value)
-                {
-                    var old = _currentFile;
-                    _currentFile = value;
-                    _currentFileChanged?.Invoke(this, new IFitsImageManager.CurrentFileChangedEventArgs(old, value));
-                }
-            }
-        }
-
-        private event EventHandler<IFitsImageManager.CurrentFileChangedEventArgs>? _currentFileChanged;
-        public event EventHandler<IFitsImageManager.CurrentFileChangedEventArgs> CurrentFileChanged
-        {
-            add => _currentFileChanged += value;
-            remove => _currentFileChanged -= value;
         }
 
         private class ImageContainerRegistrationReleaser : IDisposable

@@ -95,7 +95,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File)
             {
                 if (args.AddedOrUpdated)
                 {
@@ -106,7 +106,7 @@ namespace FitsRatingTool.GuiApp.UI.FileTable.ViewModels
                     RemoveRecord(args.File);
                 }
             }
-            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Metadata && args.AddedOrUpdated)
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Metadata && args.AddedOrUpdated)
             {
                 UpdateRecord(args.File);
             }

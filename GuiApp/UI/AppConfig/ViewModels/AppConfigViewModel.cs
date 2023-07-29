@@ -179,6 +179,10 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             {
                 Description = "Evaluation grouping used by default."
             });
+            category.Settings.Add(new BoolSettingViewModel("Automatically Select Group", () => appConfig.AutoSelectGroupKey, v => appConfig.AutoSelectGroupKey = v)
+            {
+                Description = "Whether the group shown in the evaluation table should be selected automatically based on the currently selected image."
+            });
             category.Settings.Add(new BoolSettingViewModel("Enable Dangerous Exporters", () => appConfig.EnableDangerousExporters, v => appConfig.EnableDangerousExporters = v)
             {
                 Description = "Whether dangerous exporters (e.g. with non-reversible effects) should be enabled."

@@ -113,6 +113,12 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             set => manager.Set("DefaultEvaluationGrouping", GroupingToString(value));
         }
 
+        public bool AutoSelectGroupKey
+        {
+            get => bool.TryParse(manager.Get("AutoSelectGroupKey"), out bool enabled) ? enabled : false;
+            set => manager.Set("AutoSelectGroupKey", value.ToString());
+        }
+
         public bool EnableDangerousExporters
         {
             get => bool.TryParse(manager.Get("EnableDangerousExporters"), out bool enabled) ? enabled : false;

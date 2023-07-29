@@ -30,6 +30,7 @@ namespace FitsRatingTool.GuiApp
             public const string Evaluation = "FRT.Context.Evaluation";
             public const string Variable = "FRT.Context.Variable";
             public const string InstrumentProfile = "FRT.Context.InstrumentProfile";
+            public const string ImageSelection = "FRT.Context.ImageSelection";
         }
     }
 }

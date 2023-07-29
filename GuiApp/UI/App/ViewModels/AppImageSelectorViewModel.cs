@@ -69,12 +69,14 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
         private bool isImageLoading;
 
         private readonly IFitsImageManager fitsImageManager;
+        private readonly IImageSelectionContext imageSelectionContext;
         private readonly ISingletonContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer;
 
         private AppImageSelectorViewModel(IAppImageSelectorViewModel.Of args, IFitsImageManager fitsImageManager,
-            IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer)
+            IImageSelectionContext imageSelectionContext, IContainer<IFitsImageViewModel, IFitsImageViewModel.OfImage> fitsImageContainer)
         {
             this.fitsImageManager = fitsImageManager;
+            this.imageSelectionContext = imageSelectionContext;
             this.fitsImageContainer = fitsImageContainer.Singleton();
 
             this.fitsImageContainer.Subscribe(vm => SelectedImage = vm);
@@ -83,7 +85,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             SelectedImageFilter = i => i.OutDim.Width == i.ImageWidth && i.OutDim.Height == i.ImageHeight;
 
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.RecordChanged), OnRecordChanged);
-            SubscribeToEvent<IFitsImageManager, IFitsImageManager.CurrentFileChangedEventArgs, AppImageSelectorViewModel>(fitsImageManager, nameof(fitsImageManager.CurrentFileChanged), OnCurrentFileChanged);
+            SubscribeToEvent<IImageSelectionContext, IImageSelectionContext.FileChangedEventArgs, AppImageSelectorViewModel>(imageSelectionContext, nameof(imageSelectionContext.CurrentFileChanged), OnCurrentFileChanged);
         }
 
         protected override void OnInstantiated()
@@ -93,7 +95,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 if (x)
                 {
                     var prev = SelectedFile;
-                    SelectedFile = fitsImageManager.CurrentFile;
+                    SelectedFile = imageSelectionContext.CurrentFile;
                     prevSelectedFile = prev;
                 }
                 else
@@ -114,7 +116,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
         {
-            if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.ImageContainers)
+            if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.ImageContainers)
             {
                 UpdateFiles();
 
@@ -123,7 +125,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                     UpdateSelectedImage();
                 }
             }
-            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.File && args.Removed)
+            else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.File && args.Removed)
             {
                 UpdateFiles();
             }
@@ -170,7 +172,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             return foundFiles;
         }
 
-        private void OnCurrentFileChanged(object? sender, IFitsImageManager.CurrentFileChangedEventArgs args)
+        private void OnCurrentFileChanged(object? sender, IImageSelectionContext.FileChangedEventArgs args)
         {
             UpdateSelectedFile();
         }
@@ -181,7 +183,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
             {
                 var prev = prevSelectedFile;
 
-                var currentFile = fitsImageManager.CurrentFile;
+                var currentFile = imageSelectionContext.CurrentFile;
 
                 if (currentFile != null && Files.Contains(currentFile))
                 {

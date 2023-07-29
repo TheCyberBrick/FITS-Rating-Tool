@@ -47,14 +47,14 @@ namespace FitsRatingTool.GuiApp.Services
 
         public class RecordChangedEventArgs : EventArgs
         {
-            public enum DataType
+            public enum ChangeType
             {
                 File, Statistics, Photometry, Rating, Metadata, ImageContainers, Outdated
             }
 
             public string File { get; }
 
-            public DataType Type { get; }
+            public ChangeType Type { get; }
 
             public bool Removed => _removed;
 
@@ -64,7 +64,7 @@ namespace FitsRatingTool.GuiApp.Services
             private readonly bool _removed;
 
 
-            public RecordChangedEventArgs(string file, DataType type, bool removed)
+            public RecordChangedEventArgs(string file, ChangeType type, bool removed)
             {
                 File = file;
                 Type = type;
@@ -72,20 +72,9 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
-        public class CurrentFileChangedEventArgs : EventArgs
-        {
-            public string? OldFile { get; }
-
-            public string? NewFile { get; }
-
-            public CurrentFileChangedEventArgs(string? oldFile, string? newFile)
-            {
-                OldFile = oldFile;
-                NewFile = newFile;
-            }
-        }
 
         IReadOnlyList<string> Files { get; }
+
 
         bool Contains(string file);
 
@@ -95,12 +84,9 @@ namespace FitsRatingTool.GuiApp.Services
 
         IRecord? Remove(string file);
 
-        string? CurrentFile { get; set; }
-
         IDisposable RegisterImageContainer(IFitsImageContainer container);
 
-        event EventHandler<RecordChangedEventArgs> RecordChanged;
 
-        event EventHandler<CurrentFileChangedEventArgs> CurrentFileChanged;
+        event EventHandler<RecordChangedEventArgs> RecordChanged;
     }
 }

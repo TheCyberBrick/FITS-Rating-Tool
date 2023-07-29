@@ -53,6 +53,8 @@ namespace FitsRatingTool.GuiApp.Services
 
         GroupingConfiguration DefaultEvaluationGrouping { get; set; }
 
+        bool AutoSelectGroupKey { get; set; }
+
         bool EnableDangerousExporters { get; set; }
         #endregion
 

@@ -727,7 +727,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
         {
             if (args.File.Equals(File))
             {
-                if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Statistics || args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Photometry)
+                if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Statistics || args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Photometry)
                 {
                     var record = manager.Get(args.File);
 
@@ -744,7 +744,7 @@ namespace FitsRatingTool.GuiApp.UI.FitsImage.ViewModels
                         if (ShowPhotometry) SetShownPhotometry(photometry);
                     }
                 }
-                else if (args.Type == IFitsImageManager.RecordChangedEventArgs.DataType.Outdated)
+                else if (args.Type == IFitsImageManager.RecordChangedEventArgs.ChangeType.Outdated)
                 {
                     var image = FitsImage;
                     if (image != null)
