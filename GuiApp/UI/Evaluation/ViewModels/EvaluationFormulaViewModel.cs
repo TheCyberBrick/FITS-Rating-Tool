@@ -54,6 +54,13 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _ratingFormula, value);
         }
 
+        private bool _isFormulaUsingAggregateFunctions = false;
+        public bool IsFormulaUsingAggregateFunctions
+        {
+            get => _isFormulaUsingAggregateFunctions;
+            set => this.RaiseAndSetIfChanged(ref _isFormulaUsingAggregateFunctions, value);
+        }
+
         private bool _autoUpdateRatings;
         public bool AutoUpdateRatings
         {
@@ -152,6 +159,18 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             var currentFormula = evaluationContext.CurrentFormula;
 
             UpdateRatings = ReactiveCommand.CreateFromTask(UpdateRatingsAsync, this.WhenAnyValue(x => x.EvaluatorInstance).Select(x => x != null));
+
+            this.WhenAnyValue(x => x.EvaluatorInstance).Subscribe(x =>
+            {
+                if (x != null)
+                {
+                    IsFormulaUsingAggregateFunctions = x.IsUsingAggregateFunctions;
+                }
+                else
+                {
+                    IsFormulaUsingAggregateFunctions = false;
+                }
+            });
 
             this.WhenAnyValue(x => x.RatingFormula).Subscribe(x =>
             {

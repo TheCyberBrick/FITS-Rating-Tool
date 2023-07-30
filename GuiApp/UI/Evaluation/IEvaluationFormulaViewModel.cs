@@ -28,6 +28,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
 
         string? RatingFormula { get; set; }
 
+        bool IsFormulaUsingAggregateFunctions { get; }
+
         bool AutoUpdateRatings { get; set; }
 
         ReactiveCommand<Unit, Unit> UpdateRatings { get; }

@@ -114,6 +114,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                      TextWrapping="Wrap"
                      AcceptsReturn="True"/>
 
+            <views:EvaluationFormulaWarningView
+              VerticalAlignment="Top" HorizontalAlignment="Right"
+              Margin="4 4"
+              IsVisible="{Binding IsFormulaUsingAggregateFunctions}"/>
+
             <Border Grid.Row="2"
                     Padding="8 2"
                     Height="22">

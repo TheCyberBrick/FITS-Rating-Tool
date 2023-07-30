@@ -28,6 +28,8 @@ namespace FitsRatingTool.Common.Services
 
             bool IsThreadSafe { get; }
 
+            bool IsUsingAggregateFunctions { get; }
+
             IEvaluator Clone();
 
 

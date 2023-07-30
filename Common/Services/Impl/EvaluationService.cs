@@ -21,6 +21,7 @@ using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using org.matheval;
+using org.matheval.Node;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -36,6 +37,8 @@ namespace FitsRatingTool.Common.Services.Impl
 
             public bool IsThreadSafe => false;
 
+            public bool IsUsingAggregateFunctions { get; } = false;
+
 
             private readonly EvaluationService evaluator;
             private readonly List<Variable> variables;
@@ -48,6 +51,15 @@ namespace FitsRatingTool.Common.Services.Impl
                 this.evaluator = evaluator;
                 this.variables = variables;
                 this.constants = constants;
+
+                foreach (var variable in variables)
+                {
+                    if (variable.IsAggregateVariable)
+                    {
+                        IsUsingAggregateFunctions = true;
+                        break;
+                    }
+                }
             }
 
             public IEvaluationService.IEvaluator Clone()
@@ -522,12 +534,24 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static void SetAdditionalStatsBindingsCheck(Expression expression, string name, Random rng)
+        private static bool SetAdditionalStatsBindingsCheck(Expression expression, string name, Random rng)
         {
+            HashSet<string> usedVariables;
+            try
+            {
+                usedVariables = new HashSet<string>(expression.getVariables());
+            }
+            catch (Exception)
+            {
+                usedVariables = new HashSet<string>();
+            }
+
             expression.Bind(name + "Sigma", 1.123456 + rng.NextDouble());
             expression.Bind(name + "Min", 1.123456 + rng.NextDouble());
             expression.Bind(name + "Max", 1.123456 + rng.NextDouble());
             expression.Bind(name + "Median", 1.123456 + rng.NextDouble());
+
+            return usedVariables.Contains(name + "Sigma") || usedVariables.Contains(name + "Min") || usedVariables.Contains(name + "Max") || usedVariables.Contains(name + "Median");
         }
 
         private static void SetStatsBindings(Expression expression, EvaluationItem item, Dictionary<string, Constant> constants, IDictionary<string, StatsInfo> additionalStatistics)
@@ -572,13 +596,15 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static void SetStatsBindingsCheck(Expression expression, Dictionary<string, Constant> constants, Random rng)
+        private static bool SetStatsBindingsCheck(Expression expression, Dictionary<string, Constant> constants, Random rng)
         {
+            bool isUsingAggregateFunction = false;
+
             foreach (var measurementClass in MeasurementClasses)
             {
                 if (!constants.ContainsKey(measurementClass.Name))
                 {
-                    SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
+                    isUsingAggregateFunction |= SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
 
                     foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
@@ -607,6 +633,8 @@ namespace FitsRatingTool.Common.Services.Impl
             {
                 expression.Bind(entry.Key, 1.123456 + rng.NextDouble());
             }
+
+            return isUsingAggregateFunction;
         }
 
         private static void SetAdditionalVariablesBindings(Expression expression, IDictionary<string, double> evaluatedVariables, IDictionary<string, StatsInfo> variablesStatistics)
@@ -626,7 +654,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static void SetAdditionalVariablesBindingsCheck(Expression expression, Random rng, List<Variable> variables)
+        private static bool SetAdditionalVariablesBindingsCheck(Expression expression, Random rng, List<Variable> variables)
         {
             HashSet<string> usedVariables;
             try
@@ -637,6 +665,8 @@ namespace FitsRatingTool.Common.Services.Impl
             {
                 usedVariables = new HashSet<string>();
             }
+
+            bool isAggregateVariable = false;
 
             foreach (var variable in variables)
             {
@@ -650,8 +680,11 @@ namespace FitsRatingTool.Common.Services.Impl
                 if (usedVariables.Contains(variableName + "Sigma") || usedVariables.Contains(variableName + "Min") || usedVariables.Contains(variableName + "Max") || usedVariables.Contains(variableName + "Median"))
                 {
                     variable.StatisticsRequired = true;
+                    isAggregateVariable = true;
                 }
             }
+
+            return isAggregateVariable;
         }
 
         private string PreprocessFormula(string formula)
@@ -685,6 +718,8 @@ namespace FitsRatingTool.Common.Services.Impl
             public Expression? Expression { get; set; }
 
             public bool StatisticsRequired { get; set; }
+
+            public bool IsAggregateVariable { get; set; }
 
             public Variable(string name, int position)
             {
@@ -728,7 +763,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var rng = new Random();
 
-            SetStatsBindingsCheck(variable.Expression, constants, rng);
+            variable.IsAggregateVariable |= SetStatsBindingsCheck(variable.Expression, constants, rng);
 
             foreach (var var in variables)
             {
@@ -736,7 +771,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 variable.Expression.Bind(variableName, 1.123456 + rng.NextDouble());
             }
 
-            SetAdditionalVariablesBindingsCheck(variable.Expression, rng, variables);
+            variable.IsAggregateVariable |= SetAdditionalVariablesBindingsCheck(variable.Expression, rng, variables);
 
             var errors = variable.Expression.GetError();
 

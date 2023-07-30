@@ -28,16 +28,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <ToolTip.Tip>
       <StackPanel Spacing="8">
         <TextBlock Text="Built-in variables: Stars, Median, Noise, NoiseRatio, Eccentricity, SNR, SNRWeight, FWHM, HFR, HFD, Residual" TextWrapping="Wrap"/>
-        <TextBlock Text="All variables - including custom ones defined in the formula - have Min, Max, Median and Sigma versions, e.g. FWHMSigma or HFRSubMinMedian, which are calculated over all subs in each group." TextWrapping="Wrap"/>
-        <TextBlock Text="All variables except Stars, Noise and NoiseRatio have MeanDev versions, e.g. MedianMeanDev, which are calculated individually for each sub." TextWrapping="Wrap"/>
-        <TextBlock Text="All variables except Stars, Median, Noise and NoiseRatio have SubMin, SubMax, SubMean, SubMedian and SubMeanDev (=MeanDev) versions, e.g. FWHMSubMin, which are calculated individually for each sub." TextWrapping="Wrap"/>
+        <TextBlock Text="All variables, including custom ones defined in the formula, have Min, Max, Median and Sigma versions (e.g. FWHMSigma or HFRSubMinMedian) which aggregate the values over all images per group." TextWrapping="Wrap"/>
+        <TextBlock Text="All variables except Stars, Noise and NoiseRatio have MeanDev versions, e.g. MedianMeanDev, which are calculated individually for each image." TextWrapping="Wrap"/>
+        <TextBlock Text="All variables except Stars, Median, Noise and NoiseRatio have SubMin, SubMax, SubMean, SubMedian and SubMeanDev (=MeanDev) versions, e.g. FWHMSubMin, which are calculated individually for each image. For example, FWHMSubMax corresponds to the largest measured FWHM within an image." TextWrapping="Wrap"/>
         <Grid ColumnDefinitions="Auto,*">
           <Viewbox Grid.Column="0"
                    Width="16" Height="16"
                    Margin="4 4 10 4">
             <Image Source="/Assets/Icons/warning.png"/>
           </Viewbox>
-          <TextBlock Grid.Column="1" Text="Note: Min, Max, Median and Sigma variables depend on the grouping!" VerticalAlignment="Center" TextWrapping="Wrap"/>
+          <TextBlock Grid.Column="1" Text="Note: Min, Max, Median and Sigma variables aggregate values over multiple images and therefore depend on the present images and the grouping!" VerticalAlignment="Center" TextWrapping="Wrap"/>
         </Grid>
       </StackPanel>
     </ToolTip.Tip>

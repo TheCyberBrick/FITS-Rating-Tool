@@ -175,6 +175,9 @@
     <Compile Update="UI\Evaluation\Views\EvaluationExporterConfiguratorView.axaml.cs">
       <DependentUpon>EvaluationExporterConfiguratorView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Evaluation\Views\EvaluationFormulaWarningView.axaml.cs">
+      <DependentUpon>EvaluationFormulaWarningView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\Evaluation\Windows\EvaluationExporterWindow.axaml.cs">
       <DependentUpon>EvaluationExporterWindow.axaml</DependentUpon>
     </Compile>
