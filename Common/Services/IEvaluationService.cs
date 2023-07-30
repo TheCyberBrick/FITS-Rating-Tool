@@ -30,6 +30,8 @@ namespace FitsRatingTool.Common.Services
 
             bool IsUsingAggregateFunctions { get; }
 
+            IReadOnlySet<string> RequiredConstants { get; }
+
             IEvaluator Clone();
 
 

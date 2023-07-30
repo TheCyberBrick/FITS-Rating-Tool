@@ -24,7 +24,9 @@ using FitsRatingTool.GuiApp.UI.App.ViewModels;
 using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
 using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
 using ReactiveUI;
+using System.Collections.Generic;
 using System.Reactive;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FitsRatingTool.GuiApp.UI.App.Views
@@ -42,6 +44,7 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
                 if (ViewModel != null)
                 {
                     d.Add(ViewModel.ChangeProfileConfirmationDialog.RegisterHandler(ShowChangeProfileConfirmationDialogAsync));
+                    d.Add(ViewModel.ChangeProfileMissingVariablesWarningDialog.RegisterHandler(ShowChangeProfileMissingVariablesWarningDialogAsync));
                 }
             });
         }
@@ -62,6 +65,25 @@ namespace FitsRatingTool.GuiApp.UI.App.Views
             if (window != null)
             {
                 var result = await MessageBoxWindow.ShowAsync(window, MessageBoxStyle.OkCancel, "Change profile?", "Changing the profile will invalidate all current image measurements and statistics.", null, MessageBoxIcon.Info, true);
+                ctx.SetOutput(result == MessageBoxResult.Ok);
+            }
+            else
+            {
+                ctx.SetOutput(false);
+            }
+        }
+
+        private async Task ShowChangeProfileMissingVariablesWarningDialogAsync(InteractionContext<List<string>, bool> ctx)
+        {
+            if (window != null)
+            {
+                var missingVariablesStr = new StringBuilder();
+                foreach (var missingVariable in ctx.Input)
+                {
+                    missingVariablesStr.Append("- ");
+                    missingVariablesStr.AppendLine(missingVariable);
+                }
+                var result = await MessageBoxWindow.ShowAsync(window, MessageBoxStyle.OkCancel, "Change profile?", "The current evaluation formula uses variables are that are not present in the selected profile and it may stop working if you proceed. Missing variables:\n\n" + missingVariablesStr.ToString(), null, MessageBoxIcon.Warning, true);
                 ctx.SetOutput(result == MessageBoxResult.Ok);
             }
             else

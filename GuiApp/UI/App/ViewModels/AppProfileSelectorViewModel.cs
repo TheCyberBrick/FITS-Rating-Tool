@@ -17,12 +17,12 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.InstrumentProfile;
 using FitsRatingTool.IoC;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -44,6 +44,8 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         public Interaction<Unit, bool> ChangeProfileConfirmationDialog { get; } = new();
 
+        public Interaction<List<string>, bool> ChangeProfileMissingVariablesWarningDialog { get; } = new();
+
 
         private volatile bool suppressChangeCommand;
         private string? prevSelectedProfileId = null;
@@ -51,7 +53,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
 
         private AppProfileSelectorViewModel(IAppProfileSelectorViewModel.Of args,
             IContainer<IInstrumentProfileSelectorViewModel, IInstrumentProfileSelectorViewModel.Of> instrumentProfileSelectorContainer,
-            IInstrumentProfileContext instrumentProfileContext, IAppConfig appConfig)
+            IInstrumentProfileContext instrumentProfileContext, IEvaluationContext evaluationContext, IAppConfig appConfig)
         {
             instrumentProfileSelectorContainer.Singleton().Inject(new IInstrumentProfileSelectorViewModel.Of(), vm =>
             {
@@ -74,11 +76,59 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                 {
                     try
                     {
-                        confirmed = await ChangeProfileConfirmationDialog.Handle(Unit.Default);
+                        confirmed &= await ChangeProfileConfirmationDialog.Handle(Unit.Default);
                     }
                     catch (UnhandledInteractionException<Unit, bool>)
                     {
                         // OK
+                    }
+
+                    if (confirmed)
+                    {
+                        var currentEvaluator = evaluationContext.CurrentEvaluator;
+                        if (currentEvaluator != null)
+                        {
+                            var availableVariables = new HashSet<string>();
+                            if (profile != null)
+                            {
+                                foreach (var variableVm in profile.Variables)
+                                {
+                                    try
+                                    {
+                                        var variable = variableVm.Editor.Configurator?.CreateVariable();
+                                        if (variable != null)
+                                        {
+                                            availableVariables.Add(variable.Name);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // OK, we only care about valid variables
+                                    }
+                                }
+                            }
+
+                            var missingVariables = new List<string>();
+                            foreach (var requiredVariable in currentEvaluator.RequiredConstants)
+                            {
+                                if (!availableVariables.Contains(requiredVariable))
+                                {
+                                    missingVariables.Add(requiredVariable);
+                                }
+                            }
+
+                            if (missingVariables.Count > 0)
+                            {
+                                try
+                                {
+                                    confirmed &= await ChangeProfileMissingVariablesWarningDialog.Handle(missingVariables);
+                                }
+                                catch (UnhandledInteractionException<Unit, bool>)
+                                {
+                                    // OK
+                                }
+                            }
+                        }
                     }
                 }
 

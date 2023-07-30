@@ -17,12 +17,9 @@
 */
 
 using FitsRatingTool.Common.Models.Evaluation;
-using FitsRatingTool.Common.Models.FitsImage;
 using FitsRatingTool.Common.Utils;
 using Microsoft.VisualStudio.Threading;
 using org.matheval;
-using org.matheval.Node;
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using static FitsRatingTool.Common.Models.FitsImage.IFitsImageStatistics;
@@ -39,18 +36,21 @@ namespace FitsRatingTool.Common.Services.Impl
 
             public bool IsUsingAggregateFunctions { get; } = false;
 
+            public IReadOnlySet<string> RequiredConstants { get; }
 
             private readonly EvaluationService evaluator;
             private readonly List<Variable> variables;
 
             private readonly Dictionary<string, Constant> constants;
 
-            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula, Dictionary<string, Constant> constants)
+            public Evaluator(EvaluationService evaluator, List<Variable> variables, string formula, Dictionary<string, Constant> constants, IReadOnlySet<string> requiredConstants)
             {
                 Formula = formula;
                 this.evaluator = evaluator;
                 this.variables = variables;
                 this.constants = constants;
+
+                RequiredConstants = requiredConstants;
 
                 foreach (var variable in variables)
                 {
@@ -74,7 +74,7 @@ namespace FitsRatingTool.Common.Services.Impl
                     clonedVariables.Add(clonedVariable);
                 }
 
-                return new Evaluator(evaluator, clonedVariables, Formula, constants);
+                return new Evaluator(evaluator, clonedVariables, Formula, constants, RequiredConstants);
             }
 
             private async Task EvaluateAsync(
@@ -534,18 +534,8 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static bool SetAdditionalStatsBindingsCheck(Expression expression, string name, Random rng)
+        private static bool SetAdditionalStatsBindingsCheck(Expression expression, HashSet<string> usedVariables, string name, Random rng)
         {
-            HashSet<string> usedVariables;
-            try
-            {
-                usedVariables = new HashSet<string>(expression.getVariables());
-            }
-            catch (Exception)
-            {
-                usedVariables = new HashSet<string>();
-            }
-
             expression.Bind(name + "Sigma", 1.123456 + rng.NextDouble());
             expression.Bind(name + "Min", 1.123456 + rng.NextDouble());
             expression.Bind(name + "Max", 1.123456 + rng.NextDouble());
@@ -596,26 +586,39 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private static bool SetStatsBindingsCheck(Expression expression, Dictionary<string, Constant> constants, Random rng)
+        private static bool SetStatsBindingsCheck(Expression expression, Dictionary<string, Constant> constants, Random rng, HashSet<string> requiredConstants)
         {
+            HashSet<string> usedVariables;
+            try
+            {
+                usedVariables = new HashSet<string>(expression.getVariables());
+            }
+            catch (Exception)
+            {
+                usedVariables = new HashSet<string>();
+            }
+
             bool isUsingAggregateFunction = false;
 
             foreach (var measurementClass in MeasurementClasses)
             {
                 if (!constants.ContainsKey(measurementClass.Name))
                 {
-                    isUsingAggregateFunction |= SetAdditionalStatsBindingsCheck(expression, measurementClass.Name, rng);
+                    isUsingAggregateFunction |= SetAdditionalStatsBindingsCheck(expression, usedVariables, measurementClass.Name, rng);
 
                     foreach (var measurementName in measurementClass.Measurements.Keys)
                     {
-                        SetAdditionalStatsBindingsCheck(expression, measurementName, rng);
+                        SetAdditionalStatsBindingsCheck(expression, usedVariables, measurementName, rng);
                     }
                 }
             }
 
             foreach (var entry in constants)
             {
-                SetAdditionalStatsBindingsCheck(expression, entry.Key, rng);
+                if (SetAdditionalStatsBindingsCheck(expression, usedVariables, entry.Key, rng))
+                {
+                    requiredConstants.Add(entry.Key);
+                }
             }
 
             foreach (var measurementClass in MeasurementClasses)
@@ -632,6 +635,11 @@ namespace FitsRatingTool.Common.Services.Impl
             foreach (var entry in constants)
             {
                 expression.Bind(entry.Key, 1.123456 + rng.NextDouble());
+
+                if (usedVariables.Contains(entry.Key))
+                {
+                    requiredConstants.Add(entry.Key);
+                }
             }
 
             return isUsingAggregateFunction;
@@ -733,7 +741,7 @@ namespace FitsRatingTool.Common.Services.Impl
             }
         }
 
-        private bool BuildVariable(Variable variable, List<Variable> variables, Dictionary<string, Constant> constants, out string? errorMessage)
+        private bool BuildVariable(Variable variable, List<Variable> variables, Dictionary<string, Constant> constants, HashSet<string> requiredConstants, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -763,7 +771,7 @@ namespace FitsRatingTool.Common.Services.Impl
 
             var rng = new Random();
 
-            variable.IsAggregateVariable |= SetStatsBindingsCheck(variable.Expression, constants, rng);
+            variable.IsAggregateVariable |= SetStatsBindingsCheck(variable.Expression, constants, rng, requiredConstants);
 
             foreach (var var in variables)
             {
@@ -905,11 +913,13 @@ namespace FitsRatingTool.Common.Services.Impl
             evaluator = null;
             errorMessage = null;
 
-            List<Variable> evaluatedVariables = new();
+            var requiredConstants = new HashSet<string>();
+
+            var evaluatedVariables = new List<Variable>();
 
             foreach (Variable variable in variables)
             {
-                if (!BuildVariable(variable, evaluatedVariables, defaultConstants, out errorMessage))
+                if (!BuildVariable(variable, evaluatedVariables, defaultConstants, requiredConstants, out errorMessage))
                 {
                     return false;
                 }
@@ -917,7 +927,7 @@ namespace FitsRatingTool.Common.Services.Impl
                 evaluatedVariables.Add(variable);
             }
 
-            evaluator = new Evaluator(this, variables, formula, defaultConstants);
+            evaluator = new Evaluator(this, variables, formula, defaultConstants, requiredConstants);
             return true;
         }
 
