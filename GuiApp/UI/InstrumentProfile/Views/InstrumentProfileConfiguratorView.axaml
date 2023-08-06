@@ -38,8 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </StackPanel>
       </Button>
     </Grid>
-    <Border Classes="themed"
-            Grid.Row="1"
+    <Border Grid.Row="1"
             Padding="4"
             IsEnabled="{Binding HasProfile}">
       <views:InstrumentProfileView DataContext="{Binding Selector.SelectedProfile}"/>

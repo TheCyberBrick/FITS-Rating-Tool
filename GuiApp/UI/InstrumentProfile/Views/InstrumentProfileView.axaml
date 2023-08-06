@@ -20,112 +20,181 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.InstrumentProfile.Views.InstrumentProfileView">
 
-  <Grid ColumnDefinitions="Auto,*"
-        RowDefinitions="Auto,Auto,Auto,Auto,14,Auto,Auto,Auto,Auto,14,*">
 
-    <TextBlock Grid.Column="0" Grid.Row="0" Text="ID" VerticalAlignment="Center" Margin="0 0 8 0"/>
-    <Panel Grid.Column="1" Grid.Row="0" Margin="0 0 0 4">
-      <TextBox Text="{Binding Id}"
-               Classes.invalid="{Binding !IsIdValid}"
-               Classes.unavailable="{Binding !IsIdAvailable}">
-        <Classes.readonly>
-          <MultiBinding Converter="{x:Static BoolConverters.Or}">
-            <Binding Path="IsReadOnly"/>
-            <Binding Path="!IsNew"/>
-          </MultiBinding>
-        </Classes.readonly>
-        <TextBox.Styles>
-          <Style Selector="TextBox.readonly">
-            <Setter Property="IsReadOnly" Value="True"/>
-          </Style>
-          <Style Selector="TextBox.invalid">
-            <Setter Property="ToolTip.Tip" Value="The ID must only consist of characters a-Z, 0-9 or _ (underscore) and must be at least one character long."/>
-          </Style>
-          <Style Selector="TextBox.invalid.unavailable">
-            <Setter Property="ToolTip.Tip" Value="This ID is already taken. Please choose another one."/>
-          </Style>
-        </TextBox.Styles>
-      </TextBox>
-      <Border Classes.invalid="{Binding !IsIdValid}">
-        <Border.Styles>
-          <Style Selector="Border.invalid">
-            <Setter Property="BorderBrush" Value="#90FA4A37"/>
-            <Setter Property="BorderThickness" Value="2"/>
-          </Style>
-        </Border.Styles>
-      </Border>
-    </Panel>
+  <controls:ScrollableTabControl Grid.Row="0"
+                                 QuickSelectDropdown="False">
 
-    <TextBlock Grid.Column="0" Grid.Row="1" Text="Name" VerticalAlignment="Center" Margin="0 0 8 0"/>
-    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Name}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="16" Height="16" Margin="-1">
+            <Image Source="/Assets/Icons/profile.png"/>
+          </Viewbox>
+          <TextBlock Text="Profile" VerticalAlignment="Center" Margin="0 0 3 0"/>
+        </StackPanel>
+      </TabItem.Header>
 
-    <TextBlock Grid.Column="0" Grid.Row="2" Text="Description" VerticalAlignment="Top" Margin="0 5 8 0"/>
-    <TextBox Grid.Column="1" Grid.Row="2"
-             Text="{Binding Description}"
-             IsReadOnly="{Binding IsReadOnly}"
-             Classes.readonly="{Binding IsReadOnly}"
-             TextWrapping="Wrap"
-             AcceptsReturn="True"
-             Height="46"
-             Margin="0 0 0 4"/>
+      <Grid ColumnDefinitions="Auto,*"
+          RowDefinitions="Auto,Auto,Auto,Auto">
 
-    <TextBlock Grid.Column="0" Grid.Row="3" Text="Key" VerticalAlignment="Center" Margin="0 0 8 0"/>
-    <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Key}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="ID" VerticalAlignment="Center" Margin="0 0 8 0"/>
+        <Panel Grid.Column="1" Grid.Row="0" Margin="0 0 0 4">
+          <TextBox Text="{Binding Id}"
+                   Classes.invalid="{Binding !IsIdValid}"
+                   Classes.unavailable="{Binding !IsIdAvailable}">
+            <Classes.readonly>
+              <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="IsReadOnly"/>
+                <Binding Path="!IsNew"/>
+              </MultiBinding>
+            </Classes.readonly>
+            <TextBox.Styles>
+              <Style Selector="TextBox.readonly">
+                <Setter Property="IsReadOnly" Value="True"/>
+              </Style>
+              <Style Selector="TextBox.invalid">
+                <Setter Property="ToolTip.Tip" Value="The ID must only consist of characters a-Z, 0-9 or _ (underscore) and must be at least one character long."/>
+              </Style>
+              <Style Selector="TextBox.invalid.unavailable">
+                <Setter Property="ToolTip.Tip" Value="This ID is already taken. Please choose another one."/>
+              </Style>
+            </TextBox.Styles>
+          </TextBox>
+          <Border Classes.invalid="{Binding !IsIdValid}">
+            <Border.Styles>
+              <Style Selector="Border.invalid">
+                <Setter Property="BorderBrush" Value="#90FA4A37"/>
+                <Setter Property="BorderThickness" Value="2"/>
+              </Style>
+            </Border.Styles>
+          </Border>
+        </Panel>
 
-    <Separator Grid.ColumnSpan="2" Grid.Row="4" Margin="0 0 0 3" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="1" Text="Name" VerticalAlignment="Center" Margin="0 0 8 0"/>
+        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Name}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
 
-    <CheckBox Grid.Column="0" Grid.Row="5" Content="Focal Length (mm)" IsChecked="{Binding IsFocalLengthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
-    <NumericUpDown Grid.Column="1" Grid.Row="5" Value="{Binding FocalLength}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsFocalLengthEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Description" VerticalAlignment="Top" Margin="0 5 8 0"/>
+        <TextBox Grid.Column="1" Grid.Row="2"
+                 Text="{Binding Description}"
+                 IsReadOnly="{Binding IsReadOnly}"
+                 Classes.readonly="{Binding IsReadOnly}"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 Height="46"
+                 Margin="0 0 0 4"/>
 
-    <CheckBox Grid.Column="0" Grid.Row="6" Content="Bit Depth" IsChecked="{Binding IsBitDepthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
-    <NumericUpDown Grid.Column="1" Grid.Row="6" Value="{Binding BitDepth}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsBitDepthEnabled}" Minimum="1" Maximum="256" Margin="0 0 0 4"/>
+        <TextBlock Grid.Column="0" Grid.Row="3" Text="Key" VerticalAlignment="Center" Margin="0 0 8 0"/>
+        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Key}" IsReadOnly="{Binding IsReadOnly}" Classes.readonly="{Binding IsReadOnly}" Margin="0 0 0 4"/>
 
-    <CheckBox Grid.Column="0" Grid.Row="7" Content="e&#8315; per ADU" IsChecked="{Binding IsElectronsPerADUEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
-    <NumericUpDown Grid.Column="1" Grid.Row="7" Value="{Binding ElectronsPerADU}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsElectronsPerADUEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+      </Grid>
 
-    <CheckBox Grid.Column="0" Grid.Row="8" Content="Pixel Size (&#181;m)" IsChecked="{Binding IsPixelSizeInMicronsEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
-    <NumericUpDown Grid.Column="1" Grid.Row="8" Value="{Binding PixelSizeInMicrons}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsPixelSizeInMicronsEnabled}" Minimum="0" Maximum="1000" Margin="0 0 0 4"/>
+    </TabItem>
 
-    <Separator Grid.ColumnSpan="2" Grid.Row="9" Margin="0 0 0 3" VerticalAlignment="Center"/>
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="20" Height="20" Margin="-1">
+            <Image Source="/Assets/Icons/telescope.png"/>
+          </Viewbox>
+          <TextBlock Text="Instrument" VerticalAlignment="Center" Margin="0 0 3 0"/>
+        </StackPanel>
+      </TabItem.Header>
 
-    <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="10" RowDefinitions="Auto,*">
-      <TextBlock Grid.Row="0" Text="Variables" Margin="0 0 0 4"/>
-      <Button Grid.Row="0"
-              Content="+"
-              Width="15" Height="15"
-              CornerRadius="1" Padding="0 -4 0 0"
-              VerticalAlignment="Center" HorizontalAlignment="Right"
-              VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
-              Command="{Binding AddVariable}"
-              IsEnabled="{Binding !IsReadOnly}"/>
-      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
-        <ItemsControl Items="{Binding Variables}"
-                      IsEnabled="{Binding !IsReadOnly}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="*,4,Auto">
-                <ContentControl Grid.Column="0" Grid.Row="0"
-                                HorizontalAlignment="Stretch"
-                                Content="{Binding Editor}"/>
-                <Panel Grid.Column="2" Grid.Row="0"
-                       Margin="0 4 0 0">
-                  <Button Content="-"
-                          Width="15" Height="15"
-                          CornerRadius="1" Padding="1.5 -4 0 0"
-                          VerticalAlignment="Top" HorizontalAlignment="Right"
-                          VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
-                          Command="{Binding Remove}"/>
-                </Panel>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
-    </Grid>
+      <Grid ColumnDefinitions="Auto,*"
+          RowDefinitions="Auto,Auto,Auto,Auto,14,*">
 
-  </Grid>
+        <CheckBox Grid.Column="0" Grid.Row="0" Content="Focal Length (mm)" IsChecked="{Binding IsFocalLengthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <NumericUpDown Grid.Column="1" Grid.Row="0" Value="{Binding FocalLength}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsFocalLengthEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+
+        <CheckBox Grid.Column="0" Grid.Row="1" Content="Bit Depth" IsChecked="{Binding IsBitDepthEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <NumericUpDown Grid.Column="1" Grid.Row="1" Value="{Binding BitDepth}" IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsBitDepthEnabled}" Minimum="1" Maximum="256" Margin="0 0 0 4"/>
+
+        <CheckBox Grid.Column="0" Grid.Row="2" Content="e&#8315; per ADU" IsChecked="{Binding IsElectronsPerADUEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <NumericUpDown Grid.Column="1" Grid.Row="2" Value="{Binding ElectronsPerADU}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsElectronsPerADUEnabled}" Minimum="0" Maximum="100000" Margin="0 0 0 4"/>
+
+        <CheckBox Grid.Column="0" Grid.Row="3" Content="Pixel Size (&#181;m)" IsChecked="{Binding IsPixelSizeInMicronsEnabled, FallbackValue=False}" IsEnabled="{Binding !IsReadOnly}" VerticalAlignment="Center" Margin="0 0 8 2"/>
+        <NumericUpDown Grid.Column="1" Grid.Row="3" Value="{Binding PixelSizeInMicrons}" IsReadOnly="{Binding IsReadOnly}" FormatString="0.###" Increment="0.1" IsEnabled="{Binding IsPixelSizeInMicronsEnabled}" Minimum="0" Maximum="1000" Margin="0 0 0 4"/>
+
+      </Grid>
+
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="18" Height="18" Margin="0 -2">
+            <Image Source="/Assets/Icons/link.png"/>
+          </Viewbox>
+          <TextBlock Text="Grouping" VerticalAlignment="Center" Margin="0 0 3 0"/>
+        </StackPanel>
+      </TabItem.Header>
+
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="12" Height="12" Margin="0 0 0 -1">
+            <Image Source="/Assets/Icons/alpha.png"/>
+          </Viewbox>
+          <TextBlock Text="Variables" VerticalAlignment="Center" Margin="0 0 3 0"/>
+        </StackPanel>
+      </TabItem.Header>
+
+      <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="10" RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Text="Variables" Margin="0 0 0 4"/>
+        <Button Grid.Row="0"
+                Content="+"
+                Width="15" Height="15"
+                CornerRadius="1" Padding="0 -4 0 0"
+                VerticalAlignment="Center" HorizontalAlignment="Right"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                Command="{Binding AddVariable}"
+                IsEnabled="{Binding !IsReadOnly}"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+          <ItemsControl Items="{Binding Variables}"
+                        IsEnabled="{Binding !IsReadOnly}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="*,4,Auto">
+                  <ContentControl Grid.Column="0" Grid.Row="0"
+                                  HorizontalAlignment="Stretch"
+                                  Content="{Binding Editor}"/>
+                  <Panel Grid.Column="2" Grid.Row="0"
+                         Margin="0 4 0 0">
+                    <Button Content="-"
+                            Width="15" Height="15"
+                            CornerRadius="1" Padding="1.5 -4 0 0"
+                            VerticalAlignment="Top" HorizontalAlignment="Right"
+                            VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                            Command="{Binding Remove}"/>
+                  </Panel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Viewbox Width="16" Height="16" Margin="-1">
+            <Image Source="/Assets/Icons/formula.png"/>
+          </Viewbox>
+          <TextBlock Text="Evaluation Formula" VerticalAlignment="Center" Margin="0 0 3 0"/>
+        </StackPanel>
+      </TabItem.Header>
+
+    </TabItem>
+
+
+  </controls:ScrollableTabControl>
 
 </UserControl>

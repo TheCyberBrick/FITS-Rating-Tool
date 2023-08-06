@@ -22,9 +22,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
         xmlns:views="clr-namespace:FitsRatingTool.GuiApp.UI.InstrumentProfile.Views"
-        mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="500"
-        Width="350" MinWidth="230"
-        Height="500" MinHeight="254"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="400"
+        Width="550" MinWidth="230"
+        Height="400" MinHeight="254"
         UseLayoutRounding="True"
         x:Class="FitsRatingTool.GuiApp.UI.InstrumentProfile.Windows.InstrumentProfileConfiguratorWindow"
         Icon="/Assets/Icons/profile.png"
@@ -70,11 +70,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </Menu>
 
     <Grid RowDefinitions="*,Auto">
-      <Border Grid.Row="0"
-              Classes="themed inner"
-              Padding="4">
-        <views:InstrumentProfileConfiguratorView DataContext="{Binding .}"/>
-      </Border>
+      <views:InstrumentProfileConfiguratorView DataContext="{Binding .}"/>
 
       <StackPanel Grid.Row="1"
                   Orientation="Horizontal"
