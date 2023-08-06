@@ -62,14 +62,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
         {
             var fileName = vm.LoadedFile;
             var modified = vm.IsModified;
-            if (fileName != null)
-            {
-                Title = (modified ? "*" : "") + fileName;
-            }
-            else
-            {
-                Title = defaultTitle;
-            }
+            Title = (modified ? "*" : "") + (fileName ?? defaultTitle);
         }
 
         private void InitializeComponent()

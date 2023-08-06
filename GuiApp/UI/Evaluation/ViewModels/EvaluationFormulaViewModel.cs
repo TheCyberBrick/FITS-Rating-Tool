@@ -291,6 +291,9 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             RatingFormula = evaluationContext.CurrentFormula;
 
+            LoadedFile = null;
+            IsModified = false;
+
             UpdateCanReset();
         }
 
@@ -328,6 +331,15 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             // Can reset if evaluation context differs from the profile it
             // was loaded from, or if it was loaded from a different profile
             CanReset = evaluationContext.LoadedInstrumentProfile == null || evaluationContext.LoadedInstrumentProfile != loadedInstrumentProfile;
+
+            if (CanReset)
+            {
+                IsModified = true;
+            }
+            else if (LoadedFile == null)
+            {
+                IsModified = false;
+            }
         }
 
         private void InvalidateEvaluator()
