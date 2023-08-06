@@ -116,15 +116,22 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private IReadOnlyInstrumentProfile CreateProfileFactoryCopy(IReadOnlyInstrumentProfile profile)
         {
+            // TODO Must get rid of this. IInstrumentProfileViewModel no longer implements
+            // IReadOnlyInstrumentProfile so we don't need to copy the data anymore.
+
             var copy = instrumentProfileFactory.Builder().Id(profile.Id).Build();
 
             copy.Name = profile.Name;
             copy.Description = profile.Description;
             copy.Key = profile.Key;
+
             copy.FocalLength = profile.FocalLength;
             copy.BitDepth = profile.BitDepth;
             copy.ElectronsPerADU = profile.ElectronsPerADU;
             copy.PixelSizeInMicrons = profile.PixelSizeInMicrons;
+
+            copy.GroupingKeys = profile.GroupingKeys != null ? new List<string>(profile.GroupingKeys) : null;
+
             if (profile.Variables != null)
             {
                 copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);

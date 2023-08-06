@@ -25,6 +25,9 @@ using System.Reactive;
 using System.Threading.Tasks;
 using FitsRatingTool.GuiApp.UI.Evaluation.ViewModels;
 using Avalonia;
+using FitsRatingTool.GuiApp.UI.MessageBox.ViewModels;
+using FitsRatingTool.GuiApp.UI.MessageBox.Windows;
+using MathNet.Numerics;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
 {
@@ -47,6 +50,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
                 {
                     d.Add(ViewModel.LoadFormulaOpenFileDialog.RegisterHandler(ShowOpenFileDialogAsync));
                     d.Add(ViewModel.SaveFormulaSaveFileDialog.RegisterHandler(ShowSaveFileDialogAsync));
+                    d.Add(ViewModel.ResetConfirmationDialog.RegisterHandler(ShowResetConfirmationDialogAsync));
 
                     d.Add(ViewModel.WhenAnyValue(x => x.LoadedFile).Subscribe(x => UpdateTitle(ViewModel)));
                     d.Add(ViewModel.WhenAnyValue(x => x.IsModified).Subscribe(x => UpdateTitle(ViewModel)));
@@ -96,6 +100,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
             var file = await dialog.ShowAsync(this);
 
             ctx.SetOutput(file ?? "");
+        }
+
+        private async Task ShowResetConfirmationDialogAsync(InteractionContext<Unit, bool> ctx)
+        {
+            var result = await MessageBoxWindow.ShowAsync(this, MessageBoxStyle.OkCancel, "Reset?", "The evaluation grouping and formula will be reset.\nYour changes here will be lost.\nContinue?", null, MessageBoxIcon.Warning, true);
+            ctx.SetOutput(result == MessageBoxResult.Ok);
         }
     }
 }

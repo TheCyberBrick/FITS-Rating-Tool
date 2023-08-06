@@ -121,7 +121,11 @@ namespace FitsRatingTool.GuiApp
         private void SetupContext()
         {
             instrumentProfileContext.LoadFromConfig();
+
+            variableContext.LoadFromCurrentProfile();
+
             evaluationContext.LoadFromConfig();
+            evaluationContext.LoadFromCurrentProfile();
 
             evaluationManager.EvaluationContext = evaluationContext;
             evaluationManager.VariableContext = variableContext;
@@ -215,6 +219,14 @@ namespace FitsRatingTool.GuiApp
             // Keep current variables in sync with the currently
             // selected profile
             variableContext.LoadFromCurrentProfile(instrumentProfileContext);
+
+            // If evaluation context data was loaded from previous
+            // profile and has since not changed then it should
+            // be updated
+            if (evaluationContext.LoadedInstrumentProfile == e.OldProfile)
+            {
+                evaluationContext.LoadFromCurrentProfile();
+            }
 
             // Image statistics need to be invalidated when
             // profile has changed because they have to be

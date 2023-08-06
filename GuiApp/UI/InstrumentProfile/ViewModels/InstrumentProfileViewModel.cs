@@ -22,10 +22,14 @@ using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
+using FitsRatingTool.Common.Services.Impl;
+using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
+using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Utils;
 using FitsRatingTool.GuiApp.UI.Variables;
 using FitsRatingTool.IoC;
+using Newtonsoft.Json.Linq;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -146,6 +150,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
         }
 
 
+        private IJobGroupingConfiguratorViewModel _jobGroupingConfiguratorViewModel = null!;
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator
+        {
+            get => _jobGroupingConfiguratorViewModel;
+            set => this.RaiseAndSetIfChanged(ref _jobGroupingConfiguratorViewModel, value);
+
+        }
+
         public AvaloniaList<IVariableItemViewModel> Variables { get; } = new();
 
 
@@ -196,15 +208,25 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         private readonly IInstrumentProfileManager instrumentProfileManager;
         private readonly IInstrumentProfileFactory instrumentProfileFactory;
+        private readonly IGroupingManager groupingManager;
+
 
         private readonly IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer;
+        private readonly ISingletonContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> jobGroupingConfiguratorContainer;
 
         private InstrumentProfileViewModel(IInstrumentProfileViewModel.OfProfile args, IInstrumentProfileManager instrumentProfileManager,
-            IInstrumentProfileFactory instrumentProfileFactory, IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer)
+            IInstrumentProfileFactory instrumentProfileFactory, IGroupingManager groupingManager,
+            IContainer<IVariableEditorViewModel, IVariableEditorViewModel.Of> variableEditorContainer,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> jobGroupingConfiguratorContainer)
         {
             this.instrumentProfileManager = instrumentProfileManager;
             this.instrumentProfileFactory = instrumentProfileFactory;
+            this.groupingManager = groupingManager;
+
             this.variableEditorContainer = variableEditorContainer;
+            this.jobGroupingConfiguratorContainer = jobGroupingConfiguratorContainer.Singleton();
+
+            jobGroupingConfiguratorContainer.Inject(new(), this, x => x.GroupingConfigurator);
 
             IsNew = args.Profile == null;
 
@@ -237,6 +259,7 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             this.WhenAnyValue(x => x.Name).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.Description).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.Key).Subscribe(_ => IsModified = true);
+
             this.WhenAnyValue(x => x.IsFocalLengthEnabled).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.FocalLength).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.IsBitDepthEnabled).Subscribe(_ => IsModified = true);
@@ -245,6 +268,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             this.WhenAnyValue(x => x.ElectronsPerADU).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.IsPixelSizeInMicronsEnabled).Subscribe(_ => IsModified = true);
             this.WhenAnyValue(x => x.PixelSizeInMicrons).Subscribe(_ => IsModified = true);
+
+            this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Subscribe(_ => IsModified = true);
 
             Variables.CollectionChanged += (sender, e) =>
             {
@@ -324,6 +349,18 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             else
             {
                 IsPixelSizeInMicronsEnabled = false;
+            }
+
+
+            // Load grouping
+            var groupingKeys = profile.GroupingKeys;
+            if (groupingKeys != null && GroupingConfiguration.TryParseGroupingKeys(groupingManager, groupingKeys, out var grouping))
+            {
+                GroupingConfigurator = jobGroupingConfiguratorContainer.Instantiate(new(grouping));
+            }
+            else
+            {
+                GroupingConfigurator = jobGroupingConfiguratorContainer.Instantiate(new());
             }
 
 
@@ -431,10 +468,13 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             profile.Name = Name;
             profile.Description = Description;
             profile.Key = Key;
+
             profile.FocalLength = FocalLength;
             profile.BitDepth = BitDepth;
             profile.ElectronsPerADU = ElectronsPerADU;
             profile.PixelSizeInMicrons = PixelSizeInMicrons;
+
+            profile.GroupingKeys = GroupingConfigurator.GroupingConfiguration.GroupingKeys;
 
             if (Variables != null)
             {

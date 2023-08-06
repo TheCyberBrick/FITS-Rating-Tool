@@ -18,6 +18,7 @@
 
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Instrument;
+using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Variables;
 using ReactiveUI;
 using System.Reactive;
@@ -49,6 +50,9 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
         bool IsElectronsPerADUEnabled { get; set; }
 
         bool IsPixelSizeInMicronsEnabled { get; set; }
+
+
+        IJobGroupingConfiguratorViewModel GroupingConfigurator { get; }
 
 
         AvaloniaList<IVariableItemViewModel> Variables { get; }

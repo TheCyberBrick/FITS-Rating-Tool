@@ -89,9 +89,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <RowDefinition Height="*" MinHeight="50"/>
         <RowDefinition Height="0"/>
         <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
 
-      <HeaderedContentControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="3"
+      <HeaderedContentControl Grid.Row="0" Grid.Column="2" Grid.RowSpan="4"
                               Padding="4">
         <HeaderedContentControl.Header>
           <Panel>
@@ -225,6 +226,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </HeaderedContentControl>
 
       <Button Grid.Row="2" Grid.Column="0"
+              Margin="0 3 0 0"
+              Command="{Binding Reset}"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Stretch">
+        <ToolTip.Tip>Resets the evaluation grouping and formula to the currently selected profile.</ToolTip.Tip>
+        <Grid ColumnDefinitions="Auto,10,*">
+          <TextBlock Grid.Column="0"
+                     Text="Reset"
+                     HorizontalAlignment="Left"
+                     Margin="4 0 0 0"/>
+          <Viewbox Grid.Column="2"
+                   Width="16" Height="16"
+                   HorizontalAlignment="Right"
+                   Margin="-2 -1 -2 -2">
+            <Image Source="/Assets/Icons/undo.png"/>
+          </Viewbox>
+        </Grid>
+      </Button>
+
+      <Button Grid.Row="3" Grid.Column="0"
               Margin="0 3 0 0"
               Command="{Binding UpdateRatings}"
               HorizontalAlignment="Stretch"

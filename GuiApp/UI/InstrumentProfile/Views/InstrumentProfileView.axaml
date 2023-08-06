@@ -20,8 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-            xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             xmlns:controls="clr-namespace:FitsRatingTool.GuiApp.UI.Controls"
+             xmlns:jviews="clr-namespace:FitsRatingTool.GuiApp.UI.JobConfigurator.Views"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="FitsRatingTool.GuiApp.UI.InstrumentProfile.Views.InstrumentProfileView">
 
 
@@ -132,6 +133,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <TextBlock Text="Grouping" VerticalAlignment="Center" Margin="0 0 3 0"/>
         </StackPanel>
       </TabItem.Header>
+
+      <Panel>
+        <jviews:JobGroupingConfigurationHelpView
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    DataContext="{Binding GroupingConfigurator.GroupingConfiguration}"
+                    Margin="3"/>
+
+        <Grid RowDefinitions="Auto,4,*">
+          <TextBlock Grid.Row="0" Text="Group by..."/>
+          <jviews:JobGroupingConfiguratorView
+                    Grid.Row="2"
+                    Grid.ColumnSpan="2"
+                    DataContext="{Binding GroupingConfigurator}"/>
+        </Grid>
+      </Panel>
 
     </TabItem>
 

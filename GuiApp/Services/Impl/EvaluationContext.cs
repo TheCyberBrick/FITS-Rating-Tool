@@ -18,6 +18,7 @@
 
 using Avalonia.Utilities;
 using DryIocAttributes;
+using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Models;
 using System;
@@ -36,24 +37,26 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private readonly IGroupingManager groupingManager;
         private readonly IAppConfig appConfig;
-        private readonly IVariableContext variableContext;
         private readonly IEvaluationService evaluationService;
 
-        public EvaluationContext(IGroupingManager groupingManager, IAppConfig appConfig,
-            IVariableContext variableContext, IEvaluationService evaluationService)
+        private readonly IVariableContext variableContext;
+        private readonly IInstrumentProfileContext instrumentProfileContext;
+
+        public EvaluationContext(IGroupingManager groupingManager, IAppConfig appConfig, IEvaluationService evaluationService,
+            IVariableContext variableContext, IInstrumentProfileContext instrumentProfileContext)
         {
             this.groupingManager = groupingManager;
             this.appConfig = appConfig;
-            this.variableContext = variableContext;
             this.evaluationService = evaluationService;
+
+            this.variableContext = variableContext;
+            this.instrumentProfileContext = instrumentProfileContext;
 
             WeakEventHandlerManager.Subscribe<IVariableContext, IVariableContext.VariablesChangedEventArgs, EvaluationContext>(variableContext, nameof(variableContext.CurrentVariablesChanged), OnCurrentVariablesChanged);
         }
 
         public void LoadFromConfig()
         {
-            CurrentGroupingConfiguration = CurrentFilterGroupingConfiguration = appConfig.DefaultEvaluationGrouping;
-
             var file = appConfig.DefaultEvaluationFormulaPath;
             if (file.Length > 0)
             {
@@ -66,6 +69,37 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     CurrentFormula = $"Could not load default formula from file '{file}'. Please make sure it exists and is readable or adjust the default evaluation formula setting.";
                 }
             }
+            else
+            {
+                CurrentFormula = "";
+            }
+        }
+
+        public void LoadFromCurrentProfile()
+        {
+            LoadFromCurrentProfile(instrumentProfileContext);
+        }
+
+        public void LoadFromCurrentProfile(IInstrumentProfileContext ctx)
+        {
+            var currentProfile = ctx.CurrentProfile;
+
+            var groupingKeys = currentProfile?.GroupingKeys;
+            if (groupingKeys != null && GroupingConfiguration.TryParseGroupingKeys(groupingManager, groupingKeys, out var groupingConfiguration))
+            {
+                CurrentGroupingConfiguration = CurrentFilterGroupingConfiguration = groupingConfiguration;
+            }
+            else
+            {
+                CurrentGroupingConfiguration = CurrentFilterGroupingConfiguration = null;
+            }
+
+            LoadedInstrumentProfile = currentProfile;
+        }
+
+        private void ResetLoadedInstrumentProfileContext()
+        {
+            LoadedInstrumentProfile = null;
         }
 
         public void LoadFromOther(IEvaluationContext ctx)
@@ -177,7 +211,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     var old = _currentFormula;
                     _currentFormula = value;
+
+                    ResetLoadedInstrumentProfileContext();
                     UpdateEvaluator();
+
                     _currentFormulaChanged?.Invoke(this, new IEvaluationContext.FormulaChangedEventArgs(old, value));
                 }
             }
@@ -195,6 +232,9 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 {
                     var old = _currentGroupingConfiguration;
                     _currentGroupingConfiguration = value;
+
+                    ResetLoadedInstrumentProfileContext();
+
                     _currentGroupingConfigurationChanged?.Invoke(this, new IEvaluationContext.GroupingConfigurationChangedEventArgs(old, value));
 
                     if (value != null)
@@ -231,6 +271,21 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         CurrentFilterGrouping = null;
                     }
+                }
+            }
+        }
+
+        private IReadOnlyInstrumentProfile? _loadedInstrumentProfile;
+        public IReadOnlyInstrumentProfile? LoadedInstrumentProfile
+        {
+            get => _loadedInstrumentProfile;
+            set
+            {
+                if (_loadedInstrumentProfile != value)
+                {
+                    var old = _loadedInstrumentProfile;
+                    _loadedInstrumentProfile = value;
+                    _loadedInstrumentProfileChanged?.Invoke(this, new IEvaluationContext.InstrumentProfileChangedEventArgs(old, value));
                 }
             }
         }
@@ -310,6 +365,19 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             remove
             {
                 _currentFormulaChanged -= value;
+            }
+        }
+
+        private event EventHandler<IEvaluationContext.InstrumentProfileChangedEventArgs>? _loadedInstrumentProfileChanged;
+        public event EventHandler<IEvaluationContext.InstrumentProfileChangedEventArgs> LoadedInstrumentProfileChanged
+        {
+            add
+            {
+                _loadedInstrumentProfileChanged += value;
+            }
+            remove
+            {
+                _loadedInstrumentProfileChanged -= value;
             }
         }
     }

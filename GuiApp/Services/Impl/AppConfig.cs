@@ -29,12 +29,10 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public bool IsLoaded => manager.IsLoaded;
 
         private IAppConfigManager manager;
-        private IGroupingManager groupingManager;
 
-        public AppConfig(IAppConfigManager manager, IGroupingManager groupingManager)
+        public AppConfig(IAppConfigManager manager)
         {
             this.manager = manager;
-            this.groupingManager = groupingManager;
         }
 
         #region Misc
@@ -107,12 +105,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             set => manager.Set("DefaultEvaluationFormulaPath", value);
         }
 
-        public GroupingConfiguration DefaultEvaluationGrouping
-        {
-            get => StringToGrouping(manager.Get("DefaultEvaluationGrouping") ?? "", out var grouping) ? grouping! : new GroupingConfiguration(true, true, false, false, false, false, 0, null);
-            set => manager.Set("DefaultEvaluationGrouping", GroupingToString(value));
-        }
-
         public bool AutoSelectGroupKey
         {
             get => bool.TryParse(manager.Get("AutoSelectGroupKey"), out bool enabled) ? enabled : false;
@@ -162,24 +154,5 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             set => manager.Set("RoboTargetSecret", System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(value)));
         }
         #endregion
-
-        private string GroupingToString(GroupingConfiguration? grouping)
-        {
-            if (grouping == null)
-            {
-                return string.Empty;
-            }
-            return string.Join(',', grouping.GroupingKeys);
-        }
-
-        private bool StringToGrouping(string value, out GroupingConfiguration? grouping)
-        {
-            if (value.Trim().Length == 0)
-            {
-                grouping = new GroupingConfiguration(false, false, false, false, false, false, 0, null);
-                return true;
-            }
-            return GroupingConfiguration.TryParseGroupingKeys(groupingManager, value.Split(','), out grouping);
-        }
     }
 }

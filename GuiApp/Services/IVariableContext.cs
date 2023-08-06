@@ -58,9 +58,11 @@ namespace FitsRatingTool.GuiApp.Services
         IReadOnlyList<IReadOnlyVariable>? CurrentVariables { get; }
 
 
-        void LoadFromOther(IVariableContext ctx);
+        void LoadFromCurrentProfile();
 
         void LoadFromCurrentProfile(IInstrumentProfileContext ctx);
+
+        void LoadFromOther(IVariableContext ctx);
 
 
         event EventHandler<VariableConfigsChangedEventArgs> CurrentVariableConfigsChanged;

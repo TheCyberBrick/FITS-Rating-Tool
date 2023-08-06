@@ -175,10 +175,6 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
             {
                 Description = "Path to a text file containing the evaluation formula that should be used by default."
             });
-            category.Settings.Add(new GroupingConfigurationSettingViewModel("Default Evaluation Grouping", () => appConfig.DefaultEvaluationGrouping, v => appConfig.DefaultEvaluationGrouping = v, conf => jobGroupingConfiguratorContainer.Instantiate(new IJobGroupingConfiguratorViewModel.OfConfiguration(conf)))
-            {
-                Description = "Evaluation grouping used by default."
-            });
             category.Settings.Add(new BoolSettingViewModel("Automatically Select Group", () => appConfig.AutoSelectGroupKey, v => appConfig.AutoSelectGroupKey = v)
             {
                 Description = "Whether the group shown in the evaluation table should be selected automatically based on the currently selected image."

@@ -19,8 +19,6 @@
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.Reflection.Metadata;
 using System.Text;
 
 namespace FitsRatingTool.Common.Services.Impl
@@ -55,6 +53,7 @@ namespace FitsRatingTool.Common.Services.Impl
             [JsonProperty(PropertyName = "key", NullValueHandling = NullValueHandling.Ignore)]
             public string Key { get; set; } = "";
 
+
             [JsonProperty(PropertyName = "focal_length", NullValueHandling = NullValueHandling.Ignore)]
             public float? FocalLength { get; set; }
 
@@ -66,6 +65,10 @@ namespace FitsRatingTool.Common.Services.Impl
 
             [JsonProperty(PropertyName = "pixel_size", NullValueHandling = NullValueHandling.Ignore)]
             public float? PixelSizeInMicrons { get; set; }
+
+
+            [JsonProperty(PropertyName = "grouping_keys", NullValueHandling = NullValueHandling.Ignore)]
+            public IReadOnlyCollection<string>? GroupingKeys { get; set; }
 
 
             [JsonProperty(PropertyName = "variables", NullValueHandling = NullValueHandling.Ignore)]

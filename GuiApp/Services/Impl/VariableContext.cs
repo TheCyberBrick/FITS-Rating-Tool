@@ -58,14 +58,22 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         private readonly IVariableManager variableManager;
 
-        public VariableContext(IVariableManager variableManager)
+        private readonly IInstrumentProfileContext instrumentProfileContext;
+
+        public VariableContext(IVariableManager variableManager, IInstrumentProfileContext instrumentProfileContext)
         {
             this.variableManager = variableManager;
+            this.instrumentProfileContext = instrumentProfileContext;
         }
 
         public void LoadFromOther(IVariableContext ctx)
         {
             CurrentVariableConfigs = ctx.CurrentVariableConfigs;
+        }
+
+        public void LoadFromCurrentProfile()
+        {
+            LoadFromCurrentProfile(instrumentProfileContext);
         }
 
         public void LoadFromCurrentProfile(IInstrumentProfileContext ctx)

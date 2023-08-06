@@ -35,6 +35,8 @@ using DryIocAttributes;
 using System.ComponentModel.Composition;
 using FitsRatingTool.IoC;
 using System.Reactive.Concurrency;
+using FitsRatingTool.GuiApp.Services.Impl;
+using FitsRatingTool.Common.Models.Instrument;
 
 namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 {
@@ -46,6 +48,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             reg.RegisterAndReturn<EvaluationFormulaViewModel>();
         }
 
+
+        public ReactiveCommand<Unit, Unit> Reset { get; }
+
+        public Interaction<Unit, bool> ResetConfirmationDialog { get; } = new();
 
         private string? _ratingFormula;
         public string? RatingFormula
@@ -124,6 +130,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         }
 
 
+        private bool _canReset;
+        private bool CanReset
+        {
+            get => _canReset;
+            set => this.RaiseAndSetIfChanged(ref _canReset, value);
+        }
 
 
         private readonly IFitsImageManager manager;
@@ -131,24 +143,30 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IEvaluationManager evaluationManager;
         private readonly IEvaluationContext evaluationContext;
         private readonly IVariableContext variableContext;
+        private readonly IInstrumentProfileContext instrumentProfileContext;
 
-        private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager, IEvaluationContext evaluationContext,
-            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer, IVariableContext variableContext)
+        private readonly ISingletonContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer;
+
+        private IReadOnlyInstrumentProfile? loadedInstrumentProfile;
+
+        private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
+            IEvaluationContext evaluationContext, IVariableContext variableContext, IInstrumentProfileContext instrumentProfileContext,
+            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
             this.evaluationManager = evaluationManager;
             this.evaluationContext = evaluationContext;
             this.variableContext = variableContext;
+            this.instrumentProfileContext = instrumentProfileContext;
+
+            this.groupingConfiguratorContainer = groupingConfiguratorContainer.Singleton();
+
+            loadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
 
             AutoUpdateRatings = evaluationManager.AutoUpdateRatings;
 
-            var defaultGroupingConfiguration = evaluationContext.CurrentGroupingConfiguration;
-            if (defaultGroupingConfiguration == null)
-            {
-                // By default group by object and filter
-                defaultGroupingConfiguration = new GroupingConfiguration(true, true, false, false, false, false, 0, null);
-            }
+            var defaultGroupingConfiguration = evaluationContext.CurrentGroupingConfiguration ?? new GroupingConfiguration(false, false, false, false, false, false, 0, null);
 
             groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(defaultGroupingConfiguration), vm =>
             {
@@ -157,6 +175,23 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             });
 
             var currentFormula = evaluationContext.CurrentFormula;
+
+            Reset = ReactiveCommand.CreateFromTask(async () =>
+            {
+                bool proceed = true;
+                try
+                {
+                    proceed = await ResetConfirmationDialog.Handle(Unit.Default);
+                }
+                catch (UnhandledInteractionException<Unit, bool>)
+                {
+                    // OK
+                }
+                if (proceed)
+                {
+                    ResetToDefaults();
+                }
+            }, this.WhenAnyValue(x => x.CanReset));
 
             UpdateRatings = ReactiveCommand.CreateFromTask(UpdateRatingsAsync, this.WhenAnyValue(x => x.EvaluatorInstance).Select(x => x != null));
 
@@ -237,6 +272,26 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
 
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationFormulaViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
             SubscribeToEvent<IVariableContext, IVariableContext.VariablesChangedEventArgs, EvaluationFormulaViewModel>(variableContext, nameof(variableContext.CurrentVariablesChanged), OnCurrentVariablesChanged);
+            SubscribeToEvent<IEvaluationContext, IEvaluationContext.InstrumentProfileChangedEventArgs, EvaluationFormulaViewModel>(evaluationContext, nameof(evaluationContext.LoadedInstrumentProfileChanged), OnLoadedInstrumentProfileChanged);
+        }
+
+        protected override void OnInstantiated()
+        {
+            UpdateCanReset();
+        }
+
+        private void ResetToDefaults()
+        {
+            loadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
+
+            evaluationContext.LoadFromConfig();
+            evaluationContext.LoadFromCurrentProfile(instrumentProfileContext);
+
+            groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(evaluationContext.CurrentGroupingConfiguration), this, x => x.GroupingConfigurator);
+
+            RatingFormula = evaluationContext.CurrentFormula;
+
+            UpdateCanReset();
         }
 
         private void OnRecordChanged(object? sender, IFitsImageManager.RecordChangedEventArgs args)
@@ -250,6 +305,29 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private void OnCurrentVariablesChanged(object? sender, IVariableContext.VariablesChangedEventArgs args)
         {
             InvalidateEvaluator();
+        }
+
+        private void OnLoadedInstrumentProfileChanged(object? sender, IEvaluationContext.InstrumentProfileChangedEventArgs args)
+        {
+            UpdateCanReset();
+
+            // Automatically reset if loaded profile
+            // has changed. This should only happen
+            // on manual reset or if nothing was
+            // changed and profile has switched.
+            // Therefore, there should be no user
+            // that could be lost.
+            if (args.NewProfile != null)
+            {
+                ResetToDefaults();
+            }
+        }
+
+        private void UpdateCanReset()
+        {
+            // Can reset if evaluation context differs from the profile it
+            // was loaded from, or if it was loaded from a different profile
+            CanReset = evaluationContext.LoadedInstrumentProfile == null || evaluationContext.LoadedInstrumentProfile != loadedInstrumentProfile;
         }
 
         private void InvalidateEvaluator()

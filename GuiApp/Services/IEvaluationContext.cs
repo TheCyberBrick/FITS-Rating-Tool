@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Models;
 using System;
@@ -76,6 +77,19 @@ namespace FitsRatingTool.GuiApp.Services
             }
         }
 
+        public class InstrumentProfileChangedEventArgs : EventArgs
+        {
+            public IReadOnlyInstrumentProfile? OldProfile { get; }
+
+            public IReadOnlyInstrumentProfile? NewProfile { get; }
+
+            public InstrumentProfileChangedEventArgs(IReadOnlyInstrumentProfile? oldProfile, IReadOnlyInstrumentProfile? newProfile)
+            {
+                OldProfile = oldProfile;
+                NewProfile = newProfile;
+            }
+        }
+
 
         IGroupingManager.IGrouping? CurrentGrouping { get; }
 
@@ -94,7 +108,14 @@ namespace FitsRatingTool.GuiApp.Services
         IEvaluationService.IEvaluator? CurrentEvaluator { get; }
 
 
+        IReadOnlyInstrumentProfile? LoadedInstrumentProfile { get; }
+
+
         void LoadFromConfig();
+
+        void LoadFromCurrentProfile();
+
+        void LoadFromCurrentProfile(IInstrumentProfileContext ctx);
 
         void LoadFromOther(IEvaluationContext ctx);
 
@@ -108,5 +129,7 @@ namespace FitsRatingTool.GuiApp.Services
         event EventHandler<GroupingConfigurationChangedEventArgs> CurrentFilterGroupingConfigurationChanged;
 
         event EventHandler<FormulaChangedEventArgs> CurrentFormulaChanged;
+
+        event EventHandler<InstrumentProfileChangedEventArgs> LoadedInstrumentProfileChanged;
     }
 }

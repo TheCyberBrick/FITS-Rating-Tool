@@ -83,7 +83,7 @@ namespace FitsRatingTool.GuiApp.UI.App.ViewModels
                         // OK
                     }
 
-                    if (confirmed)
+                    if (confirmed && evaluationContext.LoadedInstrumentProfile == null /* Checking for missing vars is only necessary if formula won't be reset */)
                     {
                         var currentEvaluator = evaluationContext.CurrentEvaluator;
                         if (currentEvaluator != null)

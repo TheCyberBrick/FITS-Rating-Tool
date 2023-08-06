@@ -26,6 +26,10 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
     {
         public record Of();
 
+        ReactiveCommand<Unit, Unit> Reset { get; }
+
+        Interaction<Unit, bool> ResetConfirmationDialog { get; }
+
         string? RatingFormula { get; set; }
 
         bool IsFormulaUsingAggregateFunctions { get; }

@@ -22,6 +22,7 @@ namespace FitsRatingTool.Common.Models.Instrument
 {
     public interface IInstrumentProfile : IReadOnlyInstrumentProfile
     {
+        #region Profile
         new string Id { get; set; }
 
         new string Name { get; set; }
@@ -29,7 +30,9 @@ namespace FitsRatingTool.Common.Models.Instrument
         new string Description { get; set; }
 
         new string Key { get; set; }
+        #endregion
 
+        #region Instrument
         new float? FocalLength { get; set; }
 
         new int? BitDepth { get; set; }
@@ -37,7 +40,17 @@ namespace FitsRatingTool.Common.Models.Instrument
         new float? ElectronsPerADU { get; set; }
 
         new float? PixelSizeInMicrons { get; set; }
+        #endregion
 
+        #region Grouping
+        new IReadOnlyCollection<string>? GroupingKeys { get; set; }
+        #endregion
+
+        #region Variables
         new IReadOnlyList<IReadOnlyJobConfig.VariableConfig> Variables { get; set; }
+        #endregion
+
+        #region Evaluation Formula
+        #endregion
     }
 }
