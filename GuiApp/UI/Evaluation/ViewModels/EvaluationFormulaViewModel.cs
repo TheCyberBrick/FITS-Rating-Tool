@@ -284,7 +284,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         {
             loadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
 
-            evaluationContext.LoadFromConfig();
             evaluationContext.LoadFromCurrentProfile(instrumentProfileContext);
 
             groupingConfiguratorContainer.Singleton().Inject(new IJobGroupingConfiguratorViewModel.OfConfiguration(evaluationContext.CurrentGroupingConfiguration), this, x => x.GroupingConfigurator);

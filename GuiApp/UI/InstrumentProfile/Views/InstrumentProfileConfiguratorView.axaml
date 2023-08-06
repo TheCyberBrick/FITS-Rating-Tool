@@ -41,7 +41,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <Border Grid.Row="1"
             Padding="4"
             IsEnabled="{Binding HasProfile}">
-      <views:InstrumentProfileView DataContext="{Binding Selector.SelectedProfile}"/>
+      <!-- Must be a ContentControl for view activation -->
+      <ContentControl Content="{Binding Selector.SelectedProfile}"/>
     </Border>
   </Grid>
 

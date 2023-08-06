@@ -49,8 +49,6 @@ namespace FitsRatingTool.GuiApp.Services
         #endregion
 
         #region Evaluation
-        string DefaultEvaluationFormulaPath { get; set; }
-
         bool AutoSelectGroupKey { get; set; }
 
         bool EnableDangerousExporters { get; set; }

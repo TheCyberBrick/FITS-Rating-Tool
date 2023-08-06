@@ -99,12 +99,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         #endregion
 
         #region Evaluation
-        public string DefaultEvaluationFormulaPath
-        {
-            get => manager.Get("DefaultEvaluationFormulaPath") ?? "";
-            set => manager.Set("DefaultEvaluationFormulaPath", value);
-        }
-
         public bool AutoSelectGroupKey
         {
             get => bool.TryParse(manager.Get("AutoSelectGroupKey"), out bool enabled) ? enabled : false;

@@ -111,8 +111,6 @@ namespace FitsRatingTool.GuiApp.Services
         IReadOnlyInstrumentProfile? LoadedInstrumentProfile { get; }
 
 
-        void LoadFromConfig();
-
         void LoadFromCurrentProfile();
 
         void LoadFromCurrentProfile(IInstrumentProfileContext ctx);

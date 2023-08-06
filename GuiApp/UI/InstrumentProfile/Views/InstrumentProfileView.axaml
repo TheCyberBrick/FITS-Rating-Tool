@@ -209,6 +209,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </StackPanel>
       </TabItem.Header>
 
+      <Grid RowDefinitions="Auto,4,*">
+        <Grid Grid.Row="0"
+              RowDefinitions="Auto" ColumnDefinitions="Auto,10,*">
+          <TextBlock Grid.Column="0"
+                     Text="Path"
+                     VerticalAlignment="Center"/>
+          <Grid Grid.Column="2"
+                ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0"
+                     Text="{Binding EvaluationFormulaPath}"/>
+            <Button Grid.Column="1"
+                    Height="20"
+                    Width="22"
+                    Content="..."
+                    Padding="1 -2"
+                    HorizontalContentAlignment="Right"
+                    Margin="2 0 0 0"
+                    Command="{Binding SelectEvaluationFormulaPathWithOpenDialog}"/>
+          </Grid>
+        </Grid>
+
+        <TextBox Grid.Row="2"
+                 IsReadOnly="True"
+                 Text="{Binding EvaluationFormulaPreview}"/>
+      </Grid>
+
     </TabItem>
 
 

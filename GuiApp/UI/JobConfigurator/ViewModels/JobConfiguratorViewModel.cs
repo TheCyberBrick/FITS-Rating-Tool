@@ -355,7 +355,7 @@ namespace FitsRatingTool.GuiApp.UI.JobConfigurator.ViewModels
             }
             else
             {
-                evaluationContext.LoadFromConfig();
+                evaluationContext.LoadFromCurrentProfile();
             }
 
             if (parentVariableContext != null)

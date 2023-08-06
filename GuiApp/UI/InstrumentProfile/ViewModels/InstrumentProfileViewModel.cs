@@ -17,27 +17,29 @@
 */
 
 using Avalonia.Collections;
-using DryIoc;
 using DryIocAttributes;
 using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
-using FitsRatingTool.Common.Services.Impl;
 using FitsRatingTool.GuiApp.Models;
 using FitsRatingTool.GuiApp.Services;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Utils;
 using FitsRatingTool.GuiApp.UI.Variables;
 using FitsRatingTool.IoC;
-using Newtonsoft.Json.Linq;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using static FitsRatingTool.GuiApp.UI.InstrumentProfile.IInstrumentProfileViewModel;
+using FitsRatingTool.GuiApp.Utils;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Threading;
 
 namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 {
@@ -160,6 +162,24 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
         public AvaloniaList<IVariableItemViewModel> Variables { get; } = new();
 
+        private string _evaluationFormulaPath = "";
+        public string EvaluationFormulaPath
+        {
+            get => _evaluationFormulaPath;
+            set => this.RaiseAndSetIfChanged(ref _evaluationFormulaPath, value);
+        }
+
+        private string? _evaluationFormula;
+        public string? EvaluationFormulaPreview
+        {
+            get => _evaluationFormula;
+            private set => this.RaiseAndSetIfChanged(ref _evaluationFormula, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> SelectEvaluationFormulaPathWithOpenDialog { get; }
+
+        public Interaction<Unit, string> SelectEvaluationFormulaPathOpenDialog { get; } = new();
+
 
         private bool _isModified;
         public bool IsModified
@@ -242,6 +262,11 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 ResetToSourceProfile();
             }, Observable.CombineLatest(Observable.Return(!IsNew), this.WhenAnyValue(x => x.IsModified), (a, b) => a && b));
 
+            SelectEvaluationFormulaPathWithOpenDialog = ReactiveCommand.CreateFromTask(async () =>
+            {
+                EvaluationFormulaPath = await SelectEvaluationFormulaPathOpenDialog.Handle(Unit.Default);
+            });
+
             var isIdAvailable = this.WhenAnyValue(x => x.Id, x => (!IsNew && x == args.Profile?.Id) || !instrumentProfileManager.Contains(x));
             _isIdAvailable = isIdAvailable.ToProperty(this, x => x.IsIdAvailable);
 
@@ -271,6 +296,15 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
             this.WhenAnyValue(x => x.GroupingConfigurator.GroupingConfiguration).Subscribe(_ => IsModified = true);
 
+            var OnFormulaPathChange = () => this.WhenAnyValue(x => x.EvaluationFormulaPath)
+                .Throttle(TimeSpan.FromMilliseconds(250))
+                .ObserveOn(RxApp.MainThreadScheduler);
+            OnFormulaPathChange.Observe(UpdateEvaluationFormulaPreviewAsync).WithExceptionHandler(ex =>
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex);
+            }).Subscribe();
+
             Variables.CollectionChanged += (sender, e) =>
             {
                 IsModified = true;
@@ -287,6 +321,26 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
             {
                 LoadFromProfile(SourceProfile);
             }
+        }
+
+        private async Task<Unit> UpdateEvaluationFormulaPreviewAsync(string path, CancellationToken cancel = default)
+        {
+            var formulaPreview = "";
+            if (path.Length > 0)
+            {
+                try
+                {
+                    formulaPreview = await File.ReadAllTextAsync(path, cancel);
+                }
+                catch
+                {
+                    // Just a preview
+                }
+            }
+
+            EvaluationFormulaPreview = formulaPreview;
+
+            return Unit.Default;
         }
 
         private bool ValidateId(string id)
@@ -395,6 +449,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
                 }
             }
 
+            EvaluationFormulaPath = profile.EvaluationFormulaPath;
+
             IsModified = false;
 
             ValidateVariables();
@@ -494,6 +550,8 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile.ViewModels
 
                 profile.Variables = variables;
             }
+
+            profile.EvaluationFormulaPath = EvaluationFormulaPath;
 
             return profile;
         }

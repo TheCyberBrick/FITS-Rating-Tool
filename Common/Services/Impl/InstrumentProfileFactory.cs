@@ -71,6 +71,10 @@ namespace FitsRatingTool.Common.Services.Impl
             public IReadOnlyCollection<string>? GroupingKeys { get; set; }
 
 
+            [JsonProperty(PropertyName = "evaluation_formula_path", NullValueHandling = NullValueHandling.Ignore)]
+            public string EvaluationFormulaPath { get; set; } = "";
+
+
             [JsonProperty(PropertyName = "variables", NullValueHandling = NullValueHandling.Ignore)]
             private JsonVariableConfig[]? _serializedVariables;
             [JsonIgnore]

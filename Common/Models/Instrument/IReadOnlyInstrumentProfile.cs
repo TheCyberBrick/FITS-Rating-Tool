@@ -51,6 +51,7 @@ namespace FitsRatingTool.Common.Models.Instrument
         #endregion
 
         #region Evaluation Formula
+        string EvaluationFormulaPath { get; }
         #endregion
     }
 }

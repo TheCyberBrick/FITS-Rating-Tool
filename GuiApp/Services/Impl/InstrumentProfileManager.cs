@@ -137,6 +137,8 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                 copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);
             }
 
+            copy.EvaluationFormulaPath = profile.EvaluationFormulaPath;
+
             return copy;
         }
 

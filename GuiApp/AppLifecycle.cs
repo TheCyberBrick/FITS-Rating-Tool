@@ -124,7 +124,6 @@ namespace FitsRatingTool.GuiApp
 
             variableContext.LoadFromCurrentProfile();
 
-            evaluationContext.LoadFromConfig();
             evaluationContext.LoadFromCurrentProfile();
 
             evaluationManager.EvaluationContext = evaluationContext;

@@ -171,10 +171,6 @@ namespace FitsRatingTool.GuiApp.UI.AppConfig.ViewModels
         {
             var category = appConfigCategoryContainer.Instantiate(new IAppConfigCategoryViewModel.OfName("Evaluation"));
 
-            category.Settings.Add(new PathSettingViewModel("Default Evaluation Formula", () => appConfig.DefaultEvaluationFormulaPath, v => appConfig.DefaultEvaluationFormulaPath = v, PathType.File, new List<string>() { "txt" })
-            {
-                Description = "Path to a text file containing the evaluation formula that should be used by default."
-            });
             category.Settings.Add(new BoolSettingViewModel("Automatically Select Group", () => appConfig.AutoSelectGroupKey, v => appConfig.AutoSelectGroupKey = v)
             {
                 Description = "Whether the group shown in the evaluation table should be selected automatically based on the currently selected image."

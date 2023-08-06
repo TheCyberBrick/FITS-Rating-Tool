@@ -18,6 +18,7 @@
 
 using Avalonia.Collections;
 using FitsRatingTool.Common.Models.Instrument;
+using FitsRatingTool.GuiApp.UI.AppConfig.ViewModels;
 using FitsRatingTool.GuiApp.UI.Evaluation;
 using FitsRatingTool.GuiApp.UI.Variables;
 using ReactiveUI;
@@ -57,6 +58,14 @@ namespace FitsRatingTool.GuiApp.UI.InstrumentProfile
 
         AvaloniaList<IVariableItemViewModel> Variables { get; }
 
+
+        string EvaluationFormulaPath { get; set; }
+
+        string? EvaluationFormulaPreview { get; }
+
+        ReactiveCommand<Unit, Unit> SelectEvaluationFormulaPathWithOpenDialog { get; }
+
+        Interaction<Unit, string> SelectEvaluationFormulaPathOpenDialog { get; }
 
 
         bool IsModified { get; set; }

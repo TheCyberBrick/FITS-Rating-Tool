@@ -55,10 +55,17 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             WeakEventHandlerManager.Subscribe<IVariableContext, IVariableContext.VariablesChangedEventArgs, EvaluationContext>(variableContext, nameof(variableContext.CurrentVariablesChanged), OnCurrentVariablesChanged);
         }
 
-        public void LoadFromConfig()
+        public void LoadFromCurrentProfile()
         {
-            var file = appConfig.DefaultEvaluationFormulaPath;
-            if (file.Length > 0)
+            LoadFromCurrentProfile(instrumentProfileContext);
+        }
+
+        public void LoadFromCurrentProfile(IInstrumentProfileContext ctx)
+        {
+            var currentProfile = ctx.CurrentProfile;
+
+            var file = currentProfile?.EvaluationFormulaPath;
+            if (file != null && file.Length > 0)
             {
                 try
                 {
@@ -73,16 +80,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             {
                 CurrentFormula = "";
             }
-        }
-
-        public void LoadFromCurrentProfile()
-        {
-            LoadFromCurrentProfile(instrumentProfileContext);
-        }
-
-        public void LoadFromCurrentProfile(IInstrumentProfileContext ctx)
-        {
-            var currentProfile = ctx.CurrentProfile;
 
             var groupingKeys = currentProfile?.GroupingKeys;
             if (groupingKeys != null && GroupingConfiguration.TryParseGroupingKeys(groupingManager, groupingKeys, out var groupingConfiguration))
