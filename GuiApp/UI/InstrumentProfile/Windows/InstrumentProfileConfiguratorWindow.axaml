@@ -80,8 +80,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <Button Grid.Column="1"
                 MinWidth="60"
                 HorizontalContentAlignment="Center"
-                Command="{Binding Save}"
-                IsEnabled="{Binding HasProfile}">
+                Command="{Binding Save}">
+          <Button.IsEnabled>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="HasProfile"/>
+              <Binding Path="Selector.SelectedProfile.IsModified"/>
+            </MultiBinding>
+          </Button.IsEnabled>
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="Save"/>
             <Image Source="/Assets/Icons/save.png" Width="16" Height="16" Margin="3 -1 -4 -2" VerticalAlignment="Center"/>

@@ -17,6 +17,7 @@
 */
 
 using Avalonia.Collections;
+using FitsRatingTool.Common.Models.Instrument;
 using ReactiveUI;
 using System.Reactive;
 
@@ -45,6 +46,8 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation
         bool IsModified { get; }
 
         string? LoadedFile { get; }
+
+        IReadOnlyInstrumentProfile? LoadedInstrumentProfile { get; }
 
         ReactiveCommand<Unit, Unit> LoadFormulaWithOpenFileDialog { get; }
 

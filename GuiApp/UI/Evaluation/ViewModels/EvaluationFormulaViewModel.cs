@@ -93,18 +93,25 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref this._evaluatorInstance, value);
         }
 
-        public bool _isModified;
+        private bool _isModified;
         public bool IsModified
         {
             get => _isModified;
             set => this.RaiseAndSetIfChanged(ref _isModified, value);
         }
 
-        public string? _loadedFile;
+        private string? _loadedFile;
         public string? LoadedFile
         {
             get => _loadedFile;
             set => this.RaiseAndSetIfChanged(ref _loadedFile, value);
+        }
+
+        private IReadOnlyInstrumentProfile? _loadedInstrumentProfile;
+        public IReadOnlyInstrumentProfile? LoadedInstrumentProfile
+        {
+            get => _loadedInstrumentProfile;
+            set => this.RaiseAndSetIfChanged(ref _loadedInstrumentProfile, value);
         }
 
         public ReactiveCommand<Unit, Unit> LoadFormulaWithOpenFileDialog { get; }
@@ -141,28 +148,30 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         private readonly IFitsImageManager manager;
         private readonly IEvaluationService evaluationService;
         private readonly IEvaluationManager evaluationManager;
+        private readonly IInstrumentProfileManager instrumentProfileManager;
+        private readonly IInstrumentProfileFactory instrumentProfileFactory;
         private readonly IEvaluationContext evaluationContext;
         private readonly IVariableContext variableContext;
         private readonly IInstrumentProfileContext instrumentProfileContext;
 
         private readonly ISingletonContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer;
 
-        private IReadOnlyInstrumentProfile? loadedInstrumentProfile;
-
         private EvaluationFormulaViewModel(IEvaluationFormulaViewModel.Of args, IFitsImageManager manager, IEvaluationService evaluationService, IEvaluationManager evaluationManager,
-            IEvaluationContext evaluationContext, IVariableContext variableContext, IInstrumentProfileContext instrumentProfileContext,
-            IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer)
+            IInstrumentProfileManager instrumentProfileManager, IInstrumentProfileFactory instrumentProfileFactory, IEvaluationContext evaluationContext, IVariableContext variableContext,
+            IInstrumentProfileContext instrumentProfileContext, IContainer<IJobGroupingConfiguratorViewModel, IJobGroupingConfiguratorViewModel.OfConfiguration> groupingConfiguratorContainer)
         {
             this.manager = manager;
             this.evaluationService = evaluationService;
             this.evaluationManager = evaluationManager;
+            this.instrumentProfileManager = instrumentProfileManager;
+            this.instrumentProfileFactory = instrumentProfileFactory;
             this.evaluationContext = evaluationContext;
             this.variableContext = variableContext;
             this.instrumentProfileContext = instrumentProfileContext;
 
             this.groupingConfiguratorContainer = groupingConfiguratorContainer.Singleton();
 
-            loadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
+            LoadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
 
             AutoUpdateRatings = evaluationManager.AutoUpdateRatings;
 
@@ -250,19 +259,25 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 var file = await SaveFormulaSaveFileDialog.Handle(Unit.Default);
                 if (file.Length > 0)
                 {
-                    await File.WriteAllTextAsync(file, RatingFormula);
+                    await SaveAsync(file, null, false);
                     LoadedFile = file;
-                    IsModified = false;
                 }
             });
 
             SaveFormula = ReactiveCommand.CreateFromTask(async () =>
             {
                 var loadedFile = LoadedFile;
+
+                var loadedProfile = LoadedInstrumentProfile;
+                var loadedProfileFile = loadedProfile?.EvaluationFormulaPath;
+
                 if (loadedFile != null)
                 {
-                    await File.WriteAllTextAsync(loadedFile, RatingFormula);
-                    IsModified = false;
+                    await SaveAsync(loadedFile, null, false);
+                }
+                else if (loadedProfileFile != null)
+                {
+                    await SaveAsync(loadedProfileFile, loadedProfile, true);
                 }
                 else
                 {
@@ -280,9 +295,44 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             UpdateCanReset();
         }
 
+        private async Task SaveAsync(string file, IReadOnlyInstrumentProfile? targetProfile, bool reset)
+        {
+            await File.WriteAllTextAsync(file, RatingFormula);
+
+            bool success = true;
+
+            if (targetProfile != null)
+            {
+                var record = instrumentProfileManager.Get(targetProfile.Id);
+
+                if (record != null)
+                {
+                    try
+                    {
+                        var newProfile = instrumentProfileFactory.Load(instrumentProfileFactory.Save(targetProfile));
+
+                        newProfile.GroupingKeys = GroupingConfigurator.GroupingConfiguration.GroupingKeys;
+
+                        record.Profile = newProfile;
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
+                }
+            }
+
+            IsModified = false;
+
+            if (reset && success)
+            {
+                ResetToDefaults();
+            }
+        }
+
         private void ResetToDefaults()
         {
-            loadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
+            LoadedInstrumentProfile = instrumentProfileContext.CurrentProfile;
 
             evaluationContext.LoadFromCurrentProfile(instrumentProfileContext);
 
@@ -319,7 +369,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             // changed and profile has switched.
             // Therefore, there should be no user
             // that could be lost.
-            if (args.NewProfile != null)
+            if (args.NewProfile != null && args.NewProfile != LoadedInstrumentProfile)
             {
                 ResetToDefaults();
             }
@@ -329,7 +379,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
         {
             // Can reset if evaluation context differs from the profile it
             // was loaded from, or if it was loaded from a different profile
-            CanReset = evaluationContext.LoadedInstrumentProfile == null || evaluationContext.LoadedInstrumentProfile != loadedInstrumentProfile;
+            CanReset = evaluationContext.LoadedInstrumentProfile == null || evaluationContext.LoadedInstrumentProfile != LoadedInstrumentProfile;
 
             if (CanReset)
             {

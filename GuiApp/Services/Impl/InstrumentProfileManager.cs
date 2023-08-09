@@ -17,7 +17,6 @@
 */
 
 using DryIocAttributes;
-using FitsRatingTool.Common.Models.Evaluation;
 using FitsRatingTool.Common.Models.Instrument;
 using FitsRatingTool.Common.Services;
 using FitsRatingTool.GuiApp.Repositories;
@@ -46,11 +45,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
                     {
                         EnsureInRepository();
 
-                        // Create copy through the factory so we can be sure
-                        // that it can be saved
-                        var copy = manager.CreateProfileFactoryCopy(value);
-
-                        manager.AddOrUpdateProfile(copy);
+                        manager.AddOrUpdateProfile(value);
 
                         manager.NotifyChange(this, false);
                     }
@@ -114,34 +109,6 @@ namespace FitsRatingTool.GuiApp.Services.Impl
             _recordChanged?.Invoke(this, new IInstrumentProfileManager.RecordChangedEventArgs(record.ProfileId, removed));
         }
 
-        private IReadOnlyInstrumentProfile CreateProfileFactoryCopy(IReadOnlyInstrumentProfile profile)
-        {
-            // TODO Must get rid of this. IInstrumentProfileViewModel no longer implements
-            // IReadOnlyInstrumentProfile so we don't need to copy the data anymore.
-
-            var copy = instrumentProfileFactory.Builder().Id(profile.Id).Build();
-
-            copy.Name = profile.Name;
-            copy.Description = profile.Description;
-            copy.Key = profile.Key;
-
-            copy.FocalLength = profile.FocalLength;
-            copy.BitDepth = profile.BitDepth;
-            copy.ElectronsPerADU = profile.ElectronsPerADU;
-            copy.PixelSizeInMicrons = profile.PixelSizeInMicrons;
-
-            copy.GroupingKeys = profile.GroupingKeys != null ? new List<string>(profile.GroupingKeys) : null;
-
-            if (profile.Variables != null)
-            {
-                copy.Variables = new List<IReadOnlyJobConfig.VariableConfig>(profile.Variables);
-            }
-
-            copy.EvaluationFormulaPath = profile.EvaluationFormulaPath;
-
-            return copy;
-        }
-
         private void AddOrUpdateProfile(IReadOnlyInstrumentProfile profile)
         {
             instrumentProfileRepository.AddOrUpdateProfile(profile);
@@ -198,10 +165,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
 
         public string Save(IReadOnlyInstrumentProfile profile)
         {
-            // Create copy through the factory so we can be sure
-            // that it can be saved
-            var copy = CreateProfileFactoryCopy(profile);
-            return instrumentProfileFactory.Save(copy);
+            return instrumentProfileFactory.Save(profile);
         }
 
         public IReadOnlyInstrumentProfile? Load(string data)

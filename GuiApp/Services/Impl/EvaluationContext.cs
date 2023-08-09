@@ -276,7 +276,7 @@ namespace FitsRatingTool.GuiApp.Services.Impl
         public IReadOnlyInstrumentProfile? LoadedInstrumentProfile
         {
             get => _loadedInstrumentProfile;
-            set
+            private set
             {
                 if (_loadedInstrumentProfile != value)
                 {

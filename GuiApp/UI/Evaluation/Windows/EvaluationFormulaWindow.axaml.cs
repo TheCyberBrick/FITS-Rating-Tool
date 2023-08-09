@@ -53,6 +53,7 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
                     d.Add(ViewModel.ResetConfirmationDialog.RegisterHandler(ShowResetConfirmationDialogAsync));
 
                     d.Add(ViewModel.WhenAnyValue(x => x.LoadedFile).Subscribe(x => UpdateTitle(ViewModel)));
+                    d.Add(ViewModel.WhenAnyValue(x => x.LoadedInstrumentProfile).Subscribe(x => UpdateTitle(ViewModel)));
                     d.Add(ViewModel.WhenAnyValue(x => x.IsModified).Subscribe(x => UpdateTitle(ViewModel)));
                 }
             });
@@ -61,8 +62,23 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.Windows
         private void UpdateTitle(EvaluationFormulaViewModel vm)
         {
             var fileName = vm.LoadedFile;
+            var profileName = vm.LoadedInstrumentProfile?.Name;
             var modified = vm.IsModified;
-            Title = (modified ? "*" : "") + (fileName ?? defaultTitle);
+
+            var prefix = modified ? "*" : "";
+
+            if (fileName != null)
+            {
+                Title = prefix + fileName;
+            }
+            else if (profileName != null)
+            {
+                Title = prefix + defaultTitle + " (Profile: " + profileName + ")";
+            }
+            else
+            {
+                Title = prefix + defaultTitle;
+            }
         }
 
         private void InitializeComponent()

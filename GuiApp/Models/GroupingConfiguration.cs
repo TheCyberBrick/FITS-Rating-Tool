@@ -18,6 +18,7 @@
 
 using FitsRatingTool.Common.Services;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FitsRatingTool.GuiApp.Models
 {
@@ -179,7 +180,8 @@ namespace FitsRatingTool.GuiApp.Models
                    IsGroupedByParentDir == configuration.IsGroupedByParentDir &&
                    IsGroupedByFitsKeyword == configuration.IsGroupedByFitsKeyword &&
                    GroupingParentDirs == configuration.GroupingParentDirs &&
-                   EqualityComparer<IReadOnlyList<string>?>.Default.Equals(GroupingFitsKeywords, configuration.GroupingFitsKeywords);
+                   GroupingFitsKeywords?.Count == configuration.GroupingFitsKeywords?.Count &&
+                   (GroupingFitsKeywords == null || configuration.GroupingFitsKeywords == null || GroupingFitsKeywords.SequenceEqual(configuration.GroupingFitsKeywords));
         }
 
         public override int GetHashCode()
