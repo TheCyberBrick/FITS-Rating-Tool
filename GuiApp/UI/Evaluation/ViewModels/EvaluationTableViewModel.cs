@@ -204,7 +204,12 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedGroupKey, value);
         }
 
-        public IJobGroupingConfiguratorViewModel GroupingConfigurator { get; private set; } = null!;
+        private IJobGroupingConfiguratorViewModel _groupingConfigurator = null!;
+        public IJobGroupingConfiguratorViewModel GroupingConfigurator
+        {
+            get => _groupingConfigurator;
+            private set => this.RaiseAndSetIfChanged(ref _groupingConfigurator, value);
+        }
 
 
         public ReactiveCommand<Unit, IParameterizedFactory<IEvaluationExporterViewModel, IEvaluationExporterViewModel.Of>> ShowEvaluationExporter { get; }
@@ -245,8 +250,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 GroupingConfigurator = vm;
                 evaluationContext.CurrentFilterGroupingConfiguration = vm.GroupingConfiguration;
             });
-
-            var currentGroupKey = evaluationContext.CurrentFilterGroupKey;
 
             using (DelayChangeNotifications())
             {
@@ -303,18 +306,6 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                 if (x) TrySelectMatchingGroupKey(imageSelectionContext.CurrentFile);
             });
 
-            foreach (var groupKey in GroupKeys)
-            {
-                if (groupKey.Equals(currentGroupKey))
-                {
-                    SelectedGroupKey = currentGroupKey;
-                    UpdateGroupsAndRecords();
-                    break;
-                }
-            }
-
-            UpdateGraphsImmediately();
-
             SubscribeToEvent<IFitsImageManager, IFitsImageManager.RecordChangedEventArgs, EvaluationTableViewModel>(manager, nameof(manager.RecordChanged), OnRecordChanged);
 
             SubscribeToEvent<IImageSelectionContext, IImageSelectionContext.FileChangedEventArgs, EvaluationTableViewModel>(imageSelectionContext, nameof(imageSelectionContext.CurrentFileChanged), OnCurrentFileChanged);
@@ -336,6 +327,23 @@ namespace FitsRatingTool.GuiApp.UI.Evaluation.ViewModels
                     await record.Remove.Execute(Unit.Default);
                 }
             });
+        }
+
+        protected override void OnInstantiated()
+        {
+            var currentGroupKey = evaluationContext.CurrentFilterGroupKey;
+
+            foreach (var groupKey in GroupKeys)
+            {
+                if (groupKey.Equals(currentGroupKey))
+                {
+                    SelectedGroupKey = currentGroupKey;
+                    UpdateGroupsAndRecords();
+                    break;
+                }
+            }
+
+            UpdateGraphsImmediately();
         }
 
         private void AddRecord(long id, string file)
